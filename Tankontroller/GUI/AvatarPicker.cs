@@ -74,7 +74,10 @@ namespace Tankontroller.GUI
             PrepareButtons();
 
             mCentre = new Vector2(mBoundsRectangle.X + mBoundsRectangle.Width / 2, mBoundsRectangle.Y + mBoundsRectangle.Height / 2);
-            mAvatarRadius = (float)mBoundsRectangle.Width / 13.5f;
+            if ((float)mBoundsRectangle.Width / (float)mBoundsRectangle.Height > 3.5f && (float)mBoundsRectangle.Width / (float)mBoundsRectangle.Height < 3.6f)
+                mAvatarRadius = (float)mBoundsRectangle.Width / 20.5f; // Ultrawide monitor adjustment
+            else
+                mAvatarRadius = (float)mBoundsRectangle.Width / 13.5f;
             mRadius = mBoundsRectangle.Height / 2 - mAvatarRadius;
 
             SetUpAvatarSelection();
