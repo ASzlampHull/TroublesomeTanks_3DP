@@ -27,3 +27,9 @@ jobs:
 
     - name: Publish
       run: dotnet publish Tankontroller/Tankontroller.csproj -c Release -o build_output
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: game-build
+        path: build_output
