@@ -61,6 +61,7 @@ namespace Tankontroller.GUI
                 Color.DeepPink,
             };
 
+        // Player Avatar Picker UI 
         public AvatarPicker(Rectangle pRectangle)
         {
             mBoundsRectangle = pRectangle;
@@ -121,7 +122,8 @@ namespace Tankontroller.GUI
             mSelectionRectangles = GetSelectionRectangles(mAvatars.Count);
             UpdateCentreAvatar();
         }
-
+        
+        // Player Avatar UI
         private void UpdateCentreAvatar()
         {
             string name = mAvatarSet ? mCentreAvatar.GetName() : mAvatars[mSelectionIndex].GetName();
@@ -137,6 +139,7 @@ namespace Tankontroller.GUI
             mController?.SetColour(color);
         }
 
+        // Player Selection UI Buttons
         private void PrepareButtons()
         {
             float widthRatio = (float)mJoinButtonTexture.Width / mJoinButtonTexture.Height;
