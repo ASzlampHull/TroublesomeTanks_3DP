@@ -26,4 +26,4 @@ jobs:
       run: dotnet build --configuration Release --no-restore
 
     - name: Publish
-      run: dotnet publish Tankontroller.csproj -c Release -o build_output
+      run: dotnet publish Tankontroller/Tankontroller.csproj -c Release -o build_output
