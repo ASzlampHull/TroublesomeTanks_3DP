@@ -48,9 +48,12 @@ float LED_BRIGHTNESS = 0.6;
 bool SHOW_LIST_ON_MAIN_MENU = false;
 bool ONLY_KEYBOARD_ON_MAIN_MENU = false;
 bool ONLY_KEYBOARD_ON_MAP_SELECT = false;
-bool ADD_KEYBOARD_CONTROLLER_1 = false;
-bool ADD_KEYBOARD_CONTROLLER_2 = false;
+bool ADD_KEYBOARD_CONTROLLER_1 = true;
+bool ADD_KEYBOARD_CONTROLLER_2 = true;
 
-// TESTING & DEBUGGING
-bool ENABLE_TEST_SCENE = false;
-string TEST_SCENE_MAP_FILE = Testing.json;
+// TESTING & DEBUGGING 
+// Warning: Do not enable these options for release builds
+bool ENABLE_TEST_SCENE = false; // Immediately load test game scene. ADD_KEYBOARD_CONTROLLER 1 and 2 must be true
+string TEST_SCENE_MAP_FILE = Testing.json; // Map file to use for the test scene
+bool MUTE_MUSIC = true; // Mute all music
+bool MUTE_SFX = false; // Mute all sound effects
