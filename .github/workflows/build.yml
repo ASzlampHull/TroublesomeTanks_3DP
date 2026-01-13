@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master     # Every push to master triggers a new release
+      - working/resolution
 
 jobs:
   build:
