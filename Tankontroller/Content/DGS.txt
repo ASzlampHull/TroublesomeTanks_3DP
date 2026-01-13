@@ -3,7 +3,6 @@ bool IS_FULL_SCREEN = false;
 int SCREENWIDTH = 3840;
 int SCREENHEIGHT = 2160;
 
-
 // MAP
 string DEFAULT_MAP_FILE = Default.json;
 
