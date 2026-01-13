@@ -1,7 +1,7 @@
 ﻿// WINDOW
-bool IS_FULL_SCREEN = false;
-int SCREENWIDTH = 3840;
-int SCREENHEIGHT = 2160;
+bool IS_FULL_SCREEN = true;
+int SCREENWIDTH = 1920;
+int SCREENHEIGHT = 1080;
 
 // MAP
 string DEFAULT_MAP_FILE = Default.json;
@@ -48,5 +48,5 @@ float LED_BRIGHTNESS = 0.6;
 bool SHOW_LIST_ON_MAIN_MENU = false;
 bool ONLY_KEYBOARD_ON_MAIN_MENU = false;
 bool ONLY_KEYBOARD_ON_MAP_SELECT = false;
-bool ADD_KEYBOARD_CONTROLLER_1 = true;
-bool ADD_KEYBOARD_CONTROLLER_2 = true;
+bool ADD_KEYBOARD_CONTROLLER_1 = false;
+bool ADD_KEYBOARD_CONTROLLER_2 = false;
