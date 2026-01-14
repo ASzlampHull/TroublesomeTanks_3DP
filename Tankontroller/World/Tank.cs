@@ -314,16 +314,6 @@ namespace Tankontroller.World
             return false;
         }
 
-        public void PrimingWeapon(float pSeconds)
-        {
-            m_TimePrimed += pSeconds;
-        }
-
-        public bool IsFirePrimed()
-        {
-            return m_TimePrimed > 0;
-        }
-
         public void Fire(BulletType bullet)
         {
             m_TimePrimed = 0;
