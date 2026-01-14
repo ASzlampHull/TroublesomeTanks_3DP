@@ -152,21 +152,16 @@ namespace Tankontroller
                 }
 
                 int currentJackIndex = Controller.GetJackIndex(Control.FIRE);
-                if (Controller.IsPressedWithCharge(Control.FIRE))
+                if (Controller.IsPressedWithCharge(Control.FIRE) && !Controller.WasPressed(Control.FIRE))
                 {
                     if (mCannonJackIndex == -1) mCannonJackIndex = currentJackIndex;
                     else if (mCannonJackIndex == currentJackIndex) Tank.PrimingWeapon(pSeconds);
-                }
-                else
-                {
-                    if (mCannonJackIndex == currentJackIndex && Tank.IsFirePrimed())
+
+                    if (Controller.DepleteCharge(Control.FIRE, BULLET_CHARGE_DEPLETION))
                     {
-                        if (Controller.DepleteCharge(Control.FIRE, BULLET_CHARGE_DEPLETION))
-                        {
-                            Tank.Fire(Tank.mbulletType);
-                            SoundEffectInstance bulletShot = Tankontroller.Instance().GetSoundManager().GetSoundEffectInstance("Sounds/Tank_Gun");
-                            bulletShot.Play();
-                        }
+                        Tank.Fire(Tank.mbulletType);
+                        SoundEffectInstance bulletShot = Tankontroller.Instance().GetSoundManager().GetSoundEffectInstance("Sounds/Tank_Gun");
+                        bulletShot.Play();
                     }
                     mCannonJackIndex = -1;
                 }
