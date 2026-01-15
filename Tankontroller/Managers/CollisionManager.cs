@@ -11,6 +11,8 @@ namespace Tankontroller.Managers
 {
     internal class CollisionManager
     {
+        public static readonly bool DRAW_COLLISION_SHAPES = DGS.Instance.GetBool("DRAW_COLLISION_SHAPES");
+
         private static CollisionManager mInstance = new();
 
         static CollisionManager() { }

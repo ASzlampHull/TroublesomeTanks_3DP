@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Tankontroller.Managers;
+using Tankontroller.Utilities;
 using Tankontroller.World.Particles;
 
 namespace Tankontroller.World.Bullets
@@ -96,6 +98,12 @@ namespace Tankontroller.World.Bullets
         {
             Particle.DrawCircle(pBatch, pTexture, (int)Radius + 2 * Particle.EDGE_THICKNESS, Position, Color.Black);
             Particle.DrawCircle(pBatch, pTexture, (int)Radius, Position, Colour);
+
+            // Draw collision shape if enabled in DGS
+            if (CollisionManager.DRAW_COLLISION_SHAPES)
+            {
+                DrawUtilities.DrawCircle(pBatch, Position, Radius, Color.LimeGreen);
+            }
         }
     }
 }

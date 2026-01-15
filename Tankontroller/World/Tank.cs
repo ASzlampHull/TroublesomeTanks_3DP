@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Tankontroller.Managers;
+using Tankontroller.Utilities;
 using Tankontroller.World.Bullets;
 using Tankontroller.World.Particles;
 
@@ -306,6 +307,7 @@ namespace Tankontroller.World
         }
         public bool TankInRadius(float pBulletRadius, Vector2 pPoint)
         {
+            // TODO: Improve collision detection - check for each corner instead of just the center
             float distance = Vector2.Distance(new Vector2(mPosition.X, mPosition.Y), pPoint);
             if (distance < (pBulletRadius - 10))
             {
@@ -495,6 +497,14 @@ namespace Tankontroller.World
             {
                 Color blend = Color.Lerp(mColour, Color.SlateGray, 0.75f); // Adds a bit of grey to the colour
                 pSpriteBatch.Draw(mBrokenTexture, GetWorldPosition(), null, blend, GetRotation(), new Vector2(mBrokenTexture.Width / 2, mBrokenTexture.Height / 2), m_Scale, SpriteEffects.None, 0.0f);
+            }
+
+            // Draw collision shape if enabled in DGS
+            if (CollisionManager.DRAW_COLLISION_SHAPES)
+            {
+                Vector2[] corners = new Vector2[4];
+                GetCorners(corners);
+                DrawUtilities.DrawRectangle(pSpriteBatch, ConvertUtilities.ToRectangle(TANK_CORNERS), Color.Magenta, mRotation, GetWorldPosition(), m_Scale);
             }
         }
 
