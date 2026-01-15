@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
+using System.Numerics;
 
 //-----------------------------------------------------------------------------------------------
 // Hacktroller.cs
@@ -102,6 +103,8 @@ namespace Tankontroller.Controller
         static byte[] GetPortCommand = new byte[] { (byte)'R' };
 
         static byte[] frameBuffer = new byte[61 * 3];
+
+        List<byte> prevFrameBuffer = new List<byte>();
 
         static int tolerance = 0;
 
@@ -207,8 +210,22 @@ namespace Tankontroller.Controller
                     if (b != 'D') return null;
 
                     byte[] buffer = new byte[numPins + 1];
-
                     port.Read(buffer, 0, buffer.Length);
+
+                    if (prevFrameBuffer.Count > 0)
+                    {
+                        for (int i = 0; i < numPins + 1; i++)
+                        {
+                            if (buffer[i] != prevFrameBuffer[i] && 
+                                buffer[i] != prevFrameBuffer[i]+1 && 
+                                prevFrameBuffer[i] != buffer[i]+1 &&
+                                buffer[i] != 0 && 
+                                prevFrameBuffer[i] != 0)
+                            {
+                                buffer[i] = (byte)prevFrameBuffer[i];
+                            }
+                        }
+                    }
 
                     for (int i = 0; i < numPins; i++)
                     {
@@ -216,6 +233,7 @@ namespace Tankontroller.Controller
                         ControllerState readingState = DecodeState(reading);
                         portStates[i] = readingState;
                     }
+                    prevFrameBuffer = buffer.ToList();
                 }
             }
             catch
