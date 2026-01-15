@@ -104,7 +104,8 @@ namespace Tankontroller.Controller
 
         static byte[] frameBuffer = new byte[61 * 3];
 
-        List<byte> prevFrameBuffer = new List<byte>();
+        private List<byte> prevFrameBuffer = new List<byte>();
+        private int frameBufferCounter = 0;
 
         static int tolerance = 0;
 
@@ -223,6 +224,18 @@ namespace Tankontroller.Controller
                                 prevFrameBuffer[i] != 0)
                             {
                                 buffer[i] = (byte)prevFrameBuffer[i];
+                            }
+
+                            const uint frameCounterMax = 5;
+                            if (buffer[i] == 0 && prevFrameBuffer[i] != 0 && frameBufferCounter < frameCounterMax)
+                            {
+                                frameBufferCounter++;
+                                buffer[i] = (byte)prevFrameBuffer[i];
+                            }
+
+                            if (buffer[i] == 0 && frameBufferCounter >= frameCounterMax)
+                            {
+                                frameBufferCounter = 0;
                             }
                         }
                     }
