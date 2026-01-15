@@ -217,6 +217,7 @@ namespace Tankontroller.Controller
                     {
                         for (int i = 0; i < numPins + 1; i++)
                         {
+                            // Stops the controller from jumping between two states rapidly
                             if (buffer[i] != prevFrameBuffer[i] && 
                                 buffer[i] != prevFrameBuffer[i]+1 && 
                                 prevFrameBuffer[i] != buffer[i]+1 &&
@@ -226,13 +227,13 @@ namespace Tankontroller.Controller
                                 buffer[i] = (byte)prevFrameBuffer[i];
                             }
 
+                            // Fills in dropouts in the signal for a couple of frames
                             const uint frameCounterMax = 2;
                             if (buffer[i] == 0 && prevFrameBuffer[i] != 0 && frameBufferCounter < frameCounterMax)
                             {
                                 frameBufferCounter++;
                                 buffer[i] = (byte)prevFrameBuffer[i];
                             }
-
                             if (buffer[i] == 0 && frameBufferCounter >= frameCounterMax)
                             {
                                 frameBufferCounter = 0;
