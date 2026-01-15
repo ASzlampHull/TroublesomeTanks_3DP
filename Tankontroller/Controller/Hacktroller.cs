@@ -226,7 +226,7 @@ namespace Tankontroller.Controller
                                 buffer[i] = (byte)prevFrameBuffer[i];
                             }
 
-                            const uint frameCounterMax = 5;
+                            const uint frameCounterMax = 2;
                             if (buffer[i] == 0 && prevFrameBuffer[i] != 0 && frameBufferCounter < frameCounterMax)
                             {
                                 frameBufferCounter++;
