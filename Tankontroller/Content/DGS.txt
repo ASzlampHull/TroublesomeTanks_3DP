@@ -50,3 +50,7 @@ bool ONLY_KEYBOARD_ON_MAIN_MENU = false;
 bool ONLY_KEYBOARD_ON_MAP_SELECT = false;
 bool ADD_KEYBOARD_CONTROLLER_1 = false;
 bool ADD_KEYBOARD_CONTROLLER_2 = false;
+
+// TESTING & DEBUGGING
+bool ENABLE_TEST_SCENE = false;
+string TEST_SCENE_MAP_FILE = Testing.json;
