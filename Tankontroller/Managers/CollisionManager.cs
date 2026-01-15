@@ -68,14 +68,7 @@ namespace Tankontroller.Managers
 
         static public bool Collide(Bullet pBullet, Tank pTank) //Bullet and Tank Collision
         {
-            if (pBullet is Shockwave)
-            {
-                if (pTank.TankInRadius(pBullet.Radius, pBullet.Position))
-                {
-                    return true;
-                }
-            }
-            if (pTank.PointIsInTank(pBullet.Position))
+            if (pTank.TankInRadius(pBullet.Radius, pBullet.Position))
             {
                 return true;
             }

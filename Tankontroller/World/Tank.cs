@@ -305,15 +305,42 @@ namespace Tankontroller.World
             }
             return result;
         }
-        public bool TankInRadius(float pBulletRadius, Vector2 pPoint)
+
+        /// <summary>
+        /// Checks if the tank's corners are within a certain radius of a point.
+        /// Transforms the point into tank-local space and checks against an AABB.
+        /// </summary>
+        /// <returns> True if the bullet radius intersects the tank's collision shape (corners) </returns>
+        public bool TankInRadius(float pRadius, Vector2 pPoint)
         {
-            // TODO: Improve collision detection - check for each corner instead of just the center
-            float distance = Vector2.Distance(new Vector2(mPosition.X, mPosition.Y), pPoint);
-            if (distance < (pBulletRadius - 10))
+            // Transform the world point into tank-local coordinates (centered on tank, unrotated).
+            Vector2 tankCenter = new(mPosition.X, mPosition.Y);
+            Vector2 localPoint = pPoint - tankCenter;
+            localPoint = Vector2.Transform(localPoint, Matrix.CreateRotationZ(-mRotation));
+
+            // Build the tank's local AABB from the unrotated, scaled corner definitions.
+            float minX = float.MaxValue, maxX = float.MinValue;
+            float minY = float.MaxValue, maxY = float.MinValue;
+            for (int i = 0; i < TANK_CORNERS.Length; ++i)
             {
-                return true;
+                // TODO: Cache scaled tank corners for efficiency and update cache whenever tank is scaled
+                float x = TANK_CORNERS[i].X * m_Scale;
+                float y = TANK_CORNERS[i].Y * m_Scale;
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
             }
-            return false;
+
+            // Find closest point on the AABB to the localPoint.
+            float closestX = Math.Clamp(localPoint.X, minX, maxX);
+            float closestY = Math.Clamp(localPoint.Y, minY, maxY);
+            Vector2 closest = new(closestX, closestY);
+            float effectiveRadius = Math.Max(0f, pRadius);
+
+            // Compare squared distances
+            float distanceSquared = Vector2.DistanceSquared(localPoint, closest);
+            return distanceSquared <= (effectiveRadius * effectiveRadius);
         }
 
         public void PrimingWeapon(float pSeconds)
