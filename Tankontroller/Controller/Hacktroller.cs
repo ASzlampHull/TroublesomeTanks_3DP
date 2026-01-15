@@ -228,7 +228,7 @@ namespace Tankontroller.Controller
                             }
 
                             // Fills in dropouts in the signal for a couple of frames
-                            const uint frameCounterMax = 2;
+                            const uint frameCounterMax = 20;
                             if (buffer[i] == 0 && prevFrameBuffer[i] != 0 && frameBufferCounter < frameCounterMax)
                             {
                                 frameBufferCounter++;
