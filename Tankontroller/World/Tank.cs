@@ -168,8 +168,8 @@ namespace Tankontroller.World
         public Vector2 GetIndexedCorner(int pIndex)
         {
             Vector3 temp = Vector3.Zero;
-            temp.X = TANK_CORNERS[pIndex].X;
-            temp.Y = TANK_CORNERS[pIndex].Y;
+            temp.X = TANK_CORNERS[pIndex].X * m_Scale;
+            temp.Y = TANK_CORNERS[pIndex].Y * m_Scale;
             temp = Vector3.Transform(temp, Matrix.CreateRotationZ(mRotation));
             temp = temp + mPosition;
             return new Vector2(temp.X, temp.Y);
@@ -364,6 +364,11 @@ namespace Tankontroller.World
         {
             mPosition = mOldPosition;
             mRotation = mOldRotation;
+        }
+
+        public void OffsetPosition(Vector2 delta)
+        {
+            mPosition += new Vector3(delta, 0);
         }
 
         public void CheckBullets(List<Tank> pTanks, Rectangle pPlayArea, List<RectWall> pWalls)
