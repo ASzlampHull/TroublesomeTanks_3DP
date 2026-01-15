@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 
 namespace Tankontroller.Utilities
 {
@@ -13,9 +14,8 @@ namespace Tankontroller.Utilities
         private static Texture2D mPixelTexture = null;
 
         // Default parameters
-        private const int DEFAULT_CIRCLE_RADIUS = 128;
-        private const int DEFAULT_RING_THICKNESS = 32;
-        private const int DEFAULT_RECTANGLE_THICKNESS = 32;
+        private const int DEFAULT_CIRCLE_RADIUS = 256;
+        private const int DEFAULT_RING_THICKNESS = 128;
 
         // -----------------------------------------------------------------------------------------
 
@@ -24,11 +24,11 @@ namespace Tankontroller.Utilities
         /// <summary>
         /// Draw a circle at the given position with the given radius and tint using a specified texture.
         /// </summary>
-        public static void DrawCircle(SpriteBatch pSpriteBatch, Texture2D pCircleTex, Vector2 pPosition, float pRadius, Color pTint)
+        public static void DrawCircle(SpriteBatch pSpriteBatch, Texture2D pCircleTexture, Vector2 pPosition, float pRadius, Color pTint)
         {
-            Vector2 origin = new(pCircleTex.Width / 2f, pCircleTex.Height / 2f);
-            float scale = (pRadius * 2f) / pCircleTex.Width;
-            pSpriteBatch.Draw(pCircleTex, pPosition, null, pTint, 0f, origin, scale, SpriteEffects.None, 0f);
+            Vector2 origin = new(pCircleTexture.Width / 2f, pCircleTexture.Height / 2f);
+            float scale = (pRadius * 2f) / pCircleTexture.Width;
+            pSpriteBatch.Draw(pCircleTexture, pPosition, null, pTint, 0f, origin, scale, SpriteEffects.None, 0f);
         }
 
         /// <summary>
