@@ -529,8 +529,6 @@ namespace Tankontroller.World
             // Draw collision shape if enabled in DGS
             if (CollisionManager.DRAW_COLLISION_SHAPES)
             {
-                Vector2[] corners = new Vector2[4];
-                GetCorners(corners);
                 DrawUtilities.DrawRectangle(pSpriteBatch, ConvertUtilities.ToRectangle(TANK_CORNERS), Color.Magenta, mRotation, GetWorldPosition(), m_Scale);
             }
         }
