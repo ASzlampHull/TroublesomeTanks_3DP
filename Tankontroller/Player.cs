@@ -79,7 +79,7 @@ namespace Tankontroller
             }
 
             bool tankMoved = false;
-            if (Tank.Alive())
+            if (Tank.IsAlive())
             {
                 bool leftTrackForward = Controller.IsPressedWithCharge(Control.LEFT_TRACK_FORWARDS);
                 bool leftTrackBackward = Controller.IsPressedWithCharge(Control.LEFT_TRACK_BACKWARDS);

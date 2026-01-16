@@ -465,7 +465,7 @@ namespace Tankontroller.World
         /// Determines whether the tank is currently in the alive state.
         /// </summary>
         /// <returns> Returns true if current tank state is alive, otherwise returns false</returns>
-        public bool Alive()
+        public bool IsAlive()
         {
             return m_CurrentState == TankStates.ALIVE;
         }
