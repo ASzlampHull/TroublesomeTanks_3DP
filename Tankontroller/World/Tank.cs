@@ -54,7 +54,6 @@ namespace Tankontroller.World
         private Vector3 mOldPosition;
 
         private float mCannonRotation;
-        private float m_TimePrimed; // How long the player held the shoot button
         private int mFired; // Number of frames since the player fired
 
         private Color mColour;
@@ -314,19 +313,8 @@ namespace Tankontroller.World
             return false;
         }
 
-        public void PrimingWeapon(float pSeconds)
-        {
-            m_TimePrimed += pSeconds;
-        }
-
-        public bool IsFirePrimed()
-        {
-            return m_TimePrimed > 0;
-        }
-
         public void Fire(BulletType bullet)
         {
-            m_TimePrimed = 0;
             mFired = BLAST_DELAY;
             float cannonRotation = GetCannonWorldRotation();
             Vector2 cannonDirection = new Vector2((float)Math.Cos(cannonRotation), (float)Math.Sin(cannonRotation));

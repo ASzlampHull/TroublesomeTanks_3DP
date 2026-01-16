@@ -18,8 +18,6 @@ namespace Tankontroller
         public IController Controller { get; private set; }
         public Color Colour { get; private set; }
 
-        private int mCannonJackIndex = -1; // Due to flickering of the controller, we need to keep track of the last jack used to fire the cannon
-
         // Variables to control Controller LED flashing when in EMP shockwave
         private const float FLASH_TIME = 0.5f;
         private readonly Color FLASH_COLOUR = new Color(0, 0, 0);
@@ -152,23 +150,14 @@ namespace Tankontroller
                 }
 
                 int currentJackIndex = Controller.GetJackIndex(Control.FIRE);
-                if (Controller.IsPressedWithCharge(Control.FIRE))
+                if (Controller.IsPressedWithCharge(Control.FIRE) && !Controller.WasPressed(Control.FIRE))
                 {
-                    if (mCannonJackIndex == -1) mCannonJackIndex = currentJackIndex;
-                    else if (mCannonJackIndex == currentJackIndex) Tank.PrimingWeapon(pSeconds);
-                }
-                else
-                {
-                    if (mCannonJackIndex == currentJackIndex && Tank.IsFirePrimed())
+                    if (Controller.DepleteCharge(Control.FIRE, BULLET_CHARGE_DEPLETION))
                     {
-                        if (Controller.DepleteCharge(Control.FIRE, BULLET_CHARGE_DEPLETION))
-                        {
-                            Tank.Fire(Tank.mbulletType);
-                            SoundEffectInstance bulletShot = Tankontroller.Instance().GetSoundManager().GetSoundEffectInstance("Sounds/Tank_Gun");
-                            bulletShot.Play();
-                        }
+                        Tank.Fire(Tank.mbulletType);
+                        SoundEffectInstance bulletShot = Tankontroller.Instance().GetSoundManager().GetSoundEffectInstance("Sounds/Tank_Gun");
+                        bulletShot.Play();
                     }
-                    mCannonJackIndex = -1;
                 }
 
                 if (Controller.IsPressed(Control.RECHARGE) && !Controller.WasPressed(Control.RECHARGE))
