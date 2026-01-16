@@ -161,7 +161,9 @@ namespace Tankontroller.World
 
                     // tank collision using collision manager
                     if (CollisionManager.Collide(mTanks[tankIndex], wallRect, false))
-                        mTanks[tankIndex].PutBack();
+                    {   
+                        CollisionManager.ResolveTankWallCollision(mTanks[tankIndex], wall);
+                    }
                 }
 
                 // Collisions with other tanks
@@ -178,7 +180,7 @@ namespace Tankontroller.World
 
                 // Collisions with the play area
                 if (CollisionManager.Collide(mTanks[tankIndex], mPlayArea, true)) // True tp check inside the play area
-                    mTanks[tankIndex].PutBack();
+                    CollisionManager.ResolveTankPlayAreaCollision(mTanks[tankIndex], mPlayArea);
             }
         }
 
