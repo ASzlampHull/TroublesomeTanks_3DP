@@ -102,7 +102,7 @@ namespace Tankontroller.World.Bullets
             // Draw collision shape if enabled in DGS
             if (CollisionManager.DRAW_COLLISION_SHAPES)
             {
-                DrawUtilities.DrawCircle(pBatch, Position, Radius, Color.LimeGreen);
+                DrawUtilities.DrawCircle(pBatch, Position, Radius, Color.DodgerBlue);
             }
         }
     }
