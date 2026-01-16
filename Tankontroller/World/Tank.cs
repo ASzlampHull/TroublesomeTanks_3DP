@@ -363,8 +363,8 @@ namespace Tankontroller.World
             mFired = BLAST_DELAY;
             float cannonRotation = GetCannonWorldRotation();
             Vector2 cannonDirection = new Vector2((float)Math.Cos(cannonRotation), (float)Math.Sin(cannonRotation));
-            float offset = 40.0f * m_Scale;
-            Vector2 endOfCannon = GetCannonWorldPosition() + cannonDirection * offset;
+            float cannonOffset = 40.0f * m_Scale;
+            Vector2 endOfCannon = GetCannonWorldPosition() + cannonDirection * cannonOffset;
             if (bullet == BulletType.BOUNCY_EMP)
             {
                 m_Bullets.Add(new BouncyEMPBullet(endOfCannon, cannonDirection * BULLET_SPEED * 1.5f, mColour, 20.0f));
@@ -374,7 +374,8 @@ namespace Tankontroller.World
             {
                 float backwardRotation = mRotation + MathHelper.ToRadians(180);
                 Vector2 backwardDirection = new Vector2((float)Math.Cos(backwardRotation), (float)Math.Sin(backwardRotation));
-                Vector2 behindTheTank = GetCannonWorldPosition() + backwardDirection * 40;
+                float behindOffset = 50.0f * m_Scale;
+                Vector2 behindTheTank = GetCannonWorldPosition() + backwardDirection * behindOffset;
                 m_Bullets.Add(new MineBullet(behindTheTank, Vector2.Zero, mColour, 600.0f));
                 mbulletType = BulletType.DEFAULT;
             }
