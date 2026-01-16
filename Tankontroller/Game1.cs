@@ -9,6 +9,7 @@ using System.IO.Ports;
 using System.Linq;
 using System.Threading.Tasks;
 using Tankontroller.Controller;
+using Tankontroller.GUI;
 using Tankontroller.Managers;
 using Tankontroller.Scenes;
 
@@ -160,7 +161,22 @@ namespace Tankontroller
             ControllerManager.PixelTex = new Texture2D(GraphicsDevice, 1, 1);
             ControllerManager.PixelTex.SetData(new Color[] { Color.White });
 
-            mSceneManager.Push(new FlashScreenScene());
+
+            // Instantly transition to Test Scene if enabled in Content/DGS.txt
+            if (DGS.Instance.GetBool("ENABLE_TEST_SCENE"))
+            {
+                List<Player> testPlayers = new()
+                {
+                    new(mControllerManager.GetController(0), new Avatar("engineer", new Rectangle(), Color.Red)),
+                    new(mControllerManager.GetController(1), new Avatar("robo", new Rectangle(), Color.Blue))
+                };
+                mSceneManager.Push(new GameScene(testPlayers, DGS.Instance.GetString("TEST_SCENE_MAP_FILE")));
+            }
+            // Otherwise, launch the game normally
+            else
+            {
+                mSceneManager.Push(new FlashScreenScene());
+            }
 
             // TODO: use this.Content to load your game content here
         }
