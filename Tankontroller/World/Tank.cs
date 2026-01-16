@@ -41,7 +41,11 @@ namespace Tankontroller.World
 
 
 
-        private Vector2[] TANK_CORNERS = { new Vector2(TANK_HEIGHT / 2 - TANK_FRONT_BUFFER, -TANK_WIDTH / 2), new Vector2(-TANK_HEIGHT / 2, -TANK_WIDTH / 2), new Vector2(-TANK_HEIGHT / 2, TANK_WIDTH / 2), new Vector2(TANK_HEIGHT / 2 - TANK_FRONT_BUFFER, TANK_WIDTH / 2) };
+        private Vector2[] TANK_CORNERS = { 
+            new Vector2(TANK_HEIGHT / 2 - TANK_FRONT_BUFFER, -TANK_WIDTH / 2), 
+            new Vector2(-TANK_HEIGHT / 2, -TANK_WIDTH / 2), 
+            new Vector2(-TANK_HEIGHT / 2, TANK_WIDTH / 2), 
+            new Vector2(TANK_HEIGHT / 2 - TANK_FRONT_BUFFER, TANK_WIDTH / 2) };
 
         private List<Bullet> m_Bullets;
 
@@ -100,7 +104,13 @@ namespace Tankontroller.World
             {
                 m_LeftTrackFrame = 1;
             }
-            DustInitialisationPolicy dust = new DustInitialisationPolicy(GetLeftFrontCorner(), GetLeftBackCorner());
+
+            Vector2[] tankCorners = new Vector2[4];
+            GetCorners(tankCorners);
+            Vector2 leftTopCorner = tankCorners[0];
+            Vector2 leftBottomCorner = tankCorners[1];
+
+            DustInitialisationPolicy dust = new DustInitialisationPolicy(leftTopCorner, leftBottomCorner);
             ParticleManager.Instance().InitialiseParticles(dust, 4);
         }
 
@@ -115,7 +125,13 @@ namespace Tankontroller.World
             {
                 m_RightTrackFrame = 1;
             }
-            DustInitialisationPolicy dust = new DustInitialisationPolicy(GetRightFrontCorner(), GetRightBackCorner());
+
+            Vector2[] tankCorners = new Vector2[4];
+            GetCorners(tankCorners);
+            Vector2 rightTopCorner = tankCorners[2];
+            Vector2 rightBottomCorner = tankCorners[3];
+
+            DustInitialisationPolicy dust = new DustInitialisationPolicy(rightTopCorner, rightBottomCorner);
             ParticleManager.Instance().InitialiseParticles(dust, 4);
         }
 
