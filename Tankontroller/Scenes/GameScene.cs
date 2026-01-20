@@ -40,6 +40,12 @@ namespace Tankontroller.Scenes
         Rectangle mBackgroundRectangle;
 
         private bool mControllersConnected = true;
+
+        // Timer GUI
+        private GameTimer m_GameTimer;
+        // configured match length in seconds (from DGS). If <= 0 timer is disabled.
+        private double m_GameLengthSeconds = 0.0;
+
         public GameScene(List<Player> pPlayers, string mapFile)
         {
             spriteBatch = new SpriteBatch(mGameInstance.GDM().GraphicsDevice);
@@ -106,6 +112,21 @@ namespace Tankontroller.Scenes
                 spriteBatch.DrawString(m_SpriteFont, message, new Vector2(centre.X - (fontSize.X / 2), centre.Y - (fontSize.Y / 2)), Color.Black);
             }
 
+            // Draw timer (top center). We compute remaining time from the configured match length and
+            // the timer's total elapsed time (your GameTimer is a count-up).
+            if (m_GameTimer != null && m_GameLengthSeconds > 0.0)
+            {
+                TimeSpan elapsed = m_GameTimer.GetTotalTime();
+                double remainingSeconds = m_GameLengthSeconds - elapsed.TotalSeconds;
+                if (remainingSeconds < 0) remainingSeconds = 0;
+                TimeSpan remaining = TimeSpan.FromSeconds(remainingSeconds);
+                string timeText = string.Format("{0:00}:{1:00}", remaining.Minutes, remaining.Seconds);
+                Vector2 size = m_SpriteFont.MeasureString(timeText);
+                float x = mBackgroundRectangle.Width / 2f - size.X / 2f;
+                float y = 10f;
+                spriteBatch.DrawString(m_SpriteFont, timeText, new Vector2(x, y), Color.White);
+            }
+
             spriteBatch.End();
         }
 
@@ -169,6 +190,24 @@ namespace Tankontroller.Scenes
                         trackSystem.AddTrack(p.Tank.GetWorldPosition(), p.Tank.GetRotation(), p.Tank.Colour());
                     }
                 }
+
+                // Update timer: your GameTimer uses Update(GameTime) and counts up.
+                if (m_GameTimer != null && m_GameLengthSeconds > 0.0)
+                {
+                    // Use a small GameTime wrapper to call the existing Update(GameTime) API
+                    var gt = new GameTime(TimeSpan.Zero, TimeSpan.FromSeconds(pSeconds));
+                    m_GameTimer.Update(gt);
+
+                    // If elapsed >= configured length, end match
+                    if (m_GameTimer.GetTotalTime().TotalSeconds >= m_GameLengthSeconds)
+                    {
+                        int winner = DetermineWinnerByHealth();
+                        IGame game = Tankontroller.Instance();
+                        game.GetControllerManager().SetAllTheLEDsWhite();
+                        game.SM().Transition(new GameOverScene(mBackgroundTexture, m_Teams, winner));
+                        return;
+                    }
+                }
             }
             else // At least one controller is disconnected
             {
@@ -205,6 +244,20 @@ namespace Tankontroller.Scenes
             }
             ParticleManager.Instance().Reset();
             TrackSystem.GetInstance().Reset();
+
+            // Initialize your existing GameTimer and start it if GAME_LENGTH is configured.
+            float configuredLength = DGS.Instance.GetFloat("GAME_LENGTH");
+            m_GameLengthSeconds = configuredLength;
+            if (configuredLength > 0f)
+            {
+                m_GameTimer = new GameTimer();
+                m_GameTimer.Reset();
+                m_GameTimer.Start();
+            }
+            else
+            {
+                m_GameTimer = null; // timer disabled
+            }
         }
 
         //Checks the health of all players and returns a list of tanks with more that 0 health
@@ -221,6 +274,29 @@ namespace Tankontroller.Scenes
                 index++;
             }
             return remaining;
+        }
+
+        // Determine winner by highest health. Returns -1 for tie or no winner.
+        private int DetermineWinnerByHealth()
+        {
+            int bestIndex = -1;
+            int bestHealth = -1;
+            bool tie = false;
+            for (int i = 0; i < m_Teams.Count; i++)
+            {
+                int health = m_Teams[i].Tank.Health();
+                if (health > bestHealth)
+                {
+                    bestHealth = health;
+                    bestIndex = i;
+                    tie = false;
+                }
+                else if (health == bestHealth)
+                {
+                    tie = true;
+                }
+            }
+            return (bestIndex == -1 || tie) ? -1 : bestIndex;
         }
     }
 }
