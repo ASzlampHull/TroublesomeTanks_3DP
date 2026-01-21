@@ -9,8 +9,13 @@ using Tankontroller.World.Particles;
 
 namespace Tankontroller.Managers
 {
+    /// <summary>
+    /// Singleton reponsible for collision detection logic and some collision responses
+    /// </summary>
     internal class CollisionManager
     {
+        public static readonly bool DRAW_COLLISION_SHAPES = DGS.Instance.GetBool("DRAW_COLLISION_SHAPES");
+
         private static CollisionManager mInstance = new();
 
         static CollisionManager() { }
@@ -66,14 +71,7 @@ namespace Tankontroller.Managers
 
         static public bool Collide(Bullet pBullet, Tank pTank) //Bullet and Tank Collision
         {
-            if (pBullet is Shockwave)
-            {
-                if (pTank.TankInRadius(pBullet.Radius, pBullet.Position))
-                {
-                    return true;
-                }
-            }
-            if (pTank.PointIsInTank(pBullet.Position))
+            if (pTank.TankInRadius(pBullet.Radius, pBullet.Position))
             {
                 return true;
             }
