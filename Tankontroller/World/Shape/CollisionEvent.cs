@@ -1,0 +1,54 @@
+﻿using Microsoft.Xna.Framework;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Tankontroller.World.Shape
+{
+    /// <summary>
+    /// Represents the result of a collision detection operation.
+    /// Stores useful collision information.
+    /// </summary>
+    internal class CollisionEvent
+    {
+        /// <summary>
+        /// Whether a collision has occurred
+        /// </summary>
+        public bool HasCollided { get; } = false;
+
+        /// <summary>
+        /// Represents the position where the collision occurred.
+        /// Null if no collision has occurred or if not applicable.
+        /// </summary>
+        public Vector2? CollisionPosition { get; } = null;
+
+        /// <summary>
+        /// Represents the normal vector of a collision.
+        /// Null if no collision has occurred or if not applicable.
+        /// </summary>
+        /// <remarks>The collision normal typically indicates the direction perpendicular to the surface
+        /// at the point of contact. It is commonly used in physics calculations to determine reflection, response
+        /// forces, or to resolve overlaps.</remarks>
+        public Vector2? CollisionNormal { get; } = null;
+
+        public CollisionEvent(bool pHasCollided)
+        {
+            HasCollided = pHasCollided;
+        }
+
+        public CollisionEvent(bool pHasCollided, Vector2 pCollisionPosition)
+        {
+            HasCollided = pHasCollided;
+            CollisionPosition = pCollisionPosition;
+        }
+
+        public CollisionEvent(bool pHasCollided, Vector2 pCollisionPosition, Vector2 pCollisionNormal)
+        {
+            HasCollided = pHasCollided;
+            CollisionPosition = pCollisionPosition;
+            CollisionNormal = pCollisionNormal;
+        }
+    }
+}
