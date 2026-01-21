@@ -1,5 +1,5 @@
 ﻿// WINDOW
-bool IS_FULL_SCREEN = false;
+bool IS_FULL_SCREEN = true;
 int SCREENWIDTH = 1920;
 int SCREENHEIGHT = 1080;
 
@@ -26,9 +26,9 @@ float TRACK_OFFSET = 17;
 // JACK CHARGE
 float MAX_CHARGE = 200;
 float CHARGE_AMOUNT = 7;
-float TRACK_DEPLETION_RATE = 0;
-float TURRET_DEPLETION_RATE = 0;
-float BULLET_CHARGE_DEPLETION = 0;
+float TRACK_DEPLETION_RATE = 10;
+float TURRET_DEPLETION_RATE = 5;
+float BULLET_CHARGE_DEPLETION = 95;
 
 //PICKUPS
 bool PICKUPS_ON = true;
@@ -49,8 +49,8 @@ float LED_BRIGHTNESS = 0.6;
 bool SHOW_LIST_ON_MAIN_MENU = false;
 bool ONLY_KEYBOARD_ON_MAIN_MENU = false;
 bool ONLY_KEYBOARD_ON_MAP_SELECT = false;
-bool ADD_KEYBOARD_CONTROLLER_1 = true;
-bool ADD_KEYBOARD_CONTROLLER_2 = true;
+bool ADD_KEYBOARD_CONTROLLER_1 = false;
+bool ADD_KEYBOARD_CONTROLLER_2 = false;
 
 // TESTING & DEBUGGING 
 // Warning: Do not enable these options for release builds
