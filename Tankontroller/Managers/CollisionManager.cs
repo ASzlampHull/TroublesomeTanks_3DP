@@ -10,21 +10,11 @@ using Tankontroller.World.Particles;
 namespace Tankontroller.Managers
 {
     /// <summary>
-    /// Singleton reponsible for collision detection logic and some collision responses
+    /// Static class that manages logic for all collision detection and response
     /// </summary>
-    internal class CollisionManager
+    internal static class CollisionManager
     {
         public static readonly bool DRAW_COLLISION_SHAPES = DGS.Instance.GetBool("DRAW_COLLISION_SHAPES");
-
-        private static CollisionManager mInstance = new();
-
-        static CollisionManager() { }
-        private CollisionManager() { }
-
-        public static CollisionManager Instance
-        {
-            get { return mInstance; }
-        }
 
         static public bool Collide(Tank pTank, Tank pTank_2) // Tank on Tank Collision
         {
