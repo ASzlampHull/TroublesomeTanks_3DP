@@ -63,6 +63,17 @@ namespace Tankontroller.World.Particles
         {
             Vector2 origin = new Vector2((m_Texture.Width / 2f), (m_Texture.Height / 2f));
 
+            // Scale based on screen resolution
+            const float referenceWidth = 1920f;
+            const float referenceHeight = 1080f;
+            int screenWidth = DGS.Instance.GetInt("SCREENWIDTH");
+            int screenHeight = DGS.Instance.GetInt("SCREENHEIGHT");
+
+            // Compute uniform scale so particles remain proportional across aspect ratios
+            float scaleX = screenWidth / referenceWidth;
+            float scaleY = screenHeight / referenceHeight;
+            float scale = Math.Min(scaleX, scaleY);
+
             for (int i = 0; i < MAX_TRACKS; i++)
             {
                 // Round positions to avoid sub-pixel sampling differences
@@ -77,12 +88,12 @@ namespace Tankontroller.World.Particles
                         // skip the center pixel where the foreground will be drawn
                         if (ox == 0 && oy == 0) continue;
 
-                        pBatch.Draw(m_Texture, basePos + new Vector2(ox, oy), null, Color.Black, m_Tracks[i].Rotation, origin, 1f, SpriteEffects.None, 0.0f);
+                        pBatch.Draw(m_Texture, basePos + new Vector2(ox, oy), null, Color.Black, m_Tracks[i].Rotation, origin, scale, SpriteEffects.None, 0.0f);
                     }
                 }
 
                 // Draw the foreground (main) track
-                pBatch.Draw(m_Texture, basePos, null, m_Tracks[i].Colour, m_Tracks[i].Rotation, origin, 1f, SpriteEffects.None,0.0f);
+                pBatch.Draw(m_Texture, basePos, null, m_Tracks[i].Colour, m_Tracks[i].Rotation, origin, scale, SpriteEffects.None,0.0f);
             }
         }
     }

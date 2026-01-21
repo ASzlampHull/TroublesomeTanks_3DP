@@ -74,7 +74,6 @@ namespace Tankontroller.World.Particles
 
             // Apply scale to radius and edge thickness
             int scaledRadius = Math.Max(1, (int)MathF.Round(pRadius * scale));
-            //int scaledEdge = Math.Max(1, (int)MathF.Round(EDGE_THICKNESS * scale));
 
             Rectangle rectangle = new Rectangle();
             rectangle.Width = scaledRadius * 2;
