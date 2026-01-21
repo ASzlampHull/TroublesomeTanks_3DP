@@ -1,21 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using TTMapEditor.Managers;
 
 namespace TTMapEditor.Scenes
 {
     internal class MapSelectionScene : IScene
     {
+
+        GraphicsDevice mGraphicsDevice;
+        IGame mGameInstance = TTMapEditor.Instance();
+        MainMenuScene mStartScene;
+
+        public MapSelectionScene(MainMenuScene pStartScene)
+        {
+            mGraphicsDevice = TTMapEditor.Instance().GetGraphicsDeviceManager().GraphicsDevice;
+            mStartScene = pStartScene;
+        }
+
+
+
+
         public override void Draw(float pSeconds)
         {
-            throw new NotImplementedException();
+            mGraphicsDevice.Clear(Color.CornflowerBlue);
         }
 
         public override void Update(float pSeconds)
         {
-            throw new NotImplementedException();
+            InputManager.Update();
+            if(InputManager.isKeyPressed(Keys.Escape))
+            {
+                mGameInstance.GetSceneManager().Transition(mStartScene);
+            }
         }
     }
 }

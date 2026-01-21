@@ -66,12 +66,12 @@ namespace TTMapEditor.Scenes
 
         public void LoadMap()
         {
-
+            mGameInstance.GetSceneManager().Transition(new MapSelectionScene(this));
         }
 
         public void NewMap()
         {
-
+            mGameInstance.GetSceneManager().Transition(new MapEditingScene(this));
         }
 
         public override void Draw(float pSeconds)
@@ -113,11 +113,11 @@ namespace TTMapEditor.Scenes
             {
                 mButtonList.SelectNextButton();
             }
-            else if(InputManager)
+            else if(InputManager.isKeyPressed(Keys.Up))
             {
                 mButtonList.SelectPreviousButton();
             }
-            else if(Keyboard.GetState().IsKeyDown(Keys.Enter))
+            else if(InputManager.isKeyPressed(Keys.Enter))
             {
                 mButtonList.PressSelectedButton();
             }
