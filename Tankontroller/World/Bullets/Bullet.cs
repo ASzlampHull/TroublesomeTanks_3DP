@@ -20,7 +20,7 @@ namespace Tankontroller.World.Bullets
             Position = pPosition;
             Velocity = pVelocity;
             Colour = pColour;
-            Radius = 5.0f;
+            Radius = 5.0f * Tankontroller.Instance().ScaleFactor();
             LifeTime = lifeTime;
         }
 
