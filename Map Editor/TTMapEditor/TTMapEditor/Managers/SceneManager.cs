@@ -28,7 +28,10 @@ namespace TTMapEditor.Managers
         public void Transition(IScene pNextScene, bool pReplaceCurrent = true)
         {
             IScene currentScene = Top;
-
+            if(Top is TransitionScene)
+            {
+                return;
+            }
             if(pNextScene == null)
             {
                 pNextScene = Previous;
@@ -46,7 +49,6 @@ namespace TTMapEditor.Managers
             {
                 TTMapEditor game = (TTMapEditor)TTMapEditor.Instance();
                 game.Exit();
-                //Todo add code to exit the application
             }
         }
 

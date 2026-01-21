@@ -66,12 +66,13 @@ namespace TTMapEditor.Scenes
 
         public void LoadMap()
         {
-            mGameInstance.GetSceneManager().Transition(new MapSelectionScene(this));
+            mGameInstance.GetSceneManager().Transition(new MapSelectionScene(this), false);
         }
 
         public void NewMap()
         {
-            mGameInstance.GetSceneManager().Transition(new MapEditingScene(this));
+            string newMapName = MapManager.createNewMap("New_Map");
+            mGameInstance.GetSceneManager().Transition(new MapEditingScene(this, newMapName, true), false);
         }
 
         public override void Draw(float pSeconds)

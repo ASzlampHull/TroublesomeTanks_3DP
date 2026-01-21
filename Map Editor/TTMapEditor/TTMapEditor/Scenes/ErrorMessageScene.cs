@@ -16,7 +16,7 @@ namespace TTMapEditor.Scenes
 
         public override void Draw(float pSeconds)
         {
-            throw new NotImplementedException();
+            
         }
 
         public override void Update(float pSeconds)

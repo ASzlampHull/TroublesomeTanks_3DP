@@ -54,6 +54,7 @@ namespace Tankontroller.Scenes
             {
                 filePaths[i] = filePaths[i].Replace(mapsDirectory + "\\", "");
             }
+            
             mMapFiles = new List<string>(filePaths);
 
             // Load thumbnail textures for each map
