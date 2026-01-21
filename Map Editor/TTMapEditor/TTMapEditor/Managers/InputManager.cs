@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework.Input;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,11 +10,39 @@ namespace TTMapEditor.Managers
     internal class InputManager
     {
         static InputManager mInstance = new InputManager();
+        private static KeyboardState mCurrentState;
+        private static KeyboardState mPreviousState;
 
         public static InputManager Instance
         {
             get { return mInstance; }
         }
+
+        public static void Update()
+        {
+            mPreviousState = mCurrentState;
+            mCurrentState = Keyboard.GetState();
+        }
+
+        public static bool isKeyPressed(Keys key)
+        {
+            return mCurrentState.IsKeyDown(key) && mPreviousState.IsKeyUp(key);
+        }
+
+        public static bool isKeyReleased(Keys key) {
+            return mCurrentState.IsKeyUp(key) && mPreviousState.IsKeyDown(key);
+        }
+
+        public static bool wasKeyPressed(Keys key)
+        {
+            return mPreviousState.IsKeyDown(key);
+        }
+
+        public static bool wasKeyReleased(Keys key)
+        {
+            return mPreviousState.IsKeyUp(key);
+        }
+
 
     }
 }

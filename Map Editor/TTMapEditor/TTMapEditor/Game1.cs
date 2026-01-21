@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TTMapEditor.Managers;
+using TTMapEditor.Scenes;
 
 namespace TTMapEditor
 {
@@ -86,26 +87,20 @@ namespace TTMapEditor
         protected override void LoadContent()
         {
             mSpriteBatch = new SpriteBatch(GraphicsDevice);
-
-            // TODO: use this.Content to load your game content here
+            mSceneManager.Push(new MainMenuScene());
         }
 
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
-
-            // TODO: Add your update logic here
-
+            float seconds = 0.001f * gameTime.ElapsedGameTime.Milliseconds;
+            mSceneManager.Update(seconds);
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
-
-            // TODO: Add your drawing code here
-
+            float seconds = 0.001f * gameTime.ElapsedGameTime.Milliseconds;
+            mSceneManager.Draw(seconds);
             base.Draw(gameTime);
         }
     }

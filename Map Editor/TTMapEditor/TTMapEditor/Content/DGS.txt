@@ -1,4 +1,4 @@
 // Used to control display settings for the application
-bool IS_FULL_SCREEN = true;
+bool IS_FULL_SCREEN = false;
 int SCREENWIDTH = 1920;
 int SCREENHEIGHT = 1080;

@@ -44,6 +44,8 @@ namespace TTMapEditor.Managers
             }
             else
             {
+                TTMapEditor game = (TTMapEditor)TTMapEditor.Instance();
+                game.Exit();
                 //Todo add code to exit the application
             }
         }
@@ -80,7 +82,7 @@ namespace TTMapEditor.Managers
             }
         }
 
-        public void update(float pSeconds)
+        public void Update(float pSeconds)
         {
             try
             {
