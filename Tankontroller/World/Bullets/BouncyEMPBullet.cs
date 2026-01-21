@@ -2,6 +2,8 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using Tankontroller.Managers;
+using Tankontroller.Utilities;
 using Tankontroller.World.Particles;
 
 namespace Tankontroller.World.Bullets
@@ -20,6 +22,7 @@ namespace Tankontroller.World.Bullets
             EMPTextures.Add(EMPTexture2);
             EMPTextures.Add(EMPTexture3);
             EMPTextures.Add(EMPTexture4);
+            Radius *= 3.0f;
         }
         private float Rotation = 0.0f;
 
@@ -67,14 +70,20 @@ namespace Tankontroller.World.Bullets
 
         public override void Draw(SpriteBatch pBatch, Texture2D pTexture)
         {
-            Particle.DrawCircle(pBatch, pTexture, (int)Radius * 3 + 2 * Particle.EDGE_THICKNESS, Position, Color.Black);
-            Particle.DrawCircle(pBatch, pTexture, (int)Radius * 3, Position, Colour);
+            Particle.DrawCircle(pBatch, pTexture, (int)Radius + 2 * Particle.EDGE_THICKNESS, Position, Color.Black);
+            Particle.DrawCircle(pBatch, pTexture, (int)Radius, Position, Colour);
             int rand = new Random().Next(0, 20);
             if (rand == 0)
             {
                index = new Random().Next(0, 4);
             }
             pBatch.Draw(EMPTextures[index], Position, null, Color.White, Rotation, new Vector2(EMPTextures[index].Width / 2, EMPTextures[index].Height / 2), Radius * 0.02f, SpriteEffects.None, 0.0f);
+
+            // Draw collision shape if enabled in DGS
+            if (CollisionManager.DRAW_COLLISION_SHAPES)
+            {
+                DrawUtilities.DrawCircle(pBatch, Position, Radius, Color.DodgerBlue);
+            }
         }
     }
 }

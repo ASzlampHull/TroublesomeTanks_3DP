@@ -21,7 +21,6 @@ namespace Tankontroller.Scenes
         Rectangle mBackgroundRectangle;
         Rectangle mTitleRectangle;
         Rectangle mControllerInfoRect;
-        private float secondsLeft;
 
         private string defaultMapFile = DEFAULT_MAP_FILE; // Default map file
 
@@ -79,7 +78,6 @@ namespace Tankontroller.Scenes
             exitGameButton.Selected = false;
             mButtonList.Add(exitGameButton);
 
-            secondsLeft = 0.1f;
             mGameInstance.GetSoundManager().ReplaceCurrentMusicInstance("Music/Music_start", true);
         }
 

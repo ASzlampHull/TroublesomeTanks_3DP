@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Tankontroller.Managers;
+using Tankontroller.Utilities;
 using Tankontroller.World.Bullets;
 using Tankontroller.World.Particles;
 
@@ -64,7 +65,6 @@ namespace Tankontroller.World
         private Vector3 mOldPosition;
 
         private float mCannonRotation;
-        private float m_TimePrimed; // How long the player held the shoot button
         private int mFired; // Number of frames since the player fired
 
         private Color mColour;
@@ -317,24 +317,42 @@ namespace Tankontroller.World
             }
             return result;
         }
-        public bool TankInRadius(float pBulletRadius, Vector2 pPoint)
+
+        /// <summary>
+        /// Checks if the tank's corners are within a certain radius of a point.
+        /// Transforms the point into tank-local space and checks against an AABB.
+        /// </summary>
+        /// <returns> True if the bullet radius intersects the tank's collision shape (corners) </returns>
+        public bool TankInRadius(float pRadius, Vector2 pPoint)
         {
-            float distance = Vector2.Distance(new Vector2(mPosition.X, mPosition.Y), pPoint);
-            if (distance < (pBulletRadius - 10))
+            // Transform the world point into tank-local coordinates (centered on tank, unrotated).
+            Vector2 tankCenter = new(mPosition.X, mPosition.Y);
+            Vector2 localPoint = pPoint - tankCenter;
+            localPoint = Vector2.Transform(localPoint, Matrix.CreateRotationZ(-mRotation));
+
+            // Build the tank's local AABB from the unrotated, scaled corner definitions.
+            float minX = float.MaxValue, maxX = float.MinValue;
+            float minY = float.MaxValue, maxY = float.MinValue;
+            for (int i = 0; i < TANK_CORNERS.Length; ++i)
             {
-                return true;
+                // TODO: Cache scaled tank corners for efficiency and update cache whenever tank is scaled
+                float x = TANK_CORNERS[i].X * m_Scale;
+                float y = TANK_CORNERS[i].Y * m_Scale;
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
             }
-            return false;
-        }
 
-        public void PrimingWeapon(float pSeconds)
-        {
-            m_TimePrimed += pSeconds;
-        }
+            // Find closest point on the AABB to the localPoint.
+            float closestX = Math.Clamp(localPoint.X, minX, maxX);
+            float closestY = Math.Clamp(localPoint.Y, minY, maxY);
+            Vector2 closest = new(closestX, closestY);
+            float effectiveRadius = Math.Max(0f, pRadius);
 
-        public bool IsFirePrimed()
-        {
-            return m_TimePrimed > 0;
+            // Compare squared distances
+            float distanceSquared = Vector2.DistanceSquared(localPoint, closest);
+            return distanceSquared <= (effectiveRadius * effectiveRadius);
         }
 
         public void Fire(BulletType bullet)
@@ -344,7 +362,6 @@ namespace Tankontroller.World
                 return;
             }
 
-            m_TimePrimed = 0;
             mFired = BLAST_DELAY;
             float cannonRotation = GetCannonWorldRotation();
             Vector2 cannonDirection = new Vector2((float)Math.Cos(cannonRotation), (float)Math.Sin(cannonRotation));
@@ -575,6 +592,12 @@ namespace Tankontroller.World
                     break;
                 case TankStates.DESTROYED: 
                     break;
+            }
+
+            // Draw collision shape if enabled in DGS
+            if (CollisionManager.DRAW_COLLISION_SHAPES)
+            {
+                DrawUtilities.DrawRectangle(pSpriteBatch, ConvertUtilities.ToRectangle(TANK_CORNERS), Color.Magenta, mRotation, GetWorldPosition(), m_Scale);
             }
         }
 

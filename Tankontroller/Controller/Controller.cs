@@ -170,7 +170,9 @@ namespace Tankontroller.Controller
             {
                 if (mJacks[i].Control == pControl)
                 {
-                    bool hasCharge = pControl == Control.FIRE ? mJacks[i].charge >= Player.BULLET_CHARGE_DEPLETION : mJacks[i].charge > 0;
+                    // read charge atomically to avoid torn/partial reads if another thread updates it
+                    float currentCharge = System.Threading.Interlocked.CompareExchange(ref mJacks[i].charge, 0f, 0f);
+                    bool hasCharge = pControl == Control.FIRE ? currentCharge >= Player.BULLET_CHARGE_DEPLETION : currentCharge > 0;
                     return mJacks[i].IsDown && hasCharge;
                 }
             }

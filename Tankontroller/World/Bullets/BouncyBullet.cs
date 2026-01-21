@@ -2,6 +2,8 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using Tankontroller.Managers;
+using Tankontroller.Utilities;
 using Tankontroller.World.Particles;
 
 namespace Tankontroller.World.Bullets
@@ -13,6 +15,7 @@ namespace Tankontroller.World.Bullets
         float numOfBounces;
         public BouncyBullet(Vector2 pPosition, Vector2 pVelocity, Color pColour, float pNumOfBounces) : base(pPosition, pVelocity, pColour, pNumOfBounces) {
             numOfBounces = pNumOfBounces;
+            Radius *= 3.0f;
         }
         public override void Update(float pSeconds)
         {
@@ -69,8 +72,14 @@ namespace Tankontroller.World.Bullets
 
         public override void Draw(SpriteBatch pBatch, Texture2D pTexture)
         {
-            Particle.DrawCircle(pBatch, m_BouncyBulletBackTexture, (int)Radius * 3, Position, Colour);
-            Particle.DrawCircle(pBatch, m_BouncyBulletTopTexture, (int)Radius * 3, Position, Color.White);
+            Particle.DrawCircle(pBatch, m_BouncyBulletBackTexture, (int)Radius, Position, Colour);
+            Particle.DrawCircle(pBatch, m_BouncyBulletTopTexture, (int)Radius, Position, Color.White);
+
+            // Draw collision shape if enabled in DGS
+            if (CollisionManager.DRAW_COLLISION_SHAPES)
+            {
+                DrawUtilities.DrawCircle(pBatch, Position, Radius, Color.DodgerBlue);
+            }
         }
     }
 }
