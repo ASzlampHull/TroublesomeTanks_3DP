@@ -60,18 +60,7 @@ namespace Tankontroller.World.Particles
         /// <param name="pColour">Colour of circle</param>
         static public void DrawCircle(SpriteBatch pBatch, Texture2D pTexture, int pRadius, Vector2 pPos, Color pColour)
         {
-            // Reference resolution to scale from. Change if your UI/world authored for a different base.
-            const float referenceWidth = 1920f;
-            const float referenceHeight = 1080f;
-
-            int screenWidth = DGS.Instance.GetInt("SCREENWIDTH");
-            int screenHeight = DGS.Instance.GetInt("SCREENHEIGHT");
-
-            // Compute uniform scale so particles remain proportional across aspect ratios
-            float scaleX = screenWidth / referenceWidth;
-            float scaleY = screenHeight / referenceHeight;
-            float scale = Math.Min(scaleX, scaleY);
-
+            float scale = Tankontroller.Instance().ScaleFactor();
             // Apply scale to radius and edge thickness
             int scaledRadius = Math.Max(1, (int)MathF.Round(pRadius * scale));
 

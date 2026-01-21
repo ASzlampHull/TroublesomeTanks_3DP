@@ -62,17 +62,7 @@ namespace Tankontroller.World.Particles
         public void Draw(SpriteBatch pBatch)
         {
             Vector2 origin = new Vector2((m_Texture.Width / 2f), (m_Texture.Height / 2f));
-
-            // Scale based on screen resolution
-            const float referenceWidth = 1920f;
-            const float referenceHeight = 1080f;
-            int screenWidth = DGS.Instance.GetInt("SCREENWIDTH");
-            int screenHeight = DGS.Instance.GetInt("SCREENHEIGHT");
-
-            // Compute uniform scale so particles remain proportional across aspect ratios
-            float scaleX = screenWidth / referenceWidth;
-            float scaleY = screenHeight / referenceHeight;
-            float scale = Math.Min(scaleX, scaleY);
+            float scale = Tankontroller.Instance().ScaleFactor();
 
             for (int i = 0; i < MAX_TRACKS; i++)
             {
