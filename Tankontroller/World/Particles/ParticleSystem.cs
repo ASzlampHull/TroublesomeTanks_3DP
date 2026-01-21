@@ -60,16 +60,11 @@ namespace Tankontroller.World.Particles
         /// <param name="pColour">Colour of circle</param>
         static public void DrawCircle(SpriteBatch pBatch, Texture2D pTexture, int pRadius, Vector2 pPos, Color pColour)
         {
-            float scale = Tankontroller.Instance().ScaleFactor();
-            // Apply scale to radius and edge thickness
-            int scaledRadius = Math.Max(1, (int)MathF.Round(pRadius * scale));
-
             Rectangle rectangle = new Rectangle();
-            rectangle.Width = scaledRadius * 2;
-            rectangle.Height = scaledRadius * 2;
-            // center properly using rounded positions to avoid subpixel jitter
-            rectangle.X = (int)pPos.X - scaledRadius;
-            rectangle.Y = (int)pPos.Y - scaledRadius;
+            rectangle.Width = pRadius * 2;
+            rectangle.Height = pRadius * 2;
+            rectangle.X = (int)pPos.X - pRadius;
+            rectangle.Y = (int)pPos.Y - pRadius;
             pBatch.Draw(pTexture, rectangle, pColour);
         }
 
@@ -276,11 +271,16 @@ namespace Tankontroller.World.Particles
 
         public void InitiateParticles(Particle[] pParticles)
         {
+            float scale = Tankontroller.Instance().ScaleFactor();
+            float radius = 0.5f * scale;
+            int minRadiusRate = (int)(5.0f * scale);
+            int maxRadiusRate = (int)(15.0f * scale);
+
             for (int i = 0; i < pParticles.Length; i++)
             {
                 Vector2 position = m_Point1 + (m_Point2 - m_Point1) * (float)m_Rng.NextDouble();
                 float lifetime = m_Rng.Next(250, 751) * 0.001f;
-                pParticles[i].Initiate(position, Vector2.Zero, 0.5f, m_Rng.Next(5, 15), m_Colours[m_Rng.Next(4)], lifetime);
+                pParticles[i].Initiate(position, Vector2.Zero, radius, m_Rng.Next(minRadiusRate, maxRadiusRate), m_Colours[m_Rng.Next(4)], lifetime);
             }
         }
     }
