@@ -130,7 +130,7 @@ namespace Tankontroller.Utilities
 
         // -----------------------------------------------------------------------------------------
 
-        #region Rectangle & Rectangle Outline
+        #region Rectangle
 
         /// <summary>
         /// Draw a rectangle at the given position with the given size and tint using a pixel texture.
@@ -145,7 +145,7 @@ namespace Tankontroller.Utilities
             pSpriteBatch.Draw(mPixelTexture, pOrigin, pRectangle, pColor, pRotationRadians, origin, pScale, SpriteEffects.None, 0.0f);
         }
 
-        #endregion Rectangle & Rectangle Outline
+        #endregion Rectangle
 
         /// <summary>
         /// Generate a white 1x1 pixel texture.
