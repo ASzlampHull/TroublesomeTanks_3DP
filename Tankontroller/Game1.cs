@@ -229,10 +229,19 @@ namespace Tankontroller
             int screenWidth = DGS.Instance.GetInt("SCREENWIDTH");
             int screenHeight = DGS.Instance.GetInt("SCREENHEIGHT");
 
-            // Compute uniform scale so particles remain proportional across aspect ratios
-            float scaleX = screenWidth / referenceWidth;
-            float scaleY = screenHeight / referenceHeight;
-            mScaleFactor = Math.Min(scaleX, scaleY);
+            // Special case for ultra wide 32:9 monitors
+            if ((float)screenWidth / (float)screenHeight == 32f / 9f)
+            {
+                float scaleRef = referenceWidth / referenceHeight;
+                float scaleNew = (float)screenWidth / (float)screenHeight;
+                mScaleFactor = scaleNew / scaleRef;
+            }
+            else // General case for all other resolutions
+            {
+                float scaleX = screenWidth / referenceWidth;
+                float scaleY = screenHeight / referenceHeight;
+                mScaleFactor = Math.Min(scaleX, scaleY);
+            }
         }
 
         // Add this method to implement the IGame interface member
