@@ -191,7 +191,7 @@ namespace Tankontroller.Scenes
                     }
                 }
 
-                // Update timer: your GameTimer uses Update(GameTime) and counts up.
+                // Update timer: GameTimer uses Update(GameTime) and counts up.
                 if (m_GameTimer != null && m_GameLengthSeconds > 0.0)
                 {
                     // Use a small GameTime wrapper to call the existing Update(GameTime) API
@@ -276,7 +276,9 @@ namespace Tankontroller.Scenes
             return remaining;
         }
 
+        // <summary>
         // Determine winner by highest health. Returns -1 for tie or no winner.
+        // </summary>
         private int DetermineWinnerByHealth()
         {
             int bestIndex = -1;
