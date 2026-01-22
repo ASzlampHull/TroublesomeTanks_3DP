@@ -237,11 +237,16 @@ namespace Tankontroller.World.Particles
 
         public void InitiateParticles(Particle[] pParticles)
         {
+            int minInitialRadius = (int)Math.Round(1.0f * Tankontroller.Instance().ScaleFactor());
+            int maxInitialRadius = (int)Math.Round(7.0f * Tankontroller.Instance().ScaleFactor());
+            int minRadiusRate = (int)Math.Round(25.0f * Tankontroller.Instance().ScaleFactor());
+            int maxRadiusRate = (int)Math.Round(46.0f * Tankontroller.Instance().ScaleFactor());
+
             for (int i = 0; i < pParticles.Length; i++)
             {
                 float lifetime = m_Rng.Next(1000, 2001) * 0.00015f;
                 Vector2 velocity = Vector2.Transform(m_Normal, Matrix.CreateRotationZ((float)(m_Rng.NextDouble() * Math.PI - Math.PI / 2))) * m_Rng.Next(90, 121);
-                pParticles[i].Initiate(m_Position, velocity, m_Rng.Next(1, 7), m_Rng.Next(25, 46), m_Colour, lifetime);
+                pParticles[i].Initiate(m_Position, velocity, m_Rng.Next(minInitialRadius, maxInitialRadius), m_Rng.Next(minRadiusRate, maxRadiusRate), m_Colour, lifetime);
             }
         }
     }
@@ -273,8 +278,8 @@ namespace Tankontroller.World.Particles
         {
             float scale = Tankontroller.Instance().ScaleFactor();
             float radius = 0.5f * scale;
-            int minRadiusRate = (int)(5.0f * scale);
-            int maxRadiusRate = (int)(15.0f * scale);
+            int minRadiusRate = (int)Math.Round(5.0f * scale);
+            int maxRadiusRate = (int)Math.Round(15.0f * scale);
 
             for (int i = 0; i < pParticles.Length; i++)
             {
@@ -299,13 +304,16 @@ namespace Tankontroller.World.Particles
 
         public void InitiateParticles(Particle[] pParticles)
         {
+            int minRadiusRate = (int)Math.Round(1.0f * Tankontroller.Instance().ScaleFactor());
+            int maxRadiusRate = (int)Math.Round(2.0f * Tankontroller.Instance().ScaleFactor());
+
             for (int i = 0; i < pParticles.Length; i++)
             {
                 float lifetime = m_Rng.Next(1000, 2001) * 0.0001f;
                 Vector2 position = m_Position;
                 position.X += m_Rng.Next(-2, 2);
                 position.Y += m_Rng.Next(-2, 2);
-                pParticles[i].Initiate(position, Vector2.Zero, m_Rng.Next(1, 2), 0, m_Colour, lifetime);
+                pParticles[i].Initiate(position, Vector2.Zero, m_Rng.Next(minRadiusRate, maxRadiusRate), 0, m_Colour, lifetime);
             }
         }
     }
@@ -328,6 +336,11 @@ namespace Tankontroller.World.Particles
 
         public void InitiateParticles(Particle[] pParticles)
         {
+            int minInitialRadius = (int)Math.Round(1.0f * Tankontroller.Instance().ScaleFactor());
+            int maxInitialRadius = (int)Math.Round(7.0f * Tankontroller.Instance().ScaleFactor());
+            int minRadiusRate = (int)Math.Round(0.0f * Tankontroller.Instance().ScaleFactor());
+            int maxRadiusRate = (int)Math.Round(2.0f * Tankontroller.Instance().ScaleFactor());
+
             for (int i = 0; i < pParticles.Length; i++)
             {
                 m_LifeTime = m_LifeTime * (float)(1.0 - (m_Rng.NextDouble() * 0.01));
@@ -336,7 +349,7 @@ namespace Tankontroller.World.Particles
                 velocity.Normalize();
                 // apply speed
                 velocity = velocity * 30;
-                pParticles[i].Initiate(m_Position, velocity, m_Rng.Next(1, 7), m_Rng.Next(0, 2), m_Colours[m_Rng.Next(2)], m_LifeTime);
+                pParticles[i].Initiate(m_Position, velocity, m_Rng.Next(minInitialRadius, maxInitialRadius), m_Rng.Next(minRadiusRate, maxRadiusRate), m_Colours[m_Rng.Next(2)], m_LifeTime);
             }
         }
     }
@@ -360,6 +373,12 @@ namespace Tankontroller.World.Particles
 
         public void InitiateParticles(Particle[] pParticles)
         {
+            int minInitialRadius = 0;
+            int maxInitialRadius = 0;
+            int minRadiusRate = 0;
+            int maxRadiusRate = 0;
+            float scale = Tankontroller.Instance().ScaleFactor();
+
             for (int i = 0; i < pParticles.Length; i++)
             {
                 m_LifeTime = m_LifeTime * (float)(1.0 - (m_Rng.NextDouble() * 0.01));
@@ -369,12 +388,22 @@ namespace Tankontroller.World.Particles
                 if (i <= (pParticles.Length / 2))
                 {
                     velocity = velocity * 40;
-                    pParticles[i].Initiate(m_Position, velocity, m_Rng.Next(1, 7), m_Rng.Next(15, 25), m_SmokeColours[m_Rng.Next(2)], m_LifeTime);
+                    minInitialRadius = (int)Math.Round(1.0f * scale);
+                    maxInitialRadius = (int)Math.Round(7.0f * scale);
+                    minRadiusRate = (int)Math.Round(15.0f * scale);
+                    maxRadiusRate = (int)Math.Round(25.0f * scale);
+
+                    pParticles[i].Initiate(m_Position, velocity, m_Rng.Next(minInitialRadius, maxInitialRadius), m_Rng.Next(minRadiusRate, maxRadiusRate), m_SmokeColours[m_Rng.Next(2)], m_LifeTime);
                 }
                 else
                 {
                     velocity = velocity * 20;
-                    pParticles[i].Initiate(m_Position, velocity, m_Rng.Next(0, 6), m_Rng.Next(10, 20), m_BlastColours[m_Rng.Next(2)], m_LifeTime + 0.4f);
+                    minInitialRadius = (int)Math.Round(0.0f * scale);
+                    maxInitialRadius = (int)Math.Round(6.0f * scale);
+                    minRadiusRate = (int)Math.Round(10.0f * scale);
+                    maxRadiusRate = (int)Math.Round(20.0f * scale);
+
+                    pParticles[i].Initiate(m_Position, velocity, m_Rng.Next(minInitialRadius, maxInitialRadius), m_Rng.Next(minRadiusRate, maxRadiusRate), m_BlastColours[m_Rng.Next(2)], m_LifeTime + 0.4f);
                 }
 
             }
