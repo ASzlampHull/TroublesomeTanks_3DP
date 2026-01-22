@@ -8,28 +8,36 @@ using System.Threading.Tasks;
 
 namespace TTMapEditor.Objects
 {
-    internal class RectWall
+    internal class RectWall : SceneObject
     {
         private static readonly Color COLOUR = Color.DarkGray;
-        public Rectangle mRectangle { get; private set; }
-        private Rectangle mOutlineRectangle;
-        private Texture2D mTexture;
-        
-        public RectWall(Texture2D pTexture, Rectangle pRectangle)
+
+        public RectWall(Texture2D pTexture, Rectangle pRectangle) : base(pTexture, pRectangle) { }
+
+        public override void Draw(SpriteBatch pSpriteBatch)
         {
-            mRectangle = pRectangle;
-            mOutlineRectangle = new Rectangle(pRectangle.X - 2, pRectangle.Y - 2, pRectangle.Width + 4, pRectangle.Height + 4);
-            mTexture = pTexture;
+            // use selection state from base class
+            pSpriteBatch.Draw(mTexture, mRectangle, GetIsSelected() ? Color.Red : COLOUR);
         }
 
-        public void Draw(SpriteBatch pSpriteBatch)
+        public override void DrawOutline(SpriteBatch pSpriteBatch) => base.DrawOutline(pSpriteBatch);
+
+        public void SetWallRectangle(Rectangle pRectangle) => SetRectangle(pRectangle);
+
+        public void ScaleHeight(float pScale)
         {
-            pSpriteBatch.Draw(mTexture, mRectangle, COLOUR);
+            float scaled = mRectangle.Height * pScale;
+            int newHeight = (int)Math.Ceiling(scaled);
+            newHeight = Math.Max(newHeight, 1);
+            SetRectangle(new Rectangle(mRectangle.X, mRectangle.Y, mRectangle.Width, newHeight));
         }
 
-        public void DrawOutline(SpriteBatch pSpriteBatch)
+        public void ScaleWidth(float pScale)
         {
-            pSpriteBatch.Draw(mTexture, mOutlineRectangle, Color.Black);
+            float scaled = mRectangle.Width * pScale;
+            int newWidth = (int)Math.Ceiling(scaled);
+            newWidth = Math.Max(newWidth, 1);
+            SetRectangle(new Rectangle(mRectangle.X, mRectangle.Y, newWidth, mRectangle.Height));
         }
     }
 }

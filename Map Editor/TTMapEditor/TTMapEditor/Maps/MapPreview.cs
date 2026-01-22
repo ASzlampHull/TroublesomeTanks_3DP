@@ -18,7 +18,15 @@ namespace TTMapEditor.Maps
         Rectangle mPlayArea { get; set; }
         List<RectWall> mWalls { get; set; }
 
+        List<Tank> mTanks { get; set; }
+
+        List<Pickup> mPickups { get; set; }
+
         string mFilePath { get; set; }
+
+        // store the raw MapData that came from the JSON (or constructed from the legacy format)
+        MapData mMapData { get; set; }
+
 
         public MapPreview(string pFilePath)
         {
@@ -26,7 +34,14 @@ namespace TTMapEditor.Maps
             int screenHeight = TTMapEditor.Instance().GetGraphicsDeviceManager().GraphicsDevice.Viewport.Height;
             mPlayArea = new Rectangle(screenWidth * 2 / 100, screenHeight * 25 / 100, screenWidth * 96 / 100, screenHeight * 73 / 100);
             mFilePath = pFilePath;
-            mWalls = GetWalls();
+
+            // initialize lists
+            mWalls = new List<RectWall>();
+            mTanks = new List<Tank>();
+            mPickups = new List<Pickup>();
+
+            // Fill lists from file and keep MapData
+            LoadMapPreview();
         }
 
         public Rectangle GetPlayArea()
@@ -35,6 +50,27 @@ namespace TTMapEditor.Maps
         }
 
         public List<RectWall> GetWalls()
+        {
+            return mWalls;
+        }
+
+        public List<Tank> GetTanks()
+        {
+            return mTanks;
+        }
+
+        public List<Pickup> GetPickups()
+        {
+            return mPickups;
+        }
+
+        // Expose the MapData that represents the map (use to save / edit)
+        public MapData GetMapData()
+        {
+            return mMapData;
+        }
+
+        private void LoadMapPreview()
         {
             // Prefer the bin (runtime) output folder first
             string baseDir = AppContext.BaseDirectory; // points to bin/... where the app runs
@@ -56,103 +92,210 @@ namespace TTMapEditor.Maps
                 }
             }
 
-            // If the provided path is absolute and exists, use it directly
+            string fullPath;
+
+            // If the provided path is absolute and exists as a file, use it directly
             if (Path.IsPathRooted(mFilePath) && File.Exists(mFilePath))
             {
-                return ParseLines(File.ReadAllLines(mFilePath));
+                fullPath = mFilePath;
             }
-
-            // Remove a leading "Maps\" or "Maps/" from mFilePath if present so we don't duplicate it
-            string relativePath = mFilePath;
-            string mapsPrefix1 = "Maps" + Path.DirectorySeparatorChar;
-            string mapsPrefix2 = "Maps" + Path.AltDirectorySeparatorChar;
-            if (relativePath.StartsWith(mapsPrefix1) || relativePath.StartsWith(mapsPrefix2))
+            else
             {
-                relativePath = relativePath.Substring(5);
-            }
-
-            string fullPath = Path.Combine(mapsDir, relativePath);
-
-            if (!File.Exists(fullPath))
-            {
-                throw new FileNotFoundException($"Map file not found: {fullPath}");
-            }
-
-            string[] lines = File.ReadAllLines(fullPath);
-            return ParseLines(lines);
-        }
-
-        public List<RectWall> ParseLines(string[] pLines)
-        {
-            int screenWidth = TTMapEditor.Instance().GetGraphicsDeviceManager().GraphicsDevice.Viewport.Width;
-            int screenHeight = TTMapEditor.Instance().GetGraphicsDeviceManager().GraphicsDevice.Viewport.Height;
-            Rectangle playArea = new Rectangle(screenWidth * 2 / 100, screenHeight * 25 / 100, screenWidth * 96 / 100, screenHeight * 73 / 100);
-            List<RectWall> Walls = new List<RectWall>();
-
-            // Join lines to determine format (JSON vs old-line format)
-            string content = string.Join(Environment.NewLine, pLines).TrimStart();
-
-            // If JSON detected, deserialize and convert to RectWall list
-            if (content.StartsWith("{") || content.StartsWith("["))
-            {
-                try
+                // Remove a leading "Maps\" or "Maps/" from mFilePath if present so we don't duplicate it
+                string relativePath = mFilePath;
+                string mapsPrefix1 = "Maps" + Path.DirectorySeparatorChar;
+                string mapsPrefix2 = "Maps" + Path.AltDirectorySeparatorChar;
+                if (relativePath.StartsWith(mapsPrefix1) || relativePath.StartsWith(mapsPrefix2))
                 {
-                    // Reuse MapData from Managers (matches the JSON structure you posted)
-                    MapData map = JsonSerializer.Deserialize<MapData>(content);
-                    if (map?.Walls != null)
+                    relativePath = relativePath.Substring(5);
+                }
+
+                fullPath = Path.Combine(mapsDir, relativePath);
+
+                // If the path resolves to a directory (e.g. a map folder name), look for "map.json" inside it
+                if (Directory.Exists(fullPath))
+                {
+                    string candidate = Path.Combine(fullPath, "map.json");
+                    if (File.Exists(candidate))
                     {
-                        foreach (var w in map.Walls)
-                        {
-                            if (w == null) continue;
-                            string textureName = w.Texture;
-                            // parse positions/sizes using invariant culture
-                            float posX = 0f, posY = 0f;
-                            float sizeX = 0f, sizeY = 0f;
-                            if (w.Position != null && w.Position.Length >= 2)
-                            {
-                                float.TryParse(w.Position[0], NumberStyles.Float, CultureInfo.InvariantCulture, out posX);
-                                float.TryParse(w.Position[1], NumberStyles.Float, CultureInfo.InvariantCulture, out posY);
-                            }
-                            if (w.Size != null && w.Size.Length >= 2)
-                            {
-                                float.TryParse(w.Size[0], NumberStyles.Float, CultureInfo.InvariantCulture, out sizeX);
-                                float.TryParse(w.Size[1], NumberStyles.Float, CultureInfo.InvariantCulture, out sizeY);
-                            }
-
-                            Vector2 position = new Vector2(
-                                playArea.X + ((float)playArea.Width * (posX / 100.0f)),
-                                playArea.Y + ((float)playArea.Height * (posY / 100.0f))
-                            );
-                            Vector2 size = new Vector2(
-                                playArea.Width * (sizeX / 100.0f),
-                                playArea.Height * (sizeY / 100.0f)
-                            );
-
-                            Texture2D tex = null;
-                            try
-                            {
-                                tex = TTMapEditor.Instance().GetContentManager().Load<Texture2D>(textureName);
-                            }
-                            catch
-                            {
-                                // If texture load fails, you may want to fallback to a default texture or skip.
-                                tex = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("block");
-                            }
-
-                            RectWall currentWall = new RectWall(tex, new Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y));
-                            Walls.Add(currentWall);
-                        }
+                        fullPath = candidate;
                     }
                 }
-                catch (JsonException)
-                {
-                    // Fall back to line parsing if JSON parse fails
-                }
-
-                return Walls;
             }
 
-            // --- existing line based parsing (fallback) ---
+            // As a final attempt, if the path doesn't point to an existing file, try appending "map.json"
+            if (!File.Exists(fullPath))
+            {
+                string alt = fullPath;
+                // If fullPath currently points to a directory, alt was already handled above; otherwise try file inside path
+                if (!fullPath.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                {
+                    alt = Path.Combine(fullPath, "map.json");
+                }
+
+                if (File.Exists(alt))
+                {
+                    fullPath = alt;
+                }
+                else
+                {
+                    throw new FileNotFoundException($"Map file not found: {fullPath}");
+                }
+            }
+
+            string content = File.ReadAllText(fullPath);
+
+            // try JSON first and remember the MapData used to build the preview
+            try
+            {
+                mMapData = JsonSerializer.Deserialize<MapData>(content);
+            }
+            catch (JsonException)
+            {
+                mMapData = null;
+            }
+
+            if (mMapData != null)
+            {
+                // build preview lists from mMapData
+                BuildPreviewFromMapData(mMapData);
+                return;
+            }
+
+            // fallback: treat file as legacy line format and parse
+            string[] lines = content.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            mWalls = ParseLines(lines);
+
+            // construct a MapData from the legacy parsing so callers can still get MapData
+            mMapData = new MapData()
+            {
+                Walls = mWalls.Select(w =>
+                {
+                    // We cannot reliably extract the original texture name from Texture2D,
+                    // so use a sensible default. If your RectWall stores the texture asset name,
+                    // replace the line below to use that property instead.
+                    string textureName = "block";
+
+                    // convert back to percent-based Position / Size using play area
+                    var rect = w.mRectangle;
+                    float posX = (rect.X - mPlayArea.X) * 100.0f / mPlayArea.Width;
+                    float posY = (rect.Y - mPlayArea.Y) * 100.0f / mPlayArea.Height;
+                    float sizeX = rect.Width * 100.0f / mPlayArea.Width;
+                    float sizeY = rect.Height * 100.0f / mPlayArea.Height;
+
+                    return new WallData
+                    {
+                        Texture = textureName,
+                        Position = new[] { posX.ToString(CultureInfo.InvariantCulture), posY.ToString(CultureInfo.InvariantCulture) },
+                        Size = new[] { sizeX.ToString(CultureInfo.InvariantCulture), sizeY.ToString(CultureInfo.InvariantCulture) }
+                    };
+                }).ToList(),
+
+                Tanks = new List<TankData>(),
+                Pickups = new List<PickupData>()
+            };
+        }
+
+        private void BuildPreviewFromMapData(MapData map)
+        {
+            mWalls = new List<RectWall>();
+            mTanks = new List<Tank>();
+            mPickups = new List<Pickup>();
+
+            if (map.Walls != null)
+            {
+                foreach (var w in map.Walls)
+                {
+                    if (w == null) continue;
+                    float posX = 0f, posY = 0f;
+                    float sizeX = 0f, sizeY = 0f;
+                    if (w.Position != null && w.Position.Length >= 2)
+                    {
+                        float.TryParse(w.Position[0], NumberStyles.Float, CultureInfo.InvariantCulture, out posX);
+                        float.TryParse(w.Position[1], NumberStyles.Float, CultureInfo.InvariantCulture, out posY);
+                    }
+                    if (w.Size != null && w.Size.Length >= 2)
+                    {
+                        float.TryParse(w.Size[0], NumberStyles.Float, CultureInfo.InvariantCulture, out sizeX);
+                        float.TryParse(w.Size[1], NumberStyles.Float, CultureInfo.InvariantCulture, out sizeY);
+                    }
+
+                    Vector2 position = new Vector2(
+                        mPlayArea.X + ((float)mPlayArea.Width * (posX / 100.0f)),
+                        mPlayArea.Y + ((float)mPlayArea.Height * (posY / 100.0f))
+                    );
+                    Vector2 size = new Vector2(
+                        mPlayArea.Width * (sizeX / 100.0f),
+                        mPlayArea.Height * (sizeY / 100.0f)
+                    );
+
+                    Texture2D tex;
+                    try
+                    {
+                        tex = TTMapEditor.Instance().GetContentManager().Load<Texture2D>(w.Texture);
+                    }
+                    catch
+                    {
+                        tex = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("block");
+                    }
+
+                    mWalls.Add(new RectWall(tex, new Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y)));
+                }
+            }
+
+            if (map.Tanks != null)
+            {
+                foreach (var t in map.Tanks)
+                {
+                    if (t?.Position == null || t.Position.Length < 2) continue;
+                    float posX = 0f, posY = 0f;
+                    float.TryParse(t.Position[0], NumberStyles.Float, CultureInfo.InvariantCulture, out posX);
+                    float.TryParse(t.Position[1], NumberStyles.Float, CultureInfo.InvariantCulture, out posY);
+
+                    Vector2 position = new Vector2(
+                        mPlayArea.X + ((float)mPlayArea.Width * (posX / 100.0f)),
+                        mPlayArea.Y + ((float)mPlayArea.Height * (posY / 100.0f))
+                    );
+
+                    // preview size and creation — your Tank preview constructor may differ; adapt as needed
+                    int previewSize = 10;
+                    Rectangle rect = new Rectangle((int)position.X - previewSize / 2, (int)position.Y - previewSize / 2, previewSize, previewSize);
+                    Texture2D tex;
+                    try { tex = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("block"); }
+                    catch { tex = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("block"); }
+                    mTanks.Add(new Tank(tex, rect));
+                }
+            }
+
+            if (map.Pickups != null)
+            {
+                foreach (var p in map.Pickups)
+                {
+                    if (p?.Position == null || p.Position.Length < 2) continue;
+                    float posX = 0f, posY = 0f;
+                    float.TryParse(p.Position[0], NumberStyles.Float, CultureInfo.InvariantCulture, out posX);
+                    float.TryParse(p.Position[1], NumberStyles.Float, CultureInfo.InvariantCulture, out posY);
+
+                    Vector2 position = new Vector2(
+                        mPlayArea.X + ((float)mPlayArea.Width * (posX / 100.0f)),
+                        mPlayArea.Y + ((float)mPlayArea.Height * (posY / 100.0f))
+                    );
+
+                    int previewSize = 9;
+                    Rectangle rect = new Rectangle((int)position.X - previewSize / 2, (int)position.Y - previewSize / 2, previewSize, previewSize);
+                    Texture2D tex;
+                    try { tex = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("circle"); }
+                    catch { tex = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("circle"); }
+                    mPickups.Add(new Pickup(tex, rect));
+                }
+            }
+        }
+
+        // Backwards-compatible line-parsing (kept for legacy formats)
+        public List<RectWall> ParseLines(string[] pLines)
+        {
+            List<RectWall> Walls = new List<RectWall>();
+
             string texture = null;
             Vector2 positionFallback = Vector2.Zero;
             Vector2 sizeFallback = Vector2.Zero;
@@ -181,16 +324,16 @@ namespace TTMapEditor.Maps
                 {
                     string[] components = line.Split('=')[1].Trim().Split(',');
                     positionFallback = new Vector2(float.Parse(components[0], CultureInfo.InvariantCulture), float.Parse(components[1], CultureInfo.InvariantCulture));
-                    positionFallback.X = playArea.X + ((float)playArea.Width * (positionFallback.X / 100.0f));
-                    positionFallback.Y = playArea.Y + ((float)playArea.Height * (positionFallback.Y / 100.0f));
+                    positionFallback.X = mPlayArea.X + ((float)mPlayArea.Width * (positionFallback.X / 100.0f));
+                    positionFallback.Y = mPlayArea.Y + ((float)mPlayArea.Height * (positionFallback.Y / 100.0f));
                     continue;
                 }
                 else if (line.Contains("Size") || line.Contains("size"))
                 {
                     string[] components = line.Split('=')[1].Trim().Split(',');
                     sizeFallback = new Vector2(float.Parse(components[0], CultureInfo.InvariantCulture), float.Parse(components[1], CultureInfo.InvariantCulture));
-                    sizeFallback.X = playArea.Width * (sizeFallback.X / 100.0f);
-                    sizeFallback.Y = playArea.Height * (sizeFallback.Y / 100.0f);
+                    sizeFallback.X = mPlayArea.Width * (sizeFallback.X / 100.0f);
+                    sizeFallback.Y = mPlayArea.Height * (sizeFallback.Y / 100.0f);
                     continue;
                 }
 
@@ -205,8 +348,40 @@ namespace TTMapEditor.Maps
             }
             return Walls;
         }
+
+        public void AddWall(RectWall pWall)
+        {
+            mWalls.Add(pWall);
+        }
+
+        public void RemoveWall(RectWall pWall)
+        {
+            mWalls.Remove(pWall);
+        }
+
+        // New helpers for tanks/pickups so the editor can remove them
+        public void AddTank(Tank pTank)
+        {
+            mTanks.Add(pTank);
+        }
+
+        public void RemoveTank(Tank pTank)
+        {
+            mTanks.Remove(pTank);
+        }
+
+        public void AddPickup(Pickup pPickup)
+        {
+            mPickups.Add(pPickup);
+        }
+
+        public void RemovePickup(Pickup pPickup)
+        {
+            mPickups.Remove(pPickup);
+        }
     }
 }
+
 
 
 
