@@ -257,13 +257,24 @@ namespace TTMapEditor.Maps
                         mPlayArea.Y + ((float)mPlayArea.Height * (posY / 100.0f))
                     );
 
+                    // parse rotation if present (map stores degrees); default 0
+                    float rotationDeg = 0f;
+                    if (!string.IsNullOrEmpty(t.Rotation))
+                    {
+                        float.TryParse(t.Rotation, NumberStyles.Float, CultureInfo.InvariantCulture, out rotationDeg);
+                    }
+                    float rotationRad = MathHelper.ToRadians(rotationDeg);
+
                     // preview size and creation — your Tank preview constructor may differ; adapt as needed
                     int previewSize = 10;
                     Rectangle rect = new Rectangle((int)position.X - previewSize / 2, (int)position.Y - previewSize / 2, previewSize, previewSize);
                     Texture2D tex;
                     try { tex = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("block"); }
                     catch { tex = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("block"); }
-                    mTanks.Add(new Tank(tex, rect));
+
+                    var previewTank = new Tank(tex, rect);
+                    previewTank.Rotation = rotationRad;
+                    mTanks.Add(previewTank);
                 }
             }
 
@@ -378,6 +389,143 @@ namespace TTMapEditor.Maps
         public void RemovePickup(Pickup pPickup)
         {
             mPickups.Remove(pPickup);
+        }
+
+        public void SaveMap()
+        {
+            // Ensure MapData exists and lists are initialized
+            if (mMapData == null)
+            {
+                mMapData = new MapData
+                {
+                    Walls = new List<WallData>(),
+                    Tanks = new List<TankData>(),
+                    Pickups = new List<PickupData>()
+                };
+            }
+
+            // Populate MapData from the current preview
+            MapDataFromPreview();
+
+            // Resolve where to save the map (mirror the LoadMapPreview resolution rules)
+            string baseDir = AppContext.BaseDirectory;
+            string mapsDir = Path.Combine(baseDir, "Maps");
+
+            if (!Directory.Exists(mapsDir))
+            {
+                DirectoryInfo? dir = new DirectoryInfo(baseDir);
+                for (int i = 0; i < 6 && dir != null; i++)
+                {
+                    string candidate = Path.Combine(dir.FullName, "Maps");
+                    if (Directory.Exists(candidate))
+                    {
+                        mapsDir = candidate;
+                        break;
+                    }
+                    dir = dir.Parent;
+                }
+            }
+
+            string targetPath;
+
+            // If the provided path is absolute
+            if (Path.IsPathRooted(mFilePath))
+            {
+                // If it's an existing directory, save map.json inside it
+                if (Directory.Exists(mFilePath))
+                {
+                    targetPath = Path.Combine(mFilePath, "map.json");
+                }
+                else if (!Path.HasExtension(mFilePath))
+                {
+                    // treat as directory path to create
+                    Directory.CreateDirectory(mFilePath);
+                    targetPath = Path.Combine(mFilePath, "map.json");
+                }
+                else
+                {
+                    // treat as file path
+                    string? dirName = Path.GetDirectoryName(mFilePath);
+                    if (!string.IsNullOrEmpty(dirName))
+                        Directory.CreateDirectory(dirName);
+                    targetPath = mFilePath;
+                }
+            }
+            else
+            {
+                // relative path: strip leading Maps\ if present
+                string relativePath = mFilePath;
+                string mapsPrefix1 = "Maps" + Path.DirectorySeparatorChar;
+                string mapsPrefix2 = "Maps" + Path.AltDirectorySeparatorChar;
+                if (relativePath.StartsWith(mapsPrefix1) || relativePath.StartsWith(mapsPrefix2))
+                {
+                    relativePath = relativePath.Substring(5);
+                }
+
+                string combined = Path.Combine(mapsDir, relativePath);
+
+                if (Directory.Exists(combined))
+                {
+                    targetPath = Path.Combine(combined, "map.json");
+                }
+                else if (!Path.HasExtension(combined))
+                {
+                    // create directory and save inside
+                    Directory.CreateDirectory(combined);
+                    targetPath = Path.Combine(combined, "map.json");
+                }
+                else
+                {
+                    string? dirName = Path.GetDirectoryName(combined);
+                    if (!string.IsNullOrEmpty(dirName))
+                        Directory.CreateDirectory(dirName);
+                    targetPath = combined;
+                }
+            }
+
+            // Serialize MapData and write
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            string json = JsonSerializer.Serialize(mMapData, options);
+            File.WriteAllText(targetPath, json);
+        }
+
+        public void MapDataFromPreview()
+        {
+            mMapData.Tanks.Clear();
+            mMapData.Pickups.Clear();
+            mMapData.Walls.Clear();
+            //Adding walls to map data
+            foreach (RectWall wall in mWalls)
+            {
+                mMapData.Walls.Add(new WallData()
+                {
+                    Texture = "block",
+                    Position = new string[] { ((wall.mRectangle.X - mPlayArea.X) * 100.0f / mPlayArea.Width).ToString(CultureInfo.InvariantCulture), ((wall.mRectangle.Y - mPlayArea.Y) * 100.0f / mPlayArea.Height).ToString(CultureInfo.InvariantCulture) },
+                    Size = new string[] { (wall.mRectangle.Width * 100.0f / mPlayArea.Width).ToString(CultureInfo.InvariantCulture), (wall.mRectangle.Height * 100.0f / mPlayArea.Height).ToString(CultureInfo.InvariantCulture) }
+                });
+            }
+            //Adding tanks to map data
+            foreach (Tank tank in mTanks)
+            {
+                float posX = (tank.mRectangle.X + tank.mRectangle.Width / 2 - mPlayArea.X) * 100.0f / mPlayArea.Width;
+                float posY = (tank.mRectangle.Y + tank.mRectangle.Height / 2 - mPlayArea.Y) * 100.0f / mPlayArea.Height;
+                float rotationDeg = MathHelper.ToDegrees(tank.Rotation);
+                mMapData.Tanks.Add(new TankData()
+                {
+                    Position = new string[] { posX.ToString(CultureInfo.InvariantCulture), posY.ToString(CultureInfo.InvariantCulture) },
+                    Rotation = rotationDeg.ToString(CultureInfo.InvariantCulture)
+                });
+            }
+            //Adding pickups to map data
+            foreach (Pickup pickup in mPickups)
+            {
+                float posX = (pickup.mRectangle.X + pickup.mRectangle.Width / 2 - mPlayArea.X) * 100.0f / mPlayArea.Width;
+                float posY = (pickup.mRectangle.Y + pickup.mRectangle.Height / 2 - mPlayArea.Y) * 100.0f / mPlayArea.Height;
+                mMapData.Pickups.Add(new PickupData()
+                {
+                    Position = new string[] { posX.ToString(CultureInfo.InvariantCulture), posY.ToString(CultureInfo.InvariantCulture) }
+                });
+            }
         }
     }
 }

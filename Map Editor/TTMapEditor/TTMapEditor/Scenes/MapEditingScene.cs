@@ -1,10 +1,12 @@
-﻿using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using TTMapEditor.Managers;
 using TTMapEditor.Maps;
@@ -21,6 +23,7 @@ namespace TTMapEditor.Scenes
         static readonly SpriteFont mTitleFont = TTMapEditor.Instance().GetContentManager().Load<SpriteFont>("TitleFont");
         static readonly Texture2D mBackgroundTexture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("background_01");
         static readonly Texture2D mPixelTexture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("white_pixel");
+        static readonly Texture2D mCircleTexture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("circle");
         Rectangle mBackgroundRectangle;
         Rectangle mPlayArea;
         Rectangle mPlayAreaOutline;
@@ -29,33 +32,110 @@ namespace TTMapEditor.Scenes
         bool mIsNewMap;
         private int mSelectedItems = 0;
 
-        // Selected object (any Object-derived)
+        // Selected object (any SceneObject-derived)
         SceneObject mSelectedObject;
+
         Rectangle mSelectedObjectPreviousRect;
 
-        // New fields to support dragging the template wall to create a new wall
+        // Template wall
         bool mIsDraggingTemplate = false;
         Rectangle mTemplateOriginalRect;
         Vector2 mTemplateDragOffset;
 
+        // Templates for tank and pickup
+        Tank mTemplateTank;
+        Pickup mTemplatePickup;
+        bool mIsDraggingTemplateTank = false;
+        bool mIsDraggingTemplatePickup = false;
+        Rectangle mTemplateTankOriginalRect;
+        Rectangle mTemplatePickupOriginalRect;
+        Vector2 mTemplateTankDragOffset;
+        Vector2 mTemplatePickupDragOffset;
+
         // drag offset for selected existing object
         Vector2 mSelectedDragOffset;
+
+        //Button for saving map
+        Rectangle mSaveButtonRect;
+
+        // max tanks allowed
+        const int MaxTanks = 4;
 
         public MapEditingScene(MainMenuScene pStartScene, string pMapFile, bool pIsNewMap)
         {
             mGraphicsDevice = TTMapEditor.Instance().GetGraphicsDeviceManager().GraphicsDevice;
             mStartScene = pStartScene;
             mName = pMapFile;
-            mPreview = new MapPreview(pFilePath: pMapFile);
+            mIsNewMap = pIsNewMap;
+
+            // If this is a new map request, create an initial empty MapData file so MapPreview can load it.
+            if (mIsNewMap)
+            {
+                string mapsRoot = Path.Combine(Environment.CurrentDirectory, "Maps");
+                Directory.CreateDirectory(mapsRoot);
+
+                // Normalize incoming path (strip leading "Maps\" if present)
+                string relative = pMapFile;
+                string mapsPrefix1 = "Maps" + Path.DirectorySeparatorChar;
+                string mapsPrefix2 = "Maps" + Path.AltDirectorySeparatorChar;
+                if (relative.StartsWith(mapsPrefix1) || relative.StartsWith(mapsPrefix2))
+                {
+                    relative = relative.Substring(5);
+                }
+
+                string candidate = Path.Combine(mapsRoot, relative);
+
+                // If caller supplied just a name (no extension) or a folder, create folder + "map.json"
+                string targetPath;
+                if (Directory.Exists(candidate) || !Path.HasExtension(candidate))
+                {
+                    Directory.CreateDirectory(candidate);
+                    targetPath = Path.Combine(candidate, "map.json");
+                }
+                else
+                {
+                    // candidate is a file path
+                    string? dir = Path.GetDirectoryName(candidate);
+                    if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+                    targetPath = candidate;
+                }
+
+                // Create an empty MapData file only if it doesn't already exist
+                if (!File.Exists(targetPath))
+                {
+                    var emptyMap = new MapData
+                    {
+                        Walls = new List<WallData>(),
+                        Tanks = new List<TankData>(),
+                        Pickups = new List<PickupData>()
+                    };
+                    var opts = new JsonSerializerOptions { WriteIndented = true };
+                    File.WriteAllText(targetPath, JsonSerializer.Serialize(emptyMap, opts));
+                }
+
+                // Use the resolved absolute path when creating the preview so LoadMapPreview picks it up directly
+                mPreview = new MapPreview(pFilePath: Path.GetFullPath(targetPath));
+            }
+            else
+            {
+                mPreview = new MapPreview(pFilePath: pMapFile);
+            }
+
             mPlayArea = mPreview.GetPlayArea();
             mPlayAreaOutline = new Rectangle(mPlayArea.X - 5, mPlayArea.Y - 5, mPlayArea.Width + 10, mPlayArea.Height + 10);
             mSpriteBatch = new SpriteBatch(mGraphicsDevice);
             mBackgroundRectangle = new Rectangle(0, 0, mGameInstance.GetGraphicsDeviceManager().GraphicsDevice.Viewport.Width, mGameInstance.GetGraphicsDeviceManager().GraphicsDevice.Viewport.Height);
             mWall = new RectWall(mPixelTexture, new Rectangle(100, 100, 50, 50));
-            mIsNewMap = pIsNewMap;
 
             // store the template's default rect so we can reset it after dragging
             mTemplateOriginalRect = mWall.mRectangle;
+
+            // create simple templates for tank/pickup (position them in a small toolbar area)
+            mTemplateTank = new Tank(mPixelTexture, new Rectangle(60, 200, 14, 14));
+            mTemplatePickup = new Pickup(mCircleTexture, new Rectangle(60, 230, 12, 12));
+            mTemplateTankOriginalRect = mTemplateTank.mRectangle;
+            mTemplatePickupOriginalRect = mTemplatePickup.mRectangle;
+            mSaveButtonRect = new Rectangle(50, 50, 100, 40);
         }
 
         void DeselectAll()
@@ -75,8 +155,6 @@ namespace TTMapEditor.Scenes
             mSpriteBatch.DrawString(mTitleFont, mName, new Vector2(100, 100), Color.Black);
             mSpriteBatch.Draw(mPixelTexture, mPlayAreaOutline, Color.Black);
             mSpriteBatch.Draw(mPixelTexture, mPlayArea, Color.Wheat);
-            if (!mIsNewMap)
-            {
                 foreach (RectWall wall in mPreview.GetWalls())
                 {
                     wall.DrawOutline(mSpriteBatch);
@@ -92,11 +170,26 @@ namespace TTMapEditor.Scenes
                     pickup.DrawOutline(mSpriteBatch);
                     pickup.Draw(mSpriteBatch);
                 }
-            }
-
-            // draw the template wall (while dragging it will follow the mouse)
+            // draw templates (wall, tank, pickup). Templates sit in the UI and can be dragged into the play area.
             mWall.DrawOutline(mSpriteBatch);
             mWall.Draw(mSpriteBatch);
+
+            mTemplateTank.DrawOutline(mSpriteBatch);
+            mTemplateTank.Draw(mSpriteBatch);
+
+            mTemplatePickup.DrawOutline(mSpriteBatch);
+            mTemplatePickup.Draw(mSpriteBatch);
+
+            // draw save button
+            if(mSaveButtonRect.Contains(InputManager.GetMousePosition()))
+            {
+                mSpriteBatch.Draw(mPixelTexture, mSaveButtonRect, Color.LightGreen);
+            }
+            else
+            {
+                mSpriteBatch.Draw(mPixelTexture, mSaveButtonRect, Color.Green);
+            }
+
             mSpriteBatch.End();
         }
 
@@ -109,18 +202,21 @@ namespace TTMapEditor.Scenes
             }
 
             Vector2 mousePos = InputManager.GetMousePosition();
+            if (mSaveButtonRect.Contains(mousePos) && InputManager.isLeftMouseClicked())
+            {
+                saveMap();
+            }
 
             // ---------- Template dragging (create new wall by dragging mWall) ----------
-            // Start dragging the template if the mouse clicks it
-            if (!mIsDraggingTemplate && mWall.IsPointWithin(mousePos) && InputManager.isLeftMouseClicked())
+            // Start dragging the template wall if clicked
+            if (!mIsDraggingTemplate && !mIsDraggingTemplateTank && !mIsDraggingTemplatePickup && mWall.IsPointWithin(mousePos) && InputManager.isLeftMouseClicked())
             {
                 mIsDraggingTemplate = true;
                 mTemplateOriginalRect = mWall.mRectangle;
-                // remember offset so the wall doesn't "jump" when you start dragging
                 mTemplateDragOffset = new Vector2(mousePos.X - mWall.mRectangle.X, mousePos.Y - mWall.mRectangle.Y);
             }
 
-            // While dragging the template (mouse down), move the template with the mouse
+            // drag wall template
             if (mIsDraggingTemplate && !InputManager.isLeftMouseReleased())
             {
                 int newX = (int)(mousePos.X - mTemplateDragOffset.X);
@@ -128,23 +224,85 @@ namespace TTMapEditor.Scenes
                 mWall.UpdatePosition(newX, newY);
             }
 
-            // On mouse release, if we were dragging the template, either create the new wall if valid or discard it.
             if (mIsDraggingTemplate && InputManager.isLeftMouseReleased())
             {
                 if (IsWallWithinPlayArea(mWall))
                 {
-                    // create a new wall at the template's current position
                     var newRectWall = new RectWall(mPixelTexture, new Rectangle(mWall.mRectangle.X, mWall.mRectangle.Y, mWall.mRectangle.Width, mWall.mRectangle.Height));
                     mPreview.AddWall(newRectWall);
                 }
 
-                // reset template to its original position and clear dragging state
                 mWall.SetWallRectangle(mTemplateOriginalRect);
                 mIsDraggingTemplate = false;
             }
 
+            // ---------- Template dragging for tank ----------
+            if (!mIsDraggingTemplateTank && !mIsDraggingTemplate && !mIsDraggingTemplatePickup && mTemplateTank.IsPointWithin(mousePos) && InputManager.isLeftMouseClicked())
+            {
+                mIsDraggingTemplateTank = true;
+                mTemplateTankOriginalRect = mTemplateTank.mRectangle;
+                mTemplateTankDragOffset = new Vector2(mousePos.X - mTemplateTank.mRectangle.X, mousePos.Y - mTemplateTank.mRectangle.Y);
+            }
+
+            if (mIsDraggingTemplateTank && !InputManager.isLeftMouseReleased())
+            {
+                int newX = (int)(mousePos.X - mTemplateTankDragOffset.X);
+                int newY = (int)(mousePos.Y - mTemplateTankDragOffset.Y);
+                mTemplateTank.UpdatePosition(newX, newY);
+            }
+
+            if (mIsDraggingTemplateTank && InputManager.isLeftMouseReleased())
+            {
+                // Only create tank if within play area and tank count < MaxTanks
+                if (mTemplateTank.mRectangle.Left >= mPlayArea.Left
+                    && mTemplateTank.mRectangle.Top >= mPlayArea.Top
+                    && mTemplateTank.mRectangle.Right <= mPlayArea.Right
+                    && mTemplateTank.mRectangle.Bottom <= mPlayArea.Bottom
+                    && mPreview.GetTanks().Count < MaxTanks)
+                {
+                    var newTank = new Tank(mPixelTexture, new Rectangle(mTemplateTank.mRectangle.X, mTemplateTank.mRectangle.Y, mTemplateTank.mRectangle.Width, mTemplateTank.mRectangle.Height));
+                    mPreview.AddTank(newTank);
+                }
+
+                // reset template
+                mTemplateTank.SetRectangle(mTemplateTankOriginalRect);
+                mIsDraggingTemplateTank = false;
+            }
+
+            // ---------- Template dragging for pickup ----------
+            if (!mIsDraggingTemplatePickup && !mIsDraggingTemplate && !mIsDraggingTemplateTank && mTemplatePickup.IsPointWithin(mousePos) && InputManager.isLeftMouseClicked())
+            {
+                mIsDraggingTemplatePickup = true;
+                mTemplatePickupOriginalRect = mTemplatePickup.mRectangle;
+                mTemplatePickupDragOffset = new Vector2(mousePos.X - mTemplatePickup.mRectangle.X, mousePos.Y - mTemplatePickup.mRectangle.Y);
+            }
+
+            if (mIsDraggingTemplatePickup && !InputManager.isLeftMouseReleased())
+            {
+                int newX = (int)(mousePos.X - mTemplatePickupDragOffset.X);
+                int newY = (int)(mousePos.Y - mTemplatePickupDragOffset.Y);
+                mTemplatePickup.UpdatePosition(newX, newY);
+            }
+
+            if (mIsDraggingTemplatePickup && InputManager.isLeftMouseReleased())
+            {
+                // create pickup if inside play area
+                Rectangle pr = mTemplatePickup.mRectangle;
+                if (pr.Left >= mPlayArea.Left && pr.Top >= mPlayArea.Top && pr.Right <= mPlayArea.Right && pr.Bottom <= mPlayArea.Bottom)
+                {
+                    var newPickup = new Pickup(mCircleTexture, new Rectangle(pr.X, pr.Y, pr.Width, pr.Height));
+                    mPreview.AddPickup(newPickup);
+                }
+
+                // reset template
+                mTemplatePickup.SetRectangle(mTemplatePickupOriginalRect);
+                mIsDraggingTemplatePickup = false;
+            }
+
             // ---------- Existing objects selection / dragging (pick top-most) ----------
-            if (!mIsDraggingTemplate)
+            bool isAnyTemplateDragging = mIsDraggingTemplate || mIsDraggingTemplateTank || mIsDraggingTemplatePickup;
+
+            if (!isAnyTemplateDragging)
             {
                 // Check pickups first (drawn last = topmost), then tanks, then walls
                 bool handledClick = false;
@@ -281,7 +439,22 @@ namespace TTMapEditor.Scenes
                     mSelectedObject = null;
                     return;
                 }
+                // Tank rotation: left/right rotate by 15 degrees per key press
+                if (mSelectedObject is Tank selectedTank)
+                {
+                    float rotationStep = MathHelper.ToRadians(15.0f);
+                    if (InputManager.isKeyPressed(Keys.Left))
+                    {
+                        selectedTank.Rotate(-rotationStep);
+                    }
+                    if (InputManager.isKeyPressed(Keys.Right))
+                    {
+                        selectedTank.Rotate(rotationStep);
+                    }
 
+                    // optional: clamp or wrap rotation if you prefer a 0..2π range
+                    // selectedTank.Rotation = MathHelper.WrapAngle(selectedTank.Rotation);
+                }
                 if (mSelectedObject is RectWall selectedWall)
                 {
                     if (InputManager.isKeyPressed(Keys.Left))
@@ -320,6 +493,11 @@ namespace TTMapEditor.Scenes
                 && r.Top >= mPlayArea.Top
                 && r.Right <= mPlayArea.Right
                 && r.Bottom <= mPlayArea.Bottom;
+        }
+
+        public void saveMap()
+        {
+            mPreview.SaveMap();
         }
     }
 }
