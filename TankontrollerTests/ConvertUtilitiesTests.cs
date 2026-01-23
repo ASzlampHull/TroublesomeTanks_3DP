@@ -7,12 +7,6 @@ namespace TankontrollerTests
     public class ConvertUtilitiesTests
     {
         [Fact]
-        public void Failing_Test()
-        {
-            Assert.Equal(0, 1);
-        }
-
-        [Fact]
         public void ToRectangle_WithFourCorners_ReturnsCorrectAABB()
         {
             var topLeft = new Vector2(0f, 0f);
