@@ -1,0 +1,34 @@
+name: CI - Tests
+
+on:
+  push:
+    branches: [ "working/unit-testing", "master", "working/*" ]
+  pull_request:
+    branches: [ "master", "working/*" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 6
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test (with coverage)
+        run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage"
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-coverage
+          path: '**/TestResults/**/*.xml'
