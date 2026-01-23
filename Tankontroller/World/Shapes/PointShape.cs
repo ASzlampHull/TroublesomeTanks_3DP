@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
-using Tankontroller.World.WorldObjects;
+using Tankontroller.World.WorldObject;
 
 namespace Tankontroller.World.Shapes
 {
@@ -38,14 +38,14 @@ namespace Tankontroller.World.Shapes
             return new CollisionEvent(false);
         }
 
-        public CollisionEvent Intersects(CircleShape circle)
-        {
-            //Vector2 difference = this.WorldPosition - circle.WorldPosition;
-            //if (difference.LengthSquared() <= circle.Radius * circle.Radius)
-            //{
-            //    return new CollisionEvent(true, this.WorldPosition);
-            //}
-            return new CollisionEvent(false);
-        }
+        //public CollisionEvent Intersects(CircleShape circle)
+        //{
+        //    Vector2 difference = this.WorldPosition - circle.WorldPosition;
+        //    if (difference.LengthSquared() <= circle.Radius * circle.Radius)
+        //    {
+        //        return new CollisionEvent(true, this.WorldPosition);
+        //    }
+        //    return new CollisionEvent(false);
+        //}
     }
 }

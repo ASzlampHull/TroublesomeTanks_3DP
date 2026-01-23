@@ -1,5 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
-using Tankontroller.World.WorldObjects;
+using Tankontroller.World.WorldObject;
 
 namespace Tankontroller.World.Shapes
 {
@@ -14,6 +14,7 @@ namespace Tankontroller.World.Shapes
 
         /// <summary>
         /// If false, shape is ignored by collision queries.
+        /// Must have an owner and mEnabled flag must be true.
         /// </summary>
         public bool Enabled {
             get => mEnabled && Owner != null;
@@ -44,6 +45,11 @@ namespace Tankontroller.World.Shapes
             mEnabled = pEnabled;
         }
 
+        /// <summary>
+        /// Checks for intersection with another shape.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public abstract CollisionEvent Intersects(Shape other);
     }
 }
