@@ -11,24 +11,19 @@ namespace Tankontroller.World.Shapes
 
         public override CollisionEvent Intersects(Shape other)
         {
-            switch (other)
+            return other switch
             {
-                case PointShape point:
-                    return Intersects(point);
-                //case CircleShape circleShape:
-                //    Vector2 difference = this.WorldPosition - circleShape.WorldPosition;
-                //    return difference.LengthSquared() <= circleShape.Radius * circleShape.Radius;
-                //case RectangleShape rectangleShape:
-                //    Vector2 worldPos = this.WorldPosition;
-                //    Vector2 rectPos = rectangleShape.WorldPosition;
-                //    Vector2 rectSize = rectangleShape.Size;
-                //    return (worldPos.X >= rectPos.X && worldPos.X <= rectPos.X + rectSize.X) &&
-                //           (worldPos.Y >= rectPos.Y && worldPos.Y <= rectPos.Y + rectSize.Y);
-                default:
-                    throw new NotImplementedException("Intersection with this shape type is not implemented.");
-            }
+                PointShape point => Intersects(point),
+                CircleShape circleShape => Intersects(circleShape),
+                _ => throw new NotImplementedException($"Intersection with shape {this} and {other} is not implemented."),
+            };
         }
 
+        /// <summary>
+        /// Check for intersection with another point shape - if they occupy the same position.
+        /// </summary>
+        /// <returns> Collision event information. If colliding:
+        /// 1. The position of the collision (the point itself). </returns>
         public CollisionEvent Intersects(PointShape other)
         {
             if (Vector2.DistanceSquared(WorldPosition, other.WorldPosition) <= float.Epsilon)
@@ -38,14 +33,20 @@ namespace Tankontroller.World.Shapes
             return new CollisionEvent(false);
         }
 
-        //public CollisionEvent Intersects(CircleShape circle)
-        //{
-        //    Vector2 difference = this.WorldPosition - circle.WorldPosition;
-        //    if (difference.LengthSquared() <= circle.Radius * circle.Radius)
-        //    {
-        //        return new CollisionEvent(true, this.WorldPosition);
-        //    }
-        //    return new CollisionEvent(false);
-        //}
+        /// <summary>
+        /// Check for intersection with a circle shape - if the point is inside the circle.
+        /// </summary>
+        /// <returns> Collision event information. If colliding:
+        /// 1. The position of the collision (the point itself)
+        /// 2. The normal of the collision (pointing away from the circle) </returns>
+        public CollisionEvent Intersects(CircleShape circle)
+        {
+            Vector2 difference = WorldPosition - circle.WorldPosition;
+            if (difference.LengthSquared() <= circle.Radius * circle.Radius)
+            {
+                return new CollisionEvent(true, WorldPosition, Vector2.Normalize(difference));
+            }
+            return new CollisionEvent(false);
+        }
     }
 }

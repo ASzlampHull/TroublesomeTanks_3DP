@@ -46,10 +46,10 @@ namespace Tankontroller.World.Shapes
         }
 
         /// <summary>
-        /// Checks for intersection with another shape.
+        /// Checks for intersection with another shape (enables polymorphic behavior).
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <returns> Collision event information, including whether a collision has occurred </returns>
+        /// <exception cref="NotImplementedException"> Thrown when intersection with an unsupported shape is attempted. </exception>
         public abstract CollisionEvent Intersects(Shape other);
     }
 }
