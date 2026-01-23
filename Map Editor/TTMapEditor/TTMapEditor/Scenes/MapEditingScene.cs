@@ -459,9 +459,10 @@ namespace TTMapEditor.Scenes
             // Wall scaling
             if (mSelectedObject is RectWall selectedWall)
             {
+                float rotationStep = MathHelper.ToRadians(15.0f);
                 if (InputManager.isKeyPressed(Keys.Left))
                 {
-                    selectedWall.ScaleWidth(0.75f);
+                    selectedWall.Rotate(rotationStep);
                 }
                 if (InputManager.isKeyPressed(Keys.Right))
                 {
