@@ -1,13 +1,16 @@
 name: Continuous Integration - Tests
 
+# Test whenever code is pushed to master or any working branch, or a pull request is opened against them
 on:
   push:
-    branches: [ "working/unit-testing", "master", "working/*" ]
+    branches: [ "master", "working/*" ]
   pull_request:
     branches: [ "master", "working/*" ]
 
+# Run test on latest Windows environment with .NET 6
 jobs:
   test:
+    # Note: Ubuntu doesn't work on .NET 6. Windows works but is slower than Ubuntu.
     runs-on: windows-latest
     steps:
       - name: Checkout
