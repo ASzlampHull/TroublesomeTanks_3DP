@@ -45,7 +45,6 @@ namespace Tankontroller
         // Scaling factor for screen resolution
         private float mScaleFactor = 1f;
 
-
         public static IGame Instance()
         {
             if (mGameInterface == null)
@@ -219,7 +218,7 @@ namespace Tankontroller
         }
 
         /// <summary>
-        /// Calculates the scale factor based on the current screen resolution and play area size
+        /// Calculates the scale factor based on the current screen resolution.
         /// </summary>
         private void CalculateScaleFactor()
         {

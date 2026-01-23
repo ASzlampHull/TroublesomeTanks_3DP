@@ -237,10 +237,11 @@ namespace Tankontroller.World.Particles
 
         public void InitiateParticles(Particle[] pParticles)
         {
-            int minInitialRadius = (int)Math.Round(1.0f * Tankontroller.Instance().ScaleFactor());
-            int maxInitialRadius = (int)Math.Round(7.0f * Tankontroller.Instance().ScaleFactor());
-            int minRadiusRate = (int)Math.Round(25.0f * Tankontroller.Instance().ScaleFactor());
-            int maxRadiusRate = (int)Math.Round(46.0f * Tankontroller.Instance().ScaleFactor());
+            float scale = Tankontroller.Instance().ScaleFactor();
+            int minInitialRadius = (int)Math.Round(1.0f * scale);
+            int maxInitialRadius = (int)Math.Round(7.0f * scale);
+            int minRadiusRate = (int)Math.Round(25.0f * scale);
+            int maxRadiusRate = (int)Math.Round(46.0f * scale);
 
             for (int i = 0; i < pParticles.Length; i++)
             {
@@ -304,8 +305,9 @@ namespace Tankontroller.World.Particles
 
         public void InitiateParticles(Particle[] pParticles)
         {
-            int minRadiusRate = (int)Math.Round(1.0f * Tankontroller.Instance().ScaleFactor());
-            int maxRadiusRate = (int)Math.Round(2.0f * Tankontroller.Instance().ScaleFactor());
+            float scale = Tankontroller.Instance().ScaleFactor();
+            int minRadiusRate = (int)Math.Round(1.0f * scale);
+            int maxRadiusRate = (int)Math.Round(2.0f * scale);
 
             for (int i = 0; i < pParticles.Length; i++)
             {
@@ -336,10 +338,11 @@ namespace Tankontroller.World.Particles
 
         public void InitiateParticles(Particle[] pParticles)
         {
-            int minInitialRadius = (int)Math.Round(1.0f * Tankontroller.Instance().ScaleFactor());
-            int maxInitialRadius = (int)Math.Round(7.0f * Tankontroller.Instance().ScaleFactor());
-            int minRadiusRate = (int)Math.Round(0.0f * Tankontroller.Instance().ScaleFactor());
-            int maxRadiusRate = (int)Math.Round(2.0f * Tankontroller.Instance().ScaleFactor());
+            float scale = Tankontroller.Instance().ScaleFactor();
+            int minInitialRadius = (int)Math.Round(1.0f * scale);
+            int maxInitialRadius = (int)Math.Round(7.0f * scale);
+            int minRadiusRate = (int)Math.Round(0.0f * scale);
+            int maxRadiusRate = (int)Math.Round(2.0f * scale);
 
             for (int i = 0; i < pParticles.Length; i++)
             {
@@ -373,11 +376,11 @@ namespace Tankontroller.World.Particles
 
         public void InitiateParticles(Particle[] pParticles)
         {
+            float scale = Tankontroller.Instance().ScaleFactor();
             int minInitialRadius = 0;
             int maxInitialRadius = 0;
             int minRadiusRate = 0;
             int maxRadiusRate = 0;
-            float scale = Tankontroller.Instance().ScaleFactor();
 
             for (int i = 0; i < pParticles.Length; i++)
             {
