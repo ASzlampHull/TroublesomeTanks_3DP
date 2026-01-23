@@ -1,11 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Tankontroller.World.Shape
+namespace Tankontroller.World.Shapes
 {
     /// <summary>
     /// Represents the result of a collision detection operation.

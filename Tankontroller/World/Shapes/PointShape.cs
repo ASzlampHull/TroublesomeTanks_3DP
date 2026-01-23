@@ -1,9 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
-using Tankontroller.Managers;
-using Tankontroller.World.WorldObject;
+using Tankontroller.World.WorldObjects;
 
-namespace Tankontroller.World.Shape
+namespace Tankontroller.World.Shapes
 {
     internal class PointShape : Shape
     {

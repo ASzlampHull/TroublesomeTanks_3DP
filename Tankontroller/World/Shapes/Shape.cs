@@ -1,8 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
-using Tankontroller.World.WorldObject;
-using Tankontroller.Managers;
+using Tankontroller.World.WorldObjects;
 
-namespace Tankontroller.World.Shape
+namespace Tankontroller.World.Shapes
 {
     internal abstract class Shape
     {
