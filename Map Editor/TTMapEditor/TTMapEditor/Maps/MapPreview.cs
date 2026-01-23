@@ -13,6 +13,14 @@ using TTMapEditor.Objects;
 
 namespace TTMapEditor.Maps
 {
+    enum ObjectType
+    {
+        Wall,
+        Tank,
+        Pickup
+    }
+
+
     internal class MapPreview
     {
         Rectangle mPlayArea { get; set; }
@@ -360,35 +368,38 @@ namespace TTMapEditor.Maps
             return Walls;
         }
 
-        public void AddWall(RectWall pWall)
+        public void AddObject(SceneObject pObject)
         {
-            mWalls.Add(pWall);
+            switch(pObject)
+            {
+                case RectWall wall:
+                    mWalls.Add(wall);
+                    break;
+                case Tank tank:
+                    mTanks.Add(tank);
+                    break;
+                case Pickup pickup:
+                    mPickups.Add(pickup);
+                    break;
+            }
         }
 
-        public void RemoveWall(RectWall pWall)
-        {
-            mWalls.Remove(pWall);
-        }
 
-        // New helpers for tanks/pickups so the editor can remove them
-        public void AddTank(Tank pTank)
-        {
-            mTanks.Add(pTank);
-        }
 
-        public void RemoveTank(Tank pTank)
+        public void RemoveObject(SceneObject pObject)
         {
-            mTanks.Remove(pTank);
-        }
-
-        public void AddPickup(Pickup pPickup)
-        {
-            mPickups.Add(pPickup);
-        }
-
-        public void RemovePickup(Pickup pPickup)
-        {
-            mPickups.Remove(pPickup);
+            switch(pObject)
+            {
+                case RectWall wall:
+                    mWalls.Remove(wall);
+                    break;
+                case Tank tank:
+                    mTanks.Remove(tank);
+                    break;
+                case Pickup pickup:
+                    mPickups.Remove(pickup);
+                    break;
+            }
         }
 
         public void SaveMap()
