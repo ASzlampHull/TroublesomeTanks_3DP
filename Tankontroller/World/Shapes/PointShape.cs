@@ -9,13 +9,15 @@ namespace Tankontroller.World.Shapes
         public PointShape(Transform pOwner, bool pEnabled = true) : base(pOwner, pEnabled) { }
         public PointShape(Transform pOwner, Vector2 pLocalOffset, bool pEnabled = true) : base(pOwner, pLocalOffset, pEnabled) { }
 
-        public override CollisionEvent Intersects(CollisionShape other)
+        public override CollisionEvent Intersects(CollisionShape pOther)
         {
-            return other switch
+            return pOther switch
             {
-                PointShape point => Intersects(point),
-                CircleShape circleShape => Intersects(circleShape),
-                _ => throw new NotImplementedException($"Intersection with shape {this} and {other} is not implemented."),
+                PointShape point => IntersectsPoint(point),
+                CircleShape circle => IntersectsCircle(circle),
+                RectangleAxisAlignedShape rectangleAligned => IntersectsAlignedRectangle(rectangleAligned),
+                RectangleOrientedShape rectangleOriented => IntersectsOrientedRectangle(rectangleOriented),
+                _ => throw new NotImplementedException($"Intersection with shape {this} and {pOther} is not implemented."),
             };
         }
 
@@ -24,9 +26,9 @@ namespace Tankontroller.World.Shapes
         /// </summary>
         /// <returns> Collision event information. If colliding:
         /// 1. The position of the collision (the point itself). </returns>
-        public CollisionEvent Intersects(PointShape other)
+        public CollisionEvent IntersectsPoint(PointShape pPoint)
         {
-            if (Vector2.DistanceSquared(WorldPosition, other.WorldPosition) <= float.Epsilon)
+            if (Vector2.DistanceSquared(WorldPosition, pPoint.WorldPosition) <= float.Epsilon)
             {
                 return new CollisionEvent(true, WorldPosition);
             }
@@ -39,13 +41,23 @@ namespace Tankontroller.World.Shapes
         /// <returns> Collision event information. If colliding:
         /// 1. The position of the collision (the point itself)
         /// 2. The normal of the collision (pointing away from the circle) </returns>
-        public CollisionEvent Intersects(CircleShape circle)
+        public CollisionEvent IntersectsCircle(CircleShape pCircle)
         {
-            Vector2 difference = WorldPosition - circle.WorldPosition;
-            if (difference.LengthSquared() <= circle.Radius * circle.Radius)
+            Vector2 difference = WorldPosition - pCircle.WorldPosition;
+            if (difference.LengthSquared() <= pCircle.Radius * pCircle.Radius)
             {
                 return new CollisionEvent(true, WorldPosition, Vector2.Normalize(difference));
             }
+            return new CollisionEvent(false);
+        }
+
+        public CollisionEvent IntersectsAlignedRectangle(RectangleAxisAlignedShape pRectangleAligned)
+        {
+            return new CollisionEvent(false);
+        }
+
+        public CollisionEvent IntersectsOrientedRectangle(RectangleOrientedShape pRectangleOriented)
+        {
             return new CollisionEvent(false);
         }
     }

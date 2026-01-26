@@ -18,13 +18,15 @@ namespace Tankontroller.World.Shapes
             Radius = pRadius;
         }
 
-        public override CollisionEvent Intersects(CollisionShape other)
+        public override CollisionEvent Intersects(CollisionShape pOther)
         {
-            return other switch
+            return pOther switch
             {
-                PointShape point => Intersects(point),
-                CircleShape circleShape => Intersects(circleShape),
-                _ => throw new NotImplementedException($"Intersection with shape {this} and {other} is not implemented."),
+                PointShape point => IntersectsPoint(point),
+                CircleShape circle => IntersectsCircle(circle),
+                RectangleAxisAlignedShape rectangleAligned => IntersectsAlignedRectangle(rectangleAligned),
+                RectangleOrientedShape rectangleOriented => IntersectsOrientedRectangle(rectangleOriented),
+                _ => throw new NotImplementedException($"Intersection with shape {this} and {pOther} is not implemented."),
             };
         }
 
@@ -34,9 +36,9 @@ namespace Tankontroller.World.Shapes
         /// <returns> Collision event information. If colliding:
         /// 1. The position of the collision (the point itself)
         /// 2. The normal of the collision (pointing away from the point, into the circle) </returns>
-        public CollisionEvent Intersects(PointShape point)
+        public CollisionEvent IntersectsPoint(PointShape pPoint)
         {
-            CollisionEvent collisionEvent = point.Intersects(this);
+            CollisionEvent collisionEvent = pPoint.IntersectsCircle(this);
             collisionEvent.CollisionNormal = -collisionEvent.CollisionNormal; // Invert normal to point into the circle
             return collisionEvent;
         }
@@ -47,10 +49,10 @@ namespace Tankontroller.World.Shapes
         /// <returns> Collision event information. If colliding:
         /// 1. The position of the collision (midpoint of overlap between the two circles)
         /// 2. The normal of the collision (pointing away from the other circle) </returns>
-        public CollisionEvent Intersects(CircleShape other)
+        public CollisionEvent IntersectsCircle(CircleShape pCircle)
         {
-            Vector2 difference = WorldPosition - other.WorldPosition;
-            float radiusSum = Radius + other.Radius;
+            Vector2 difference = WorldPosition - pCircle.WorldPosition;
+            float radiusSum = Radius + pCircle.Radius;
             float distanceSquared = difference.LengthSquared();
 
             if (distanceSquared <= radiusSum * radiusSum)
@@ -61,7 +63,7 @@ namespace Tankontroller.World.Shapes
                 Vector2 collisionNormal = distance > 0f ? Vector2.Normalize(difference) : new Vector2(1f, 0);
 
                 // Closest point on the other circle's perimeter to this circle
-                Vector2 pointOnOther = other.WorldPosition + collisionNormal * other.Radius;
+                Vector2 pointOnOther = pCircle.WorldPosition + collisionNormal * pCircle.Radius;
 
                 // Closest point on this circle's perimeter to the other circle
                 Vector2 pointOnThis = WorldPosition - collisionNormal * Radius;
@@ -71,6 +73,16 @@ namespace Tankontroller.World.Shapes
 
                 return new CollisionEvent(true, collisionPosition, collisionNormal);
             }
+            return new CollisionEvent(false);
+        }
+
+        public CollisionEvent IntersectsAlignedRectangle(RectangleAxisAlignedShape pRectangleAligned)
+        {
+            return new CollisionEvent(false);
+        }
+
+        public CollisionEvent IntersectsOrientedRectangle(RectangleOrientedShape pRectangleOriented)
+        {
             return new CollisionEvent(false);
         }
     }

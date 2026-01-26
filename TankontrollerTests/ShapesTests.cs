@@ -20,7 +20,7 @@ namespace TankontrollerTests
             PointShape point1 = new(transform1);
             PointShape point2 = new(transform2);
 
-            CollisionEvent collisionEvent = point1.Intersects(point2);
+            CollisionEvent collisionEvent = point1.IntersectsPoint(point2);
 
             Assert.True(collisionEvent.HasCollided); // Collision should be detected
             Assert.True(collisionEvent.CollisionPosition.HasValue); // Collision position should be defined
@@ -37,7 +37,7 @@ namespace TankontrollerTests
             PointShape point1 = new(transform1);
             PointShape point2 = new(transform2);
 
-            CollisionEvent collisionEvent = point1.Intersects(point2);
+            CollisionEvent collisionEvent = point1.IntersectsPoint(point2);
 
             Assert.False(collisionEvent.HasCollided); // No collision should be detected
             Assert.False(collisionEvent.CollisionPosition.HasValue); // No collision position
@@ -54,7 +54,7 @@ namespace TankontrollerTests
             PointShape point = new(pointTransform);
 
             // PointShape.Intersects(CircleShape) should detect the point on the edge as a collision
-            CollisionEvent collisionEvent = point.Intersects(circle);
+            CollisionEvent collisionEvent = point.IntersectsCircle(circle);
 
             Assert.True(collisionEvent.HasCollided); // Collision should be detected
             Assert.True(collisionEvent.CollisionPosition.HasValue); // Collision position should be defined
@@ -72,7 +72,7 @@ namespace TankontrollerTests
             CircleShape circle = new(circleTransform, 5f);
             PointShape point = new(pointTransform);
 
-            CollisionEvent collisionEvent = point.Intersects(circle);
+            CollisionEvent collisionEvent = point.IntersectsCircle(circle);
 
             Assert.False(collisionEvent.HasCollided); // No collision should be detected
             Assert.False(collisionEvent.CollisionPosition.HasValue); // No collision position
@@ -93,7 +93,7 @@ namespace TankontrollerTests
             PointShape point = new(pointTransform);
 
             // This test expects CircleShape.Intersects(PointShape) to behave symmetrically to PointShape.Intersects(CircleShape)
-            CollisionEvent collisionEvent = circle.Intersects(point);
+            CollisionEvent collisionEvent = circle.IntersectsPoint(point);
 
             Assert.True(collisionEvent.HasCollided); // Collision should be detected
             Assert.True(collisionEvent.CollisionPosition.HasValue); // Collision position should be defined
@@ -111,7 +111,7 @@ namespace TankontrollerTests
             CircleShape circle1 = new(circle1Transform, 2f);
             CircleShape circle2 = new(circle2Transform, 2f);
 
-            CollisionEvent collisionEvent = circle1.Intersects(circle2);
+            CollisionEvent collisionEvent = circle1.IntersectsCircle(circle2);
 
             Assert.False(collisionEvent.HasCollided); // No collision should be detected
             Assert.False(collisionEvent.CollisionPosition.HasValue); // No collision position
@@ -128,7 +128,7 @@ namespace TankontrollerTests
             CircleShape circle2 = new(circle2Transform, 2.0f);
 
             // Two circles with centers 3 units apart, radii 2 and 2 -> overlap (2+2 > 3)
-            CollisionEvent collisionEvent = circle1.Intersects(circle2);
+            CollisionEvent collisionEvent = circle1.IntersectsCircle(circle2);
 
             Assert.True(collisionEvent.HasCollided); // Collision should be detected
             Assert.True(collisionEvent.CollisionPosition.HasValue); // Collision position should be defined
