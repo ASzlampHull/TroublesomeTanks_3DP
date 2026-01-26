@@ -190,6 +190,7 @@ namespace Tankontroller.World
         {
             Vector3 translationVector = new Vector3(distance, 0, 0);
             translationVector = Vector3.Transform(translationVector, Matrix.CreateRotationZ(mRotation));
+            translationVector *= m_Scale;
             mOldPosition = mPosition;
             mPosition += translationVector;
         }
