@@ -26,7 +26,7 @@ namespace Tankontroller.World.Bullets
 
         public virtual void Update(float pSeconds)
         {
-            Position = Position + Velocity * pSeconds;
+            Position = Position + Velocity * pSeconds * Tankontroller.Instance().ScaleFactor();
         }
 
         public virtual bool CollideWithPlayArea(Rectangle pRectangle)
