@@ -138,5 +138,102 @@ namespace TankontrollerTests
         }
 
         #endregion CircleShape
+
+        #region RectangleAxisAlignedShape (AABB)
+
+        [Fact]
+        public void PointInsideAARectangle_ReportsCollisionAndVectors()
+        {
+            Transform rectangleTransform = new(new Vector2(0f, 0f));
+            Vector2 rectangleSize = new(4f, 4f);
+            Transform pointTransform = new(new Vector2(1f, 1f));  // inside a 4x4 centered at (0,0)
+
+            RectangleAxisAlignedShape rectangle = new(rectangleTransform, rectangleSize);
+            PointShape point = new(pointTransform);
+
+            CollisionEvent collisionEvent = point.Intersects(rectangle);
+
+            Assert.True(collisionEvent.HasCollided); // Collision should be detected
+            Assert.True(collisionEvent.CollisionPosition.HasValue); // Collision position should be defined
+            Assert.Equal(pointTransform.Position, collisionEvent.CollisionPosition.Value); // Collision position equals the point
+            Assert.True(collisionEvent.CollisionNormal.HasValue); // Normal should be defined
+            // Normal should point away from rectangle center toward the point
+            Assert.Equal(Vector2.Normalize(pointTransform.Position - rectangleTransform.Position), collisionEvent.CollisionNormal);
+        }
+
+        [Fact]
+        public void PointOutsideAARectangle_ReportsNoCollision()
+        {
+            Transform rectangleTransform = new(new Vector2(0f, 0f));
+            Vector2 rectangleSize = new(4f, 4f);
+            Transform pointTransform = new(new Vector2(3f, 3f)); // outside a 4x4 centered at (0,0)
+
+            RectangleAxisAlignedShape rectangle = new(rectangleTransform, rectangleSize);
+            PointShape point = new(pointTransform);
+
+            CollisionEvent collisionEvent = point.Intersects(rectangle);
+
+            Assert.False(collisionEvent.HasCollided); // No collision should be detected
+            Assert.False(collisionEvent.CollisionPosition.HasValue); // No collision position
+            Assert.False(collisionEvent.CollisionNormal.HasValue); // No normal
+        }
+
+        [Fact]
+        public void AARectangleToPoint_SymmetricalToInvertedNormal_PointInsideAARectangle()
+        {
+            Transform rectangleTransform = new(new Vector2(0f, 0f));
+            Vector2 rectangleSize = new(4f, 4f);
+            Transform pointTransform = new(new Vector2(1f, 0f));
+
+            RectangleAxisAlignedShape rectangle = new(rectangleTransform, rectangleSize);
+            PointShape point = new(pointTransform);
+
+            CollisionEvent collisionEvent = rectangle.Intersects(point);
+
+            Assert.True(collisionEvent.HasCollided); // Collision should be detected
+            Assert.True(collisionEvent.CollisionPosition.HasValue); // Collision position should be defined
+            Assert.Equal(pointTransform.Position, collisionEvent.CollisionPosition.Value); // Collision position equals the point
+            Assert.True(collisionEvent.CollisionNormal.HasValue); // Normal should be defined
+            // Rectangle.Intersects(point) should invert the point->rectangle normal (i.e., point into rectangle)
+            Assert.Equal(-Vector2.Normalize(pointTransform.Position - rectangleTransform.Position), collisionEvent.CollisionNormal);
+        }
+
+        [Fact]
+        public void AARectangleToAARectangle_NotOverlapping_ReportsNoCollision()
+        {
+            Transform rectangle1Transform = new(new Vector2(0f, 0f));
+            Transform rectangle2Transform = new(new Vector2(3f, 0f));
+
+            RectangleAxisAlignedShape rectangle1 = new(rectangle1Transform, new Vector2(2f, 2f)); // half-extents 1 -> spans [-1,1]
+            RectangleAxisAlignedShape rectangle2 = new(rectangle2Transform, new Vector2(2f, 2f)); // spans [2,4] -> just separated
+
+            CollisionEvent collisionEvent = rectangle1.Intersects(rectangle2);
+
+            Assert.False(collisionEvent.HasCollided); // No collision should be detected
+            Assert.False(collisionEvent.CollisionPosition.HasValue); // No collision position
+            Assert.False(collisionEvent.CollisionNormal.HasValue); // No normal
+        }
+
+        [Fact]
+        public void AARectangleToAARectangle_Overlapping_ReportsCollision()
+        {
+            Transform rectangle1Transform = new(new Vector2(0f, 0f));
+            Transform rectangle2Transform = new(new Vector2(3f, 0f));
+
+            RectangleAxisAlignedShape rectangle1 = new(rectangle1Transform, new Vector2(4f, 4f)); // spans [-2,2]
+            RectangleAxisAlignedShape rectangle2 = new(rectangle2Transform, new Vector2(4f, 4f)); // spans [1,5] -> overlap on x [1,2]
+
+            CollisionEvent collisionEvent = rectangle1.Intersects(rectangle2);
+
+            Assert.True(collisionEvent.HasCollided); // Collision should be detected
+            Assert.True(collisionEvent.CollisionPosition.HasValue); // Collision position should be defined
+            // Overlap x-range [1,2] -> midpoint x = 1.5, y-range [-2,2] -> midpoint y = 0
+            Assert.Equal(new Vector2(1.5f, 0f), collisionEvent.CollisionPosition.Value); // Collision position is center of overlap area
+            Assert.True(collisionEvent.CollisionNormal.HasValue); // Normal should be defined
+            // Normal expected to be WorldPosition(rect1) - WorldPosition(rect2) normalized
+            Assert.Equal(Vector2.Normalize(rectangle1.WorldPosition - rectangle2.WorldPosition), collisionEvent.CollisionNormal);
+        }
+
+        #endregion RectangleAxisAlignedShape (AABB)
     }
 }
