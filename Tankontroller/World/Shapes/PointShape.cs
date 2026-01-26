@@ -51,8 +51,30 @@ namespace Tankontroller.World.Shapes
             return new CollisionEvent(false);
         }
 
+        /// <summary>
+        /// Checks for intersection with an axis-aligned rectangle shape - if the point is inside the rectangle.
+        /// </summary>
+        /// <returns> Collision event information. If colliding:
+        /// 1. The position of the collision (the point itself).
+        /// 2. The normal of the collision (pointing away from the rectangle center). </returns>
         public CollisionEvent IntersectsAlignedRectangle(RectangleAxisAlignedShape pRectangleAligned)
         {
+            // Build AABB min/max from rectangle center and half-extents
+            Vector2 rectangleMin = pRectangleAligned.Min;
+            Vector2 rectangleMax = pRectangleAligned.Max;
+
+            Vector2 pointPosition = WorldPosition;
+
+            // Check if point is inside AABB and report collision event
+            if (pointPosition.X >= rectangleMin.X && 
+                pointPosition.X <= rectangleMax.X && 
+                pointPosition.Y >= rectangleMin.Y && 
+                pointPosition.Y <= rectangleMax.Y)
+            {
+                Vector2 normal = Vector2.Normalize(pointPosition - pRectangleAligned.WorldPosition);
+                return new CollisionEvent(true, pointPosition, normal);
+            }
+
             return new CollisionEvent(false);
         }
 

@@ -12,7 +12,8 @@ namespace Tankontroller.World.Shapes
     {
         public Vector2 Size { get; set; } = Vector2.One;
         public Vector2 HalfExtents => Size * 0.5f;
-
+        public Vector2 Min => WorldPosition - HalfExtents;
+        public Vector2 Max => WorldPosition + HalfExtents;
 
         public RectangleAxisAlignedShape(Transform pOwner, Vector2 pSize, bool pEnabled = true) : base(pOwner, pEnabled)
         {
@@ -36,9 +37,17 @@ namespace Tankontroller.World.Shapes
             };
         }
 
+        /// <summary>
+        /// Checks for intersection with a point shape - if the point is inside the rectangle.
+        /// </summary>
+        /// <returns> Collision event information. If colliding:
+        /// 1. The position of the collision (the point itself).
+        /// 2. The normal of the collision (pointing into the rectangle center). </returns>
         public CollisionEvent IntersectsPoint(PointShape pPoint)
         {
-            return new CollisionEvent(false);
+            CollisionEvent collisionEvent = pPoint.IntersectsAlignedRectangle(this);
+            collisionEvent.CollisionNormal *= -1;
+            return collisionEvent;
         }
 
         public CollisionEvent IntersectsCircle(CircleShape pCircle)
