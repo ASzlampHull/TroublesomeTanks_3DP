@@ -8,7 +8,7 @@ using Tankontroller.World.WorldObject;
 
 namespace Tankontroller.World.Shapes
 {
-    internal class RectangleAxisAlignedShape : Shape
+    internal class RectangleAxisAlignedShape : CollisionShape
     {
         public RectangleAxisAlignedShape(Transform pOwner, bool pEnabled = true) : base(pOwner, pEnabled)
         {
@@ -18,7 +18,7 @@ namespace Tankontroller.World.Shapes
         {
         }
 
-        public override CollisionEvent Intersects(Shape other)
+        public override CollisionEvent Intersects(CollisionShape other)
         {
             throw new NotImplementedException();
         }

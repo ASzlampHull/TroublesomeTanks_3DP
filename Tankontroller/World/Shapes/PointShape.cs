@@ -4,12 +4,12 @@ using Tankontroller.World.WorldObject;
 
 namespace Tankontroller.World.Shapes
 {
-    internal class PointShape : Shape
+    internal class PointShape : CollisionShape
     {
         public PointShape(Transform pOwner, bool pEnabled = true) : base(pOwner, pEnabled) { }
         public PointShape(Transform pOwner, Vector2 pLocalOffset, bool pEnabled = true) : base(pOwner, pLocalOffset, pEnabled) { }
 
-        public override CollisionEvent Intersects(Shape other)
+        public override CollisionEvent Intersects(CollisionShape other)
         {
             return other switch
             {

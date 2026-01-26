@@ -4,7 +4,7 @@ using Tankontroller.World.WorldObject;
 
 namespace Tankontroller.World.Shapes
 {
-    internal class CircleShape : Shape
+    internal class CircleShape : CollisionShape
     {
         public float Radius { get; private set; } = 1.0f;
 
@@ -18,7 +18,7 @@ namespace Tankontroller.World.Shapes
             Radius = pRadius;
         }
 
-        public override CollisionEvent Intersects(Shape other)
+        public override CollisionEvent Intersects(CollisionShape other)
         {
             return other switch
             {

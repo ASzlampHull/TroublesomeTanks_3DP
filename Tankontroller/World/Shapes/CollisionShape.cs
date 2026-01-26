@@ -3,7 +3,7 @@ using Tankontroller.World.WorldObject;
 
 namespace Tankontroller.World.Shapes
 {
-    internal abstract class Shape
+    internal abstract class CollisionShape
     {
         private bool mEnabled = true;
 
@@ -32,13 +32,13 @@ namespace Tankontroller.World.Shapes
         /// </summary>
         public Vector2 WorldPosition => Owner != null ? Owner.Position + LocalOffset : LocalOffset;
 
-        public Shape(Transform pOwner, bool pEnabled = true)
+        public CollisionShape(Transform pOwner, bool pEnabled = true)
         {
             Owner = pOwner;
             mEnabled = pEnabled;
         }
         
-        public Shape(Transform pOwner, Vector2 pLocalOffset, bool pEnabled = true)
+        public CollisionShape(Transform pOwner, Vector2 pLocalOffset, bool pEnabled = true)
         {
             Owner = pOwner;
             LocalOffset = pLocalOffset;
@@ -50,6 +50,6 @@ namespace Tankontroller.World.Shapes
         /// </summary>
         /// <returns> Collision event information, including whether a collision has occurred </returns>
         /// <exception cref="NotImplementedException"> Thrown when intersection with an unsupported shape is attempted. </exception>
-        public abstract CollisionEvent Intersects(Shape other);
+        public abstract CollisionEvent Intersects(CollisionShape other);
     }
 }
