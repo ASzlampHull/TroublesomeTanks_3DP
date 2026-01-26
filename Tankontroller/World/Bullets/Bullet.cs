@@ -26,6 +26,7 @@ namespace Tankontroller.World.Bullets
 
         public virtual void Update(float pSeconds)
         {
+            // Move at the correct speed according to the frame time and resolution scale factor
             Position = Position + Velocity * pSeconds * Tankontroller.Instance().ScaleFactor();
         }
 

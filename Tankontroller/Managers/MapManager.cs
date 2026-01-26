@@ -28,7 +28,7 @@ namespace Tankontroller
             List<RectWall> Walls = new List<RectWall>();
             List<Tank> Tanks = new List<Tank>();
             List<Vector2> PickupSpawnPositions = new List<Vector2>();
-            float tankScale = (float)(playArea.Width / (50 * 40)) * Tankontroller.Instance().ScaleFactor();
+            float tankScale = (float)(playArea.Width / (50 * 40)) * Tankontroller.Instance().ScaleFactor(); // Adjusted for resolution scale factor
 
             string texture = null;
             Vector2 position = Vector2.Zero;
