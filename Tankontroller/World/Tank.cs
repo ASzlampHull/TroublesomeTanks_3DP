@@ -18,6 +18,14 @@ public enum BulletType
     BOUNCY_BULLET
 }
 
+public enum TankStates
+{ 
+    ALIVE,
+    DEFEATED,
+    DESTROYED
+}
+
+
 namespace Tankontroller.World
 {
     public class Tank
@@ -32,6 +40,7 @@ namespace Tankontroller.World
         public static readonly float BASE_TURRET_ROTATION_ANGLE = DGS.Instance.GetFloat("BASE_TURRET_ROTATION_ANGLE");
         public static readonly float BASE_TANK_ROTATION_ANGLE = DGS.Instance.GetFloat("BASE_TANK_ROTATION_ANGLE");
         public static readonly float TRACK_OFFSET = DGS.Instance.GetFloat("TRACK_OFFSET");
+        public static readonly int MAX_DESTRUCTION_HEALTH = DGS.Instance.GetInt("MAX_TANK_DESTRUCTION_HEALTH");
 
         static private readonly Texture2D mBaseTexture = Tankontroller.Instance().CM().Load<Texture2D>("Tank-B-05");
         static private readonly Texture2D mBrokenTexture = Tankontroller.Instance().CM().Load<Texture2D>("BrokenTank");
@@ -47,6 +56,7 @@ namespace Tankontroller.World
         private List<Bullet> m_Bullets;
 
         private int m_Health;
+        private int m_DestructibleHealth;
         public BulletType mbulletType { get; protected set; }
 
         private float mRotation;
@@ -64,12 +74,15 @@ namespace Tankontroller.World
 
         private bool mIsInsideShockwave = false; // Needed so that Player knows to deplete charge from shockwave
 
+        private TankStates m_CurrentState = TankStates.ALIVE;
+
         public Tank(Vector2 pPos, float pRotation, float pScale) : this(pPos.X, pPos.Y, pRotation, pScale) { }
 
         public Tank(float pXPosition, float pYPosition, float pRotation, float pScale)
         {
             m_Health = MAX_HEALTH;
             mbulletType = BulletType.DEFAULT;
+            m_DestructibleHealth = MAX_DESTRUCTION_HEALTH;
 
             mColour = Color.White;
             m_Bullets = new List<Bullet>();
@@ -344,6 +357,11 @@ namespace Tankontroller.World
 
         public void Fire(BulletType bullet)
         {
+            if(m_CurrentState == TankStates.DEFEATED || m_CurrentState == TankStates.DESTROYED)
+            {
+                return;
+            }
+
             mFired = BLAST_DELAY;
             float cannonRotation = GetCannonWorldRotation();
             Vector2 cannonDirection = new Vector2((float)Math.Cos(cannonRotation), (float)Math.Sin(cannonRotation));
@@ -390,6 +408,7 @@ namespace Tankontroller.World
 
         public void CheckBullets(List<Tank> pTanks, Rectangle pPlayArea, List<RectWall> pWalls)
         {
+            
             for (int i = 0; i < m_Bullets.Count; ++i)
             {
                 bool bulletRemoved = false;
@@ -397,6 +416,8 @@ namespace Tankontroller.World
                 // Check collision with tanks
                 for (int j = 0; j < pTanks.Count; ++j)
                 {
+                    if (pTanks[j].GetState() == TankStates.DESTROYED) continue; // Skips bullet collision with destroyed tanks
+                    
                     if (CollisionManager.Collide(m_Bullets[i], pTanks[j]))
                     {
                         if (m_Bullets[i] is BouncyEMPBullet)
@@ -457,13 +478,70 @@ namespace Tankontroller.World
             }
         }
 
+        /// <summary>
+        /// Determines whether the tank is currently in the alive state.
+        /// </summary>
+        /// <returns> Returns true if current tank state is alive, otherwise returns false</returns>
+        public bool IsAlive()
+        {
+            return m_CurrentState == TankStates.ALIVE;
+        }
+
+
+        
         public void TakeDamage()
         {
-            m_Health--;
-            if (m_Health < 0)
+            switch(m_CurrentState)
             {
-                m_Health = 0;
+                case TankStates.ALIVE:
+                    m_Health--;
+                    if (m_Health <= 0)
+                    {
+                        m_Health = 0;
+                        m_CurrentState = TankStates.DEFEATED;
+                    }
+                    break;
+                case TankStates.DEFEATED:
+                    m_DestructibleHealth--;
+                    if(m_DestructibleHealth <= 0)
+                    {
+                        m_DestructibleHealth = 0;
+                        m_CurrentState = TankStates.DESTROYED;
+                        Explode(100,36);
+                    }
+                    break;
+                case TankStates.DESTROYED:
+                    break;
             }
+
+        }
+
+        /// <summary>
+        /// Creates an explosion effect at the tank's position using particles, directions is the number of directions to emit particles in a circle.
+        /// </summary>
+        /// <param name="pTotalParticles"></param>
+        /// <param name="pDirections"></param>
+        public void Explode(int pTotalParticles, int pDirections)
+        {
+            Vector2 center = GetWorldPosition();
+            int particlesPerDirection = pTotalParticles / pDirections;
+
+            for (int i = 0; i < pDirections; i++)
+            {
+                float angle = i * (MathHelper.TwoPi / pDirections);
+                Vector2 normal = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
+                ExplosionInitialisationPolicy explosion = new ExplosionInitialisationPolicy(center, normal, mColour);
+                ParticleManager.Instance().InitialiseParticles(explosion, particlesPerDirection);
+            }
+        }
+
+        /// <summary>
+        /// Gets the current state of the tank (Alive, Defeated, Destroyed).
+        /// </summary>
+        /// <returns>Returns the enum value related to the tanks current state</returns>
+        public TankStates GetState()
+        {
+            return m_CurrentState;
         }
 
         public void Heal()
@@ -491,27 +569,29 @@ namespace Tankontroller.World
         public void Draw(SpriteBatch pSpriteBatch)
         {
             Rectangle trackRect = new Rectangle(0, 0, mLeftTrackTexture.Width, mLeftTrackTexture.Height / 15);
-
-            if (m_Health > 0)
+            switch(m_CurrentState)
             {
-                trackRect.Y = m_LeftTrackFrame * mLeftTrackTexture.Height / 15;
-                pSpriteBatch.Draw(mLeftTrackTexture, GetWorldPosition(), trackRect, mColour, mRotation, new Vector2(mBaseTexture.Width / 2, mBaseTexture.Height / 2), m_Scale, SpriteEffects.None, 0.0f);
-                trackRect.Y = m_RightTrackFrame * mLeftTrackTexture.Height / 15;
-                pSpriteBatch.Draw(mRightTrackTexture, GetWorldPosition(), trackRect, mColour, mRotation, new Vector2(mBaseTexture.Width / 2, mBaseTexture.Height / 2), m_Scale, SpriteEffects.None, 0.0f);
-                pSpriteBatch.Draw(mBaseTexture, GetWorldPosition(), null, mColour, mRotation, new Vector2(mBaseTexture.Width / 2, mBaseTexture.Height / 2), m_Scale, SpriteEffects.None, 0.0f);
-                if (mFired == 0)
-                {
-                    pSpriteBatch.Draw(mCannonTexture, GetCannonWorldPosition(), null, mColour, mCannonRotation, new Vector2(mCannonTexture.Width / 2, mCannonTexture.Height / 2), m_Scale, SpriteEffects.None, 0.0f);
-                }
-                else
-                {
-                    pSpriteBatch.Draw(mCannonFireTexture, GetCannonWorldPosition(), null, mColour, mCannonRotation, new Vector2(mCannonTexture.Width / 2, mCannonTexture.Height / 2), m_Scale, SpriteEffects.None, 0.0f);
-                }
-            }
-            else //If a tank has no health, its drawn as a destroyed tank
-            {
-                Color blend = Color.Lerp(mColour, Color.SlateGray, 0.75f); // Adds a bit of grey to the colour
-                pSpriteBatch.Draw(mBrokenTexture, GetWorldPosition(), null, blend, GetRotation(), new Vector2(mBrokenTexture.Width / 2, mBrokenTexture.Height / 2), m_Scale, SpriteEffects.None, 0.0f);
+                case TankStates.ALIVE:
+                    trackRect.Y = m_LeftTrackFrame * mLeftTrackTexture.Height / 15;
+                    pSpriteBatch.Draw(mLeftTrackTexture, GetWorldPosition(), trackRect, mColour, mRotation, new Vector2(mBaseTexture.Width / 2, mBaseTexture.Height / 2), m_Scale, SpriteEffects.None, 0.0f);
+                    trackRect.Y = m_RightTrackFrame * mLeftTrackTexture.Height / 15;
+                    pSpriteBatch.Draw(mRightTrackTexture, GetWorldPosition(), trackRect, mColour, mRotation, new Vector2(mBaseTexture.Width / 2, mBaseTexture.Height / 2), m_Scale, SpriteEffects.None, 0.0f);
+                    pSpriteBatch.Draw(mBaseTexture, GetWorldPosition(), null, mColour, mRotation, new Vector2(mBaseTexture.Width / 2, mBaseTexture.Height / 2), m_Scale, SpriteEffects.None, 0.0f);
+                    if (mFired == 0)
+                    {
+                        pSpriteBatch.Draw(mCannonTexture, GetCannonWorldPosition(), null, mColour, mCannonRotation, new Vector2(mCannonTexture.Width / 2, mCannonTexture.Height / 2), m_Scale, SpriteEffects.None, 0.0f);
+                    }
+                    else
+                    {
+                        pSpriteBatch.Draw(mCannonFireTexture, GetCannonWorldPosition(), null, mColour, mCannonRotation, new Vector2(mCannonTexture.Width / 2, mCannonTexture.Height / 2), m_Scale, SpriteEffects.None, 0.0f);
+                    }
+                    break;
+                case TankStates.DEFEATED:
+                    Color blend = Color.Lerp(mColour, Color.SlateGray, (1.0f - (float)m_DestructibleHealth/(float)MAX_DESTRUCTION_HEALTH) + 0.3f); // Greys the tank out more after each shot to provide visual feedback
+                    pSpriteBatch.Draw(mBrokenTexture, GetWorldPosition(), null, blend, GetRotation(), new Vector2(mBrokenTexture.Width / 2, mBrokenTexture.Height / 2), m_Scale, SpriteEffects.None, 0.0f);
+                    break;
+                case TankStates.DESTROYED: 
+                    break;
             }
 
             // Draw collision shape if enabled in DGS
