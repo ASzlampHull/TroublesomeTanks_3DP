@@ -33,11 +33,11 @@ namespace TTMapEditor.Objects
         public override void DrawOutline(SpriteBatch pSpriteBatch)
         {
 
-            Vector2 position = new Vector2(mRectangle.Center.X, mRectangle.Center.Y);
+            Vector2 position = new Vector2(mOutlineRectangle.Center.X, mOutlineRectangle.Center.Y);
             Vector2 origin = new Vector2(mTexture.Width / 2f, mTexture.Height / 2f);
-            Vector2 scale = new Vector2(mRectangle.Width / (float)mTexture.Width, mRectangle.Height / (float)mTexture.Height);
+            Vector2 scale = new Vector2(mOutlineRectangle.Width / (float)mTexture.Width, mOutlineRectangle.Height / (float)mTexture.Height);
 
-            pSpriteBatch.Draw(mTexture, position, null, tint, mRotation, origin, scale, SpriteEffects.None, 0f);
+            pSpriteBatch.Draw(mTexture, position, null, Color.Black, mRotation, origin, scale, SpriteEffects.None, 0f);
         }
 
         public void SetWallRectangle(Rectangle pRectangle) => SetRectangle(pRectangle);

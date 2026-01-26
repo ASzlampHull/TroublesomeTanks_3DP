@@ -281,6 +281,7 @@ namespace TTMapEditor.Scenes
                 mGameInstance.GetSceneManager().Transition(mStartScene);
             }
         }
+
     }
     
  }

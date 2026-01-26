@@ -49,6 +49,18 @@
 /processorParam:TextureFormat=Color
 /build:block.png
 
+#begin BouncyBulletPickup.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:BouncyBulletPickup.png
+
 #begin BulletSlot.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -76,6 +88,18 @@
 #begin DGS.txt
 /copy:DGS.txt
 
+#begin EMP.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:EMP.png
+
 #begin Exit_Button.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -87,6 +111,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Exit_Button.png
+
+#begin healthpickup.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:healthpickup.png
 
 #begin Load_Map_Button.png
 /importer:TextureImporter
@@ -123,6 +159,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:menu_white.png
+
+#begin MinePickup.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:MinePickup.png
 
 #begin New_Map_Button.png
 /importer:TextureImporter

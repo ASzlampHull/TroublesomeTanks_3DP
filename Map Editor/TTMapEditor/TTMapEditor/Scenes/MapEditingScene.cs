@@ -196,6 +196,9 @@ namespace TTMapEditor.Scenes
             foreach (RectWall wall in mPreview.GetWalls())
             {
                 wall.DrawOutline(mSpriteBatch);
+            }
+            foreach (RectWall wall in mPreview.GetWalls())
+            {
                 wall.Draw(mSpriteBatch);
             }
             foreach (Tank tank in mPreview.GetTanks())
@@ -232,6 +235,29 @@ namespace TTMapEditor.Scenes
             float pickupLabelWidth = mTitleFont.MeasureString("Pickup").X;
             float pickupLabelHeight = mTitleFont.MeasureString("Pickup").Y;
             mSpriteBatch.DrawString(mTitleFont, "Pickup", new Vector2(mTemplatePickup.mRectangle.X - pickupLabelWidth / 2, mTemplatePickup.mRectangle.Y - pickupLabelHeight), Color.Black);
+        }
+
+        void handlePickupEnabling()
+        {
+            if(mSelectedObject is Pickup)
+            {
+                if(InputManager.isKeyPressed(Keys.D1))
+                {
+                    ((Pickup)mSelectedObject).TogglePickupType(PickupType.HEALTH);
+                }
+                if (InputManager.isKeyPressed(Keys.D2))
+                {
+                    ((Pickup)mSelectedObject).TogglePickupType(PickupType.EMP);
+                }
+                if (InputManager.isKeyPressed(Keys.D3))
+                {
+                    ((Pickup)mSelectedObject).TogglePickupType(PickupType.MINE);
+                }
+                if (InputManager.isKeyPressed(Keys.D4))
+                {
+                    ((Pickup)mSelectedObject).TogglePickupType(PickupType.BOUNCY_BULLET);
+                }
+            }
         }
 
         void DrawSaveButton()
@@ -277,6 +303,7 @@ namespace TTMapEditor.Scenes
             }
 
             HandleKeyboardActions();
+            handlePickupEnabling();
         }
 
         /// <summary>
