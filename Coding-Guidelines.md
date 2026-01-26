@@ -46,6 +46,7 @@ public bool TankInRadius(float pRadius, Vector2 pPoint)
 - Constants or `readonly` variables should be in `MACRO_CASE`
 - Member variables should have the `m` prefix 
 - Method arguments/parameters should have the `p` prefix
+- Properties should be in 'PascalCase' and have no prefix
 
 Example:
 ```C#
@@ -56,6 +57,9 @@ public class Tank
     
     // Member variable
     private Vector3 mPosition;
+
+    // Property
+    public Vector3 Position => mPosition;
 
     // Parameter variables with 'p' prefix
     private void AdvancedTrackRotation(float pAngle, bool pForwards)
@@ -77,9 +81,11 @@ public class Tank
 ## Metadata
 ### Changelog
 - 19/01/2026 - Created by Piotr Moskala
+- 26/01/2026 - Added a bullet point on properties by Piotr Moskala
 
 ### Approvals
 - 19/01/2026 - Scott White
 - 19/01/2026 - Gray Farshidi
 - 19/01/2026 - Adam Szlamp
 - 19/01/2026 - Piotr Moskala
+- 22/01/2026 - David Parker (client)
