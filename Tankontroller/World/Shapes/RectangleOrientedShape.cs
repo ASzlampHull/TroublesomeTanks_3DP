@@ -45,24 +45,32 @@ namespace Tankontroller.World.Shapes
             };
         }
 
+        /// <summary>
+        /// Checks for intersection with a point - if the point is inside the rectangle.
+        /// </summary>
+        /// <returns> Collision event information. If colliding:
+        /// 1. The position of the collision (the point itself).
+        /// 2. The normal of the collision (pointing into the rectangle center). </returns>
         public CollisionEvent IntersectsPoint(PointShape pPoint)
         {
-            return new CollisionEvent(false);
+            CollisionEvent collisionEvent = pPoint.IntersectsOrientedRectangle(this);
+            collisionEvent.CollisionNormal *= -1;
+            return collisionEvent;
         }
 
         public CollisionEvent IntersectsCircle(CircleShape pCircle)
         {
-            return new CollisionEvent(false);
+            throw new NotImplementedException($"Intersection with shape {this} and {pCircle} is not implemented.");
         }
 
         public CollisionEvent IntersectsAlignedRectangle(RectangleAxisAlignedShape pRectangleAligned)
         {
-            return new CollisionEvent(false);
+            throw new NotImplementedException($"Intersection with shape {this} and {pRectangleAligned} is not implemented.");
         }
 
         public CollisionEvent IntersectsOrientedRectangle(RectangleOrientedShape pRectangleOriented)
         {
-            return new CollisionEvent(false);
+            throw new NotImplementedException($"Intersection with shape {this} and {pRectangleOriented} is not implemented.");
         }
     }
 }

@@ -52,17 +52,17 @@ namespace Tankontroller.World.Shapes
 
         public CollisionEvent IntersectsCircle(CircleShape pCircle)
         {
-            return new CollisionEvent(false);
+            throw new NotImplementedException($"Intersection with shape {this} and {pCircle} is not implemented.");
         }
 
         public CollisionEvent IntersectsAlignedRectangle(RectangleAxisAlignedShape pRectangleAligned)
         {
-            return new CollisionEvent(false);
+            throw new NotImplementedException($"Intersection with shape {this} and {pRectangleAligned} is not implemented.");
         }
 
         public CollisionEvent IntersectsOrientedRectangle(RectangleOrientedShape pRectangleOriented)
         {
-            return new CollisionEvent(false);
+            throw new NotImplementedException($"Intersection with shape {this} and {pRectangleOriented} is not implemented.");
         }
     }
 }

@@ -46,7 +46,9 @@ namespace Tankontroller.World.Shapes
             Vector2 difference = WorldPosition - pCircle.WorldPosition;
             if (difference.LengthSquared() <= pCircle.Radius * pCircle.Radius)
             {
-                return new CollisionEvent(true, WorldPosition, Vector2.Normalize(difference));
+                Vector2 normal = Vector2.Normalize(difference);
+                FixZeroLengthNormal(ref normal);
+                return new CollisionEvent(true, WorldPosition, normal);
             }
             return new CollisionEvent(false);
         }
@@ -72,14 +74,48 @@ namespace Tankontroller.World.Shapes
                 pointPosition.Y <= rectangleMax.Y)
             {
                 Vector2 normal = Vector2.Normalize(pointPosition - pRectangleAligned.WorldPosition);
+                FixZeroLengthNormal(ref normal);
                 return new CollisionEvent(true, pointPosition, normal);
             }
 
             return new CollisionEvent(false);
         }
 
+        /// <summary>
+        /// Checks for intersection with an oriented rectangle shape - if the point is inside the rectangle.
+        /// </summary>
+        /// <returns> Collision event information. If colliding:
+        /// 1. The position of the collision (the point itself).
+        /// 2. The normal of the collision (pointing away from the rectangle center). </returns>
         public CollisionEvent IntersectsOrientedRectangle(RectangleOrientedShape pRectangleOriented)
         {
+            // World-space point
+            Vector2 pointWorld = WorldPosition;
+            Vector2 pointLocal = pointWorld - pRectangleOriented.WorldPosition;
+
+            // Rotate by negative world rotation to align rectangle axes with world axes
+            float minusRotation = -pRectangleOriented.WorldRotation;
+            float cos = (float)Math.Cos(minusRotation);
+            float sin = (float)Math.Sin(minusRotation);
+            Vector2 localSpacePoint = new(
+                pointLocal.X * cos - pointLocal.Y * sin,
+                pointLocal.X * sin + pointLocal.Y * cos
+            );
+
+            Vector2 halfExtents = pRectangleOriented.HalfExtents;
+
+            // Check if local point is within the rectangle's half-extents
+            if (localSpacePoint.X >= -halfExtents.X && 
+                localSpacePoint.X <= halfExtents.X && 
+                localSpacePoint.Y >= -halfExtents.Y && 
+                localSpacePoint.Y <= halfExtents.Y)
+            {
+                // Use vector from rectangle center to point (in world space), normalized.
+                Vector2 normal = pointWorld - pRectangleOriented.WorldPosition;
+                FixZeroLengthNormal(ref normal);
+                return new CollisionEvent(true, pointWorld, normal);
+            }
+
             return new CollisionEvent(false);
         }
     }
