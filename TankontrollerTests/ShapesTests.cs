@@ -439,7 +439,59 @@ namespace TankontrollerTests
 
         #endregion
 
-        #region CircleToOBB
+        #region CircleToORectangle
+
+        [Fact]
+        public void CircleToORectangle_Overlapping_ReportsCollisionAndVectors()
+        {
+            Transform rectangleTransform = new(new Vector2(0f, 0f), 0f, Vector2.One);
+            rectangleTransform.Rotation = MathHelper.ToRadians(30.0f);
+
+            Transform circleTransform = new(new Vector2(1f, 0.5f));
+
+            CircleShape circle = new(circleTransform, 0.5f);
+            RectangleOrientedShape rectangle = new(rectangleTransform, new Vector2(4f, 4f));
+
+            CollisionEvent collisionEvent = circle.Intersects(rectangle);
+
+            Assert.True(collisionEvent.HasCollided);
+            Assert.True(collisionEvent.CollisionPosition.HasValue);
+            Assert.Equal(circleTransform.Position, collisionEvent.CollisionPosition.Value);
+            Assert.True(collisionEvent.CollisionNormal.HasValue);
+            Assert.Equal(Vector2.Normalize(circleTransform.Position - rectangleTransform.Position), collisionEvent.CollisionNormal);
+
+            collisionEvent = rectangle.Intersects(circle);
+
+            Assert.True(collisionEvent.HasCollided);
+            Assert.True(collisionEvent.CollisionPosition.HasValue);
+            Assert.Equal(circleTransform.Position, collisionEvent.CollisionPosition.Value);
+            Assert.True(collisionEvent.CollisionNormal.HasValue);
+            Assert.Equal(Vector2.Normalize(rectangleTransform.Position - circleTransform.Position), collisionEvent.CollisionNormal);
+        }
+
+        [Fact]
+        public void CircleToORectangle_NotOverlapping_ReportsNoCollision()
+        {
+            Transform rectangleTransform = new(new Vector2(0f, 0f), 0f, Vector2.One);
+            rectangleTransform.Rotation = MathHelper.ToRadians(30.0f);
+
+            Transform circleTransform = new(new Vector2(5f, 5f));
+
+            CircleShape circle = new(circleTransform, 0.5f);
+            RectangleOrientedShape rectangle = new(rectangleTransform, new Vector2(2f, 2f));
+
+            CollisionEvent collisionEvent = circle.Intersects(rectangle);
+
+            Assert.False(collisionEvent.HasCollided);
+            Assert.False(collisionEvent.CollisionPosition.HasValue);
+            Assert.False(collisionEvent.CollisionNormal.HasValue);
+
+            collisionEvent = rectangle.Intersects(circle);
+
+            Assert.False(collisionEvent.HasCollided);
+            Assert.False(collisionEvent.CollisionPosition.HasValue);
+            Assert.False(collisionEvent.CollisionNormal.HasValue);
+        }
 
         #endregion
 
