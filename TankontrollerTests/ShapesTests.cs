@@ -110,7 +110,7 @@ namespace TankontrollerTests
 
         #endregion
 
-        #region AABBtoAABB
+        #region AARectangletoAARectangle
 
         [Fact]
         public void AARectangleToAARectangle_Overlapping_ReportsCollisionAndVectors()
@@ -163,7 +163,7 @@ namespace TankontrollerTests
 
         #endregion
 
-        #region OBBtoOBB
+        #region ORectangletoORectangle
 
         [Fact]
         public void ORectangleToORectangle_Overlapping_ReportsCollisionAndVectors()
@@ -379,7 +379,59 @@ namespace TankontrollerTests
 
         #endregion
 
-        #region PointToOBB
+        #region PointToORectangle
+
+        [Fact]
+        public void PointToORectangle_InsideRotatedRectangle_ReportsCollisionAndVectors()
+        {
+            Transform rectangleTransform = new(new Vector2(0f, 0f), 0f, Vector2.One);
+            rectangleTransform.Rotation = MathHelper.ToRadians(30.0f);
+
+            Transform pointTransform = new(new Vector2(1f, 0.5f));
+
+            RectangleOrientedShape rectangle = new(rectangleTransform, new Vector2(4f, 4f));
+            PointShape point = new(pointTransform);
+
+            CollisionEvent collisionEvent = point.Intersects(rectangle);
+
+            Assert.True(collisionEvent.HasCollided);
+            Assert.True(collisionEvent.CollisionPosition.HasValue);
+            Assert.Equal(pointTransform.Position, collisionEvent.CollisionPosition.Value);
+            Assert.True(collisionEvent.CollisionNormal.HasValue);
+            Assert.Equal(Vector2.Normalize(pointTransform.Position - rectangleTransform.Position), collisionEvent.CollisionNormal);
+
+            collisionEvent = rectangle.Intersects(point);
+
+            Assert.True(collisionEvent.HasCollided);
+            Assert.True(collisionEvent.CollisionPosition.HasValue);
+            Assert.Equal(pointTransform.Position, collisionEvent.CollisionPosition.Value);
+            Assert.True(collisionEvent.CollisionNormal.HasValue);
+            Assert.Equal(Vector2.Normalize(rectangleTransform.Position - pointTransform.Position), collisionEvent.CollisionNormal);
+        }
+
+        [Fact]
+        public void PointToORectangle_OutsideRotatedRectangle_ReportsNoCollision()
+        {
+            Transform rectangleTransform = new(new Vector2(0f, 0f), 0f, Vector2.One);
+            rectangleTransform.Rotation = MathHelper.ToRadians(30.0f);
+
+            Transform pointTransform = new(new Vector2(3f, 3f));
+
+            RectangleOrientedShape rectangle = new(rectangleTransform, new Vector2(2f, 2f));
+            PointShape point = new(pointTransform);
+
+            CollisionEvent collisionEvent = point.Intersects(rectangle);
+
+            Assert.False(collisionEvent.HasCollided);
+            Assert.False(collisionEvent.CollisionPosition.HasValue);
+            Assert.False(collisionEvent.CollisionNormal.HasValue);
+
+            collisionEvent = rectangle.Intersects(point);
+
+            Assert.False(collisionEvent.HasCollided);
+            Assert.False(collisionEvent.CollisionPosition.HasValue);
+            Assert.False(collisionEvent.CollisionNormal.HasValue);
+        }
 
         #endregion
 
