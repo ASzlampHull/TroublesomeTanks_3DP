@@ -437,6 +437,55 @@ namespace TankontrollerTests
 
         #region CircleToAARectangle
 
+        [Fact]
+        public void CircleToAARectangle_Overlapping_ReportsCollisionAndVectors()
+        {
+            Transform rectangleTransform = new(new Vector2(0f, 0f));
+            RectangleAxisAlignedShape alignedRectangle = new(rectangleTransform, new Vector2(4f, 4f)); // spans [-2,2]
+
+            Transform circleTransform = new(new Vector2(1f, 1f));
+            CircleShape circle = new(circleTransform, 0.5f);
+
+            CollisionEvent collisionEvent = circle.Intersects(alignedRectangle);
+
+            Assert.True(collisionEvent.HasCollided);
+            Assert.True(collisionEvent.CollisionPosition.HasValue);
+            // When the circle center lies inside the rectangle, collision position should be the circle center
+            Assert.Equal(circleTransform.Position, collisionEvent.CollisionPosition.Value);
+            Assert.True(collisionEvent.CollisionNormal.HasValue);
+            Assert.Equal(Vector2.Normalize(circleTransform.Position - rectangleTransform.Position), collisionEvent.CollisionNormal);
+
+            collisionEvent = alignedRectangle.Intersects(circle);
+
+            Assert.True(collisionEvent.HasCollided);
+            Assert.True(collisionEvent.CollisionPosition.HasValue);
+            Assert.Equal(circleTransform.Position, collisionEvent.CollisionPosition.Value);
+            Assert.True(collisionEvent.CollisionNormal.HasValue);
+            Assert.Equal(Vector2.Normalize(rectangleTransform.Position - circleTransform.Position), collisionEvent.CollisionNormal);
+        }
+
+        [Fact]
+        public void CircleToAARectangle_NotOverlapping_ReportsNoCollision()
+        {
+            Transform rectangleTransform = new(new Vector2(0f, 0f));
+            RectangleAxisAlignedShape alignedRectangle = new(rectangleTransform, new Vector2(2f, 2f)); // spans [-1,1]
+
+            Transform circleTransform = new(new Vector2(5f, 0f));
+            CircleShape circle = new(circleTransform, 0.5f);
+
+            CollisionEvent collisionEvent = circle.Intersects(alignedRectangle);
+
+            Assert.False(collisionEvent.HasCollided);
+            Assert.False(collisionEvent.CollisionPosition.HasValue);
+            Assert.False(collisionEvent.CollisionNormal.HasValue);
+
+            collisionEvent = alignedRectangle.Intersects(circle);
+
+            Assert.False(collisionEvent.HasCollided);
+            Assert.False(collisionEvent.CollisionPosition.HasValue);
+            Assert.False(collisionEvent.CollisionNormal.HasValue);
+        }
+
         #endregion
 
         #region CircleToORectangle
@@ -496,6 +545,62 @@ namespace TankontrollerTests
         #endregion
 
         #region AARectangleToORectangle
+
+        [Fact]
+        public void AARectangleToORectangle_Overlapping_ReportsCollisionAndVectors()
+        {
+            // Axis-aligned rectangle centered at origin, size 4x4 (spans [-2,2])
+            Transform alignedRectangleTransform = new(new Vector2(0f, 0f));
+            RectangleAxisAlignedShape alignedRectangle = new(alignedRectangleTransform, new Vector2(4f, 4f));
+
+            // Oriented rectangle centered at (3,0), rotated slightly so it overlaps the AA rect
+            Transform orientedRectangleTransform = new(new Vector2(3f, 0f), 0f, Vector2.One);
+            orientedRectangleTransform.Rotation = MathHelper.ToRadians(-14.0f);
+            RectangleOrientedShape orientedRectangle = new(orientedRectangleTransform, new Vector2(4f, 4f));
+
+            CollisionEvent collisionEvent = alignedRectangle.Intersects(orientedRectangle);
+
+            Vector2 expectedMidpoint = new(1.475f, -0.0877f);
+
+            Assert.True(collisionEvent.HasCollided);
+            Assert.True(collisionEvent.CollisionPosition.HasValue);
+            Assert.True(Vector2.Distance(expectedMidpoint, collisionEvent.CollisionPosition.Value) <= float.Epsilon);
+            Assert.True(collisionEvent.CollisionNormal.HasValue);
+            Assert.Equal(Vector2.Normalize(alignedRectangle.WorldPosition - orientedRectangle.WorldPosition), collisionEvent.CollisionNormal);
+
+            collisionEvent = orientedRectangle.Intersects(alignedRectangle);
+
+            Assert.True(collisionEvent.HasCollided);
+            Assert.True(collisionEvent.CollisionPosition.HasValue);
+            Assert.True(Vector2.Distance(expectedMidpoint, collisionEvent.CollisionPosition.Value) <= float.Epsilon);
+            Assert.True(collisionEvent.CollisionNormal.HasValue);
+            Assert.Equal(Vector2.Normalize(orientedRectangle.WorldPosition - alignedRectangle.WorldPosition), collisionEvent.CollisionNormal);
+        }
+
+        [Fact]
+        public void AARectangleToORectangle_NotOverlapping_ReportsNoCollision()
+        {
+            // Axis-aligned rectangle centered at origin, size 2x2 (spans [-1,1])
+            Transform alignedRectangleTransform = new(new Vector2(0f, 0f));
+            RectangleAxisAlignedShape alignedRectangle = new(alignedRectangleTransform, new Vector2(2f, 2f));
+
+            // Oriented rectangle centered far enough on X so it does not intersect
+            Transform orientedRectangleTransform = new(new Vector2(5f, 0f), 0f, Vector2.One);
+            orientedRectangleTransform.Rotation = MathHelper.ToRadians(30.0f);
+            RectangleOrientedShape orientedRectangle = new(orientedRectangleTransform, new Vector2(2f, 2f));
+
+            CollisionEvent collisionEvent = alignedRectangle.Intersects(orientedRectangle);
+
+            Assert.False(collisionEvent.HasCollided);
+            Assert.False(collisionEvent.CollisionPosition.HasValue);
+            Assert.False(collisionEvent.CollisionNormal.HasValue);
+
+            collisionEvent = orientedRectangle.Intersects(alignedRectangle);
+
+            Assert.False(collisionEvent.HasCollided);
+            Assert.False(collisionEvent.CollisionPosition.HasValue);
+            Assert.False(collisionEvent.CollisionNormal.HasValue);
+        }
 
         #endregion
     }
