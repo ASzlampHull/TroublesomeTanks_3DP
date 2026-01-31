@@ -52,20 +52,18 @@ namespace Tankontroller.World.Shapes
         /// <exception cref="NotImplementedException"> Thrown when intersection with an unsupported shape is attempted. </exception>
         public abstract CollisionEvent Intersects(CollisionShape other);
 
+
         /// <summary>
-        /// Ensures that the provided normal vector is not zero-length.
+        /// Normalizes a vector, returning a default unit vector if the input vector is zero-length.
         /// </summary>
-        /// <param name="normal"> The normal to fix, returns 1,0 </param>
-        protected static void FixZeroLengthNormal(ref Vector2 normal)
+        /// <returns> Normalized vector or 1,0 vector if zero </returns>
+        protected static Vector2 NormalizeZeroSafe(Vector2 vector)
         {
-            if (normal.LengthSquared() <= float.Epsilon * float.Epsilon)
+            if (vector.LengthSquared() <= 0f)
             {
-                normal = new Vector2(1f, 0f);
+                return new Vector2(1f, 0f);
             }
-            else
-            {
-                normal = Vector2.Normalize(normal);
-            }
+            return Vector2.Normalize(vector);
         }
     }
 }

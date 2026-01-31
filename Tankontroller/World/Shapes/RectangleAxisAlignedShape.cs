@@ -46,13 +46,17 @@ namespace Tankontroller.World.Shapes
         public CollisionEvent IntersectsPoint(PointShape pPoint)
         {
             CollisionEvent collisionEvent = pPoint.IntersectsAlignedRectangle(this);
-            collisionEvent.CollisionNormal *= -1;
+            if (collisionEvent.CollisionNormal.HasValue)
+                collisionEvent.CollisionNormal *= -1;
             return collisionEvent;
         }
 
         public CollisionEvent IntersectsCircle(CircleShape pCircle)
         {
-            throw new NotImplementedException($"Intersection with shape {this} and {pCircle} is not implemented.");
+            CollisionEvent collisionEvent = pCircle.IntersectsAlignedRectangle(this);
+            if (collisionEvent.CollisionNormal.HasValue)
+                collisionEvent.CollisionNormal *= -1;
+            return collisionEvent;
         }
 
         public CollisionEvent IntersectsAlignedRectangle(RectangleAxisAlignedShape pRectangleAligned)

@@ -46,8 +46,7 @@ namespace Tankontroller.World.Shapes
             Vector2 difference = WorldPosition - pCircle.WorldPosition;
             if (difference.LengthSquared() <= pCircle.Radius * pCircle.Radius)
             {
-                Vector2 normal = Vector2.Normalize(difference);
-                FixZeroLengthNormal(ref normal);
+                Vector2 normal = NormalizeZeroSafe(difference);
                 return new CollisionEvent(true, WorldPosition, normal);
             }
             return new CollisionEvent(false);
@@ -73,8 +72,7 @@ namespace Tankontroller.World.Shapes
                 pointPosition.Y >= rectangleMin.Y && 
                 pointPosition.Y <= rectangleMax.Y)
             {
-                Vector2 normal = Vector2.Normalize(pointPosition - pRectangleAligned.WorldPosition);
-                FixZeroLengthNormal(ref normal);
+                Vector2 normal = NormalizeZeroSafe(pointPosition - pRectangleAligned.WorldPosition);
                 return new CollisionEvent(true, pointPosition, normal);
             }
 
@@ -111,8 +109,7 @@ namespace Tankontroller.World.Shapes
                 localSpacePoint.Y <= halfExtents.Y)
             {
                 // Use vector from rectangle center to point (in world space), normalized.
-                Vector2 normal = pointWorld - pRectangleOriented.WorldPosition;
-                FixZeroLengthNormal(ref normal);
+                Vector2 normal = NormalizeZeroSafe(pointWorld - pRectangleOriented.WorldPosition);
                 return new CollisionEvent(true, pointWorld, normal);
             }
 

@@ -453,7 +453,7 @@ namespace TankontrollerTests
             // When the circle center lies inside the rectangle, collision position should be the circle center
             Assert.Equal(circleTransform.Position, collisionEvent.CollisionPosition.Value);
             Assert.True(collisionEvent.CollisionNormal.HasValue);
-            Assert.Equal(Vector2.Normalize(circleTransform.Position - rectangleTransform.Position), collisionEvent.CollisionNormal);
+            Assert.Equal(new Vector2(0.0f, 1.0f), collisionEvent.CollisionNormal);
 
             collisionEvent = alignedRectangle.Intersects(circle);
 
@@ -461,7 +461,7 @@ namespace TankontrollerTests
             Assert.True(collisionEvent.CollisionPosition.HasValue);
             Assert.Equal(circleTransform.Position, collisionEvent.CollisionPosition.Value);
             Assert.True(collisionEvent.CollisionNormal.HasValue);
-            Assert.Equal(Vector2.Normalize(rectangleTransform.Position - circleTransform.Position), collisionEvent.CollisionNormal);
+            Assert.Equal(new Vector2(0.0f, -1.0f), collisionEvent.CollisionNormal);
         }
 
         [Fact]
@@ -507,7 +507,7 @@ namespace TankontrollerTests
             Assert.True(collisionEvent.CollisionPosition.HasValue);
             Assert.Equal(circleTransform.Position, collisionEvent.CollisionPosition.Value);
             Assert.True(collisionEvent.CollisionNormal.HasValue);
-            Assert.Equal(Vector2.Normalize(circleTransform.Position - rectangleTransform.Position), collisionEvent.CollisionNormal);
+            Assert.Equal(new Vector2(0.8660254f, 0.5f), collisionEvent.CollisionNormal);
 
             collisionEvent = rectangle.Intersects(circle);
 
@@ -515,7 +515,7 @@ namespace TankontrollerTests
             Assert.True(collisionEvent.CollisionPosition.HasValue);
             Assert.Equal(circleTransform.Position, collisionEvent.CollisionPosition.Value);
             Assert.True(collisionEvent.CollisionNormal.HasValue);
-            Assert.Equal(Vector2.Normalize(rectangleTransform.Position - circleTransform.Position), collisionEvent.CollisionNormal);
+            Assert.Equal(new Vector2(-0.8660254f, -0.5f), collisionEvent.CollisionNormal);
         }
 
         [Fact]
