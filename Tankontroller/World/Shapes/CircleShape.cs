@@ -78,10 +78,11 @@ namespace Tankontroller.World.Shapes
         }
 
         /// <summary>
-        /// 
+        /// Check for intersection with an axis-aligned rectangle shape - if the circle overlaps with the rectangle.
         /// </summary>
-        /// <param name="pRectangleAligned"></param>
-        /// <returns></returns>
+        /// <returns> Collision event information. If colliding:
+        /// 1. The position of the collision (midpoint of overlap between the circle and rectangle)
+        /// 2. The normal of the collision (pointing away from the rectangle) </returns>
         public CollisionEvent IntersectsAlignedRectangle(RectangleAxisAlignedShape pRectangleAligned)
         {
             Vector2 circleCenter = WorldPosition;
@@ -133,6 +134,12 @@ namespace Tankontroller.World.Shapes
             return new CollisionEvent(false);
         }
 
+        /// <summary>
+        /// Check for intersection with an oriented rectangle shape - if the circle overlaps with the rectangle.
+        /// </summary>
+        /// <returns> Collision event information. If colliding:
+        /// 1. The position of the collision (midpoint of overlap between the circle and rectangle)
+        /// 2. The normal of the collision (pointing away from the rectangle) </returns>
         public CollisionEvent IntersectsOrientedRectangle(RectangleOrientedShape pRectangleOriented)
         {
             Vector2 circleWorldPosition = WorldPosition;
@@ -142,7 +149,7 @@ namespace Tankontroller.World.Shapes
             float negativeCos = (float)Math.Cos(minusRotation);
             float negativeSin = (float)Math.Sin(minusRotation);
 
-            Vector2 localSpaceCirclePosition = new Vector2(
+            Vector2 localSpaceCirclePosition = new(
                 circleLocalPosition.X * negativeCos - circleLocalPosition.Y * negativeSin,
                 circleLocalPosition.X * negativeSin + circleLocalPosition.Y * negativeCos
             );

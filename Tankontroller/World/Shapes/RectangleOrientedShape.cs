@@ -50,7 +50,7 @@ namespace Tankontroller.World.Shapes
         /// </summary>
         /// <returns> Collision event information. If colliding:
         /// 1. The position of the collision (the point itself).
-        /// 2. The normal of the collision (pointing into the rectangle center). </returns>
+        /// 2. The normal of the collision (pointing into the rectangle). </returns>
         public CollisionEvent IntersectsPoint(PointShape pPoint)
         {
             CollisionEvent collisionEvent = pPoint.IntersectsOrientedRectangle(this);
@@ -59,6 +59,12 @@ namespace Tankontroller.World.Shapes
             return collisionEvent;
         }
 
+        /// <summary>
+        /// Check for intersection with circle - if the circle overlaps with the rectangle.
+        /// </summary>
+        /// <returns> Collision event information. If colliding:
+        /// 1. The position of the collision (midpoint of overlap between the circle and rectangle)
+        /// 2. The normal of the collision (pointing into the rectangle) </returns>
         public CollisionEvent IntersectsCircle(CircleShape pCircle)
         {
             CollisionEvent collisionEvent = pCircle.IntersectsOrientedRectangle(this);
@@ -67,9 +73,18 @@ namespace Tankontroller.World.Shapes
             return collisionEvent;
         }
 
+        /// <summary>
+        /// Check for intersection with an axis aligned rectangle shape - if the rectangles overlap.
+        /// </summary>
+        /// <returns> Collision event information. If colliding:
+        /// 1. The position of the collision (midpoint of overlap between the rectangles)
+        /// 2. The normal of the collision (pointing away from the axis aligned rectangle) </returns>
         public CollisionEvent IntersectsAlignedRectangle(RectangleAxisAlignedShape pRectangleAligned)
         {
-            throw new NotImplementedException($"Intersection with shape {this} and {pRectangleAligned} is not implemented.");
+            CollisionEvent collisionEvent = pRectangleAligned.IntersectsOrientedRectangle(this);
+            if (collisionEvent.CollisionNormal.HasValue)
+                collisionEvent.CollisionNormal *= -1;
+            return collisionEvent;
         }
 
         public CollisionEvent IntersectsOrientedRectangle(RectangleOrientedShape pRectangleOriented)

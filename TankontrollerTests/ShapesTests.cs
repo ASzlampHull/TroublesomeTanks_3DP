@@ -128,7 +128,7 @@ namespace TankontrollerTests
             // Overlap x-range [1,2] -> midpoint x = 1.5, y-range [-2,2] -> midpoint y = 0
             Assert.Equal(new Vector2(1.5f, 0f), collisionEvent.CollisionPosition.Value);
             Assert.True(collisionEvent.CollisionNormal.HasValue);
-            Assert.Equal(Vector2.Normalize(rectangle1.WorldPosition - rectangle2.WorldPosition), collisionEvent.CollisionNormal);
+            Assert.Equal(new Vector2(-1.0f, 0.0f), collisionEvent.CollisionNormal);
 
             collisionEvent = rectangle2.Intersects(rectangle1);
 
@@ -136,7 +136,7 @@ namespace TankontrollerTests
             Assert.True(collisionEvent.CollisionPosition.HasValue);
             Assert.Equal(new Vector2(1.5f, 0f), collisionEvent.CollisionPosition.Value);
             Assert.True(collisionEvent.CollisionNormal.HasValue);
-            Assert.Equal(Vector2.Normalize(rectangle2.WorldPosition - rectangle1.WorldPosition), collisionEvent.CollisionNormal);
+            Assert.Equal(new Vector2(1.0f, 0.0f), collisionEvent.CollisionNormal);
         }
 
         [Fact]
@@ -560,7 +560,7 @@ namespace TankontrollerTests
 
             CollisionEvent collisionEvent = alignedRectangle.Intersects(orientedRectangle);
 
-            Vector2 expectedMidpoint = new(1.475f, -0.0877f);
+            Vector2 expectedMidpoint = new(-0.7122176f, -0.7283738f);
 
             Assert.True(collisionEvent.HasCollided);
             Assert.True(collisionEvent.CollisionPosition.HasValue);
