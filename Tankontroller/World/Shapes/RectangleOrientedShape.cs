@@ -22,6 +22,27 @@ namespace Tankontroller.World.Shapes
         // World rotation (radians)
         public float WorldRotation => Owner.Rotation + LocalRotation;
 
+        // World-space axes (unit vectors)
+        public Vector2 WorldAxisX
+        {
+            get
+            {
+                float cos = (float)Math.Cos(WorldRotation);
+                float sin = (float)Math.Sin(WorldRotation);
+                return new Vector2(cos, sin);
+            }
+        }
+
+        public Vector2 WorldAxisY
+        {
+            get
+            {
+                float cos = (float)Math.Cos(WorldRotation);
+                float sin = (float)Math.Sin(WorldRotation);
+                return new Vector2(-sin, cos);
+            }
+        }
+
         public RectangleOrientedShape(Transform pOwner, Vector2 pSize, bool pEnabled = true) : base(pOwner, pEnabled)
         {
             Size = pSize;
@@ -89,7 +110,70 @@ namespace Tankontroller.World.Shapes
 
         public CollisionEvent IntersectsOrientedRectangle(RectangleOrientedShape pRectangleOriented)
         {
-            throw new NotImplementedException($"Intersection with shape {this} and {pRectangleOriented} is not implemented.");
+            // Build local axes for both rectangles in world space
+            float cosA = (float)Math.Cos(WorldRotation);
+            float sinA = (float)Math.Sin(WorldRotation);
+            Vector2 axisA_X = new(cosA, sinA);
+            Vector2 axisA_Y = new(-sinA, cosA);
+
+            float cosB = (float)Math.Cos(pRectangleOriented.WorldRotation);
+            float sinB = (float)Math.Sin(pRectangleOriented.WorldRotation);
+            Vector2 axisB_X = new(cosB, sinB);
+            Vector2 axisB_Y = new(-sinB, cosB);
+
+            Vector2 centerA = WorldPosition;
+            Vector2 centerB = pRectangleOriented.WorldPosition;
+
+            Vector2 halfA = HalfExtents;
+            Vector2 halfB = pRectangleOriented.HalfExtents;
+
+            // Candidate axes: face normals of both rectangles
+            Vector2[] axes = { axisA_X, axisA_Y, axisB_X, axisB_Y };
+
+            float minOverlap = float.MaxValue;
+            Vector2 minAxis = Vector2.Zero;
+
+            foreach (Vector2 axis in axes)
+            {
+                // Project centers onto axis
+                float projCenterA = Vector2.Dot(centerA, axis);
+                float projCenterB = Vector2.Dot(centerB, axis);
+
+                // Projected half extents for each rectangle onto axis
+                float projHalfA = halfA.X * MathF.Abs(Vector2.Dot(axisA_X, axis)) + halfA.Y * MathF.Abs(Vector2.Dot(axisA_Y, axis));
+                float projHalfB = halfB.X * MathF.Abs(Vector2.Dot(axisB_X, axis)) + halfB.Y * MathF.Abs(Vector2.Dot(axisB_Y, axis));
+
+                float distance = MathF.Abs(projCenterA - projCenterB);
+                float overlap = projHalfA + projHalfB - distance;
+
+                // Separating axis found -> no collision
+                if (overlap <= 0f)
+                    return new CollisionEvent(false);
+
+                if (overlap < minOverlap)
+                {
+                    minOverlap = overlap;
+                    minAxis = axis;
+                }
+            }
+
+            // Determine normal direction so it consistently points from the other rectangle to this rectangle
+            float sign = MathF.Sign(Vector2.Dot(centerA - centerB, minAxis));
+            if (sign == 0f) sign = 1f;
+            Vector2 collisionNormal = NormalizeZeroSafe(minAxis * sign);
+
+            // Support points: pick rectangle-support points in the direction of the collision normal, then midpoint
+            float signAX = MathF.Sign(Vector2.Dot(collisionNormal, axisA_X));
+            float signAY = MathF.Sign(Vector2.Dot(collisionNormal, axisA_Y));
+            Vector2 supportA = centerA + axisA_X * (signAX * halfA.X) + axisA_Y * (signAY * halfA.Y);
+
+            float signBX = MathF.Sign(Vector2.Dot(collisionNormal, axisB_X));
+            float signBY = MathF.Sign(Vector2.Dot(collisionNormal, axisB_Y));
+            Vector2 supportB = centerB + axisB_X * (signBX * halfB.X) + axisB_Y * (signBY * halfB.Y);
+
+            Vector2 collisionPosition = (supportA + supportB) * 0.5f;
+
+            return new CollisionEvent(true, collisionPosition, collisionNormal);
         }
     }
 }

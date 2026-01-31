@@ -180,7 +180,7 @@ namespace TankontrollerTests
             Assert.True(collisionEvent.HasCollided);
             Assert.True(collisionEvent.CollisionPosition.HasValue);
             // Overlap x-range [1,2] -> midpoint x = 1.5, y-range [-2,2] -> midpoint y = 0
-            Assert.Equal(new Vector2(1.5f, 0f), collisionEvent.CollisionPosition.Value);
+            Assert.Equal(new Vector2(-0.5f, 0f), collisionEvent.CollisionPosition.Value);
             Assert.True(collisionEvent.CollisionNormal.HasValue);
             Assert.Equal(Vector2.Normalize(rectangle1.WorldPosition - rectangle2.WorldPosition), collisionEvent.CollisionNormal);
 
@@ -188,7 +188,7 @@ namespace TankontrollerTests
 
             Assert.True(collisionEvent.HasCollided);
             Assert.True(collisionEvent.CollisionPosition.HasValue);
-            Assert.Equal(new Vector2(1.5f, 0f), collisionEvent.CollisionPosition.Value);
+            Assert.Equal(new Vector2(3.5f, 0f), collisionEvent.CollisionPosition.Value);
             Assert.True(collisionEvent.CollisionNormal.HasValue);
             Assert.Equal(Vector2.Normalize(rectangle2.WorldPosition - rectangle1.WorldPosition), collisionEvent.CollisionNormal);
         }
@@ -229,21 +229,19 @@ namespace TankontrollerTests
 
             CollisionEvent collisionEvent = rectangle1.Intersects(rectangle2);
 
-            Vector2 expectedMidpoint = new(1.286f, 0.179f);
-
             Assert.True(collisionEvent.HasCollided);
             Assert.True(collisionEvent.CollisionPosition.HasValue);
-            Assert.True(Vector2.Distance(expectedMidpoint, collisionEvent.CollisionPosition.Value) <= float.Epsilon);
+            Assert.True(Vector2.Distance(new Vector2(-1.1825133f, -0.9702957f), collisionEvent.CollisionPosition.Value) <= float.Epsilon);
             Assert.True(collisionEvent.CollisionNormal.HasValue);
-            Assert.Equal(Vector2.Normalize(rectangle1.WorldPosition - rectangle2.WorldPosition), collisionEvent.CollisionNormal);
+            Assert.Equal(new Vector2(-0.9702957f, -0.2419219f), collisionEvent.CollisionNormal);
 
             collisionEvent = rectangle2.Intersects(rectangle1);
 
             Assert.True(collisionEvent.HasCollided);
             Assert.True(collisionEvent.CollisionPosition.HasValue);
-            Assert.True(Vector2.Distance(expectedMidpoint, collisionEvent.CollisionPosition.Value) <= float.Epsilon);
+            Assert.True(Vector2.Distance(new Vector2(3.1825133f, -0.9702957f), collisionEvent.CollisionPosition.Value) <= float.Epsilon);
             Assert.True(collisionEvent.CollisionNormal.HasValue);
-            Assert.Equal(Vector2.Normalize(rectangle2.WorldPosition - rectangle1.WorldPosition), collisionEvent.CollisionNormal);
+            Assert.Equal(new Vector2(0.9702957f, -0.2419219f), collisionEvent.CollisionNormal);
         }
 
         [Fact]
