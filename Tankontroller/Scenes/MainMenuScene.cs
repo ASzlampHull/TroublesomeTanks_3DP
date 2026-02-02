@@ -24,6 +24,9 @@ namespace Tankontroller.Scenes
 
         private string defaultMapFile = DEFAULT_MAP_FILE; // Default map file
 
+        // Cooldown timers to prevent the menu selection from being too fast
+        private float mSelectionCooldown = 0.0f;
+        private const float mSelectionCooldownTime = 0.2f;
 
         public MainMenuScene()
         {
@@ -79,6 +82,8 @@ namespace Tankontroller.Scenes
             mButtonList.Add(exitGameButton);
 
             mGameInstance.GetSoundManager().ReplaceCurrentMusicInstance("Music/Music_start", true);
+
+            mSelectionCooldown = mSelectionCooldownTime;
         }
 
         public void SetDefaultMapFile(string mapFile)
@@ -111,6 +116,8 @@ namespace Tankontroller.Scenes
             Escape();
             mGameInstance.GetControllerManager().DetectControllers();
 
+            mSelectionCooldown -= pSeconds;
+
             foreach (IController controller in mGameInstance.GetControllerManager().GetControllers())
             {
                 controller.UpdateController();
@@ -120,13 +127,15 @@ namespace Tankontroller.Scenes
                     continue; // If enabled in DSG skip any controller that isn't a keyboard
                 }
 
-                if (controller.IsPressed(Control.TURRET_LEFT) && !controller.WasPressed(Control.TURRET_LEFT))
+                if (controller.IsPressed(Control.TURRET_LEFT) && mSelectionCooldown <= 0.0f)// && !controller.WasPressed(Control.TURRET_LEFT))
                 {
                     mButtonList.SelectPreviousButton();
+                    mSelectionCooldown = mSelectionCooldownTime;
                 }
-                if (controller.IsPressed(Control.TURRET_RIGHT) && !controller.WasPressed(Control.TURRET_RIGHT))
+                if (controller.IsPressed(Control.TURRET_RIGHT) && mSelectionCooldown <= 0.0f)// && !controller.WasPressed(Control.TURRET_RIGHT))
                 {
                     mButtonList.SelectNextButton();
+                    mSelectionCooldown = mSelectionCooldownTime;
                 }
 
                 if (controller.IsPressed(Control.FIRE) && !controller.WasPressed(Control.FIRE) ||
