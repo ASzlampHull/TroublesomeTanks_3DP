@@ -108,6 +108,12 @@ namespace Tankontroller.World.Shapes
             return collisionEvent;
         }
 
+        /// <summary>
+        /// Check for intersection with another oriented rectangle shape - if the rectangles overlap.
+        /// </summary>
+        /// <returns> Collision event information. If colliding:
+        /// 1. The position of the collision (midpoint of overlap between the rectangles)
+        /// 2. The normal of the collision (pointing away from the other rectangle) </returns>
         public CollisionEvent IntersectsOrientedRectangle(RectangleOrientedShape pRectangleOriented)
         {
             // Build local axes for both rectangles in world space
