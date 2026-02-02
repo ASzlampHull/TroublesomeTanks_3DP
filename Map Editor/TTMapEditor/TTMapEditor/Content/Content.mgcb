@@ -112,6 +112,13 @@
 /processorParam:TextureFormat=Color
 /build:Exit_Button.png
 
+#begin FolderPickerText.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:FolderPickerText.spritefont
+
 #begin healthpickup.png
 /importer:TextureImporter
 /processor:TextureProcessor

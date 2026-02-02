@@ -10,6 +10,8 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using TTMapEditor.Managers;
 using TTMapEditor.Objects;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 
 namespace TTMapEditor.Maps
 {
@@ -572,6 +574,7 @@ namespace TTMapEditor.Maps
                 });
             }
         }
+
     }
 }
 

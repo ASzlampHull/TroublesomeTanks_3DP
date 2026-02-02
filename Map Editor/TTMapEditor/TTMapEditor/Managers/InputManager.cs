@@ -30,6 +30,11 @@ namespace TTMapEditor.Managers
             return mCurrentState.IsKeyDown(key) && mPreviousState.IsKeyUp(key);
         }
 
+        public static bool isKeyDown(Keys key)
+        {
+            return mCurrentState.IsKeyDown(key);
+        }
+
         public static bool isKeyReleased(Keys key)
         {
             return mCurrentState.IsKeyUp(key) && mPreviousState.IsKeyDown(key);

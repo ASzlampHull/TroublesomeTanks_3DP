@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 using TTMapEditor.Managers;
 using TTMapEditor.Maps;
 using TTMapEditor.Objects;
+using System.Runtime.InteropServices;
+using TTMapEditor.Saving;
+
 
 namespace TTMapEditor.Scenes
 {
@@ -38,7 +41,8 @@ namespace TTMapEditor.Scenes
         RectWall mWall;
         MapPreview mPreview;
         bool mIsNewMap;
-        private int mSelectedItems = 0;
+        bool mSelectingSaveLocation = true;
+        FolderPicker mFolderPicker;
 
         // Selected object (any SceneObject-derived)
         SceneObject mSelectedObject;
@@ -108,6 +112,7 @@ namespace TTMapEditor.Scenes
             int saveButtonWidth = (int)(mTitleFont.MeasureString("Save").X + 20);
             int saveButtonHeight = (int)(mTitleFont.MeasureString("Save").Y + 10);
             mSaveButtonRect = new Rectangle(viewPortWidth - viewPortWidth + viewPortWidth / 16, 5, saveButtonWidth, saveButtonHeight);
+            mFolderPicker = new FolderPicker(mSpriteBatch, mPixelTexture, mTitleFont, Path.Combine(Environment.CurrentDirectory, "Maps"));
         }
 
         void HandleNewMapCreation(string pMapFile)
@@ -173,13 +178,16 @@ namespace TTMapEditor.Scenes
         {
             mGraphicsDevice.Clear(Color.CornflowerBlue);
             mSpriteBatch.Begin();
-
             DrawBackgroundAndTitle();
             DrawPlayAreaAndObjects();
             DrawTemplates();
             DrawSaveButton();
-
             mSpriteBatch.End();
+            if (mSelectingSaveLocation)
+            {
+                mFolderPicker.Draw();
+                return;
+            }
         }
 
         void DrawBackgroundAndTitle()
@@ -304,6 +312,10 @@ namespace TTMapEditor.Scenes
 
             HandleKeyboardActions();
             handlePickupEnabling();
+            if(mSelectingSaveLocation)
+            {
+                mFolderPicker.Update(pSeconds);
+            }
         }
 
         /// <summary>
