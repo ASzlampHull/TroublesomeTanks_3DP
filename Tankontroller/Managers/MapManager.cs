@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Tankontroller.World;
+using Tankontroller.World.Pickups;
 
 namespace Tankontroller
 {
@@ -27,12 +28,13 @@ namespace Tankontroller
             Rectangle playArea = new Rectangle(screenWidth * 2 / 100, screenHeight * 25 / 100, screenWidth * 96 / 100, screenHeight * 73 / 100);
             List<RectWall> Walls = new List<RectWall>();
             List<Tank> Tanks = new List<Tank>();
-            List<Vector2> PickupSpawnPositions = new List<Vector2>();
+            List<PickupSpawnPoint> PickupSpawnPositions = new List<PickupSpawnPoint>();
             float tankScale = (float)playArea.Width / (50 * 40);
 
             string texture = null;
             Vector2 position = Vector2.Zero;
             Vector2 size = Vector2.Zero;
+            Dictionary<PickupType, bool> activatedPickups = new Dictionary<PickupType, bool>();
             float rotation = 0f;
             bool isWall = false;
             bool isTank = false;
@@ -90,6 +92,26 @@ namespace Tankontroller
                     rotation = MathHelper.ToRadians(rotation);
                     continue;
                 }
+                else if(line.Contains("health"))
+                {
+                    string[] components = line.Split('=')[1].Trim().Split(',');
+                    activatedPickups[PickupType.HEALTH] = bool.Parse(components[0]);
+                }
+                else if(line.Contains("emp"))
+                {
+                   string[] components = line.Split('=')[1].Trim().Split(',');
+                    activatedPickups[PickupType.EMP] = bool.Parse(components[0]);
+                }
+                else if(line.Contains("mine"))
+                {
+                    string[] components = line.Split('=')[1].Trim().Split(',');
+                    activatedPickups[PickupType.MINE] = bool.Parse(components[0]);
+                }
+                else if(line.Contains("bouncy_bullet"))
+                {
+                    string[] components = line.Split('=')[1].Trim().Split(',');
+                    activatedPickups[PickupType.BOUNCY_BULLET] = bool.Parse(components[0]);
+                }
 
                 //check if the current object is a wall or a tank
                 if (isWall)
@@ -107,7 +129,7 @@ namespace Tankontroller
                 }
                 else if (isPickup)
                 {
-                    PickupSpawnPositions.Add(position);
+                    PickupSpawnPositions.Add(new PickupSpawnPoint(position,activatedPickups));
                     isPickup = false;
                 }
             }
@@ -136,7 +158,7 @@ namespace Tankontroller
             Rectangle playArea = new Rectangle(screenWidth * 2 / 100, screenHeight * 25 / 100, screenWidth * 96 / 100, screenHeight * 73 / 100);
             List<RectWall> Walls = new List<RectWall>();
             List<Tank> Tanks = new List<Tank>();
-            List<Vector2> PickupSpawnPositions = new List<Vector2>();
+            List<PickupSpawnPoint> PickupSpawnPositions = new List<PickupSpawnPoint>();
             float tankScale = (float)playArea.Width / (50 * 40);
 
             foreach (var wall in mapData.Walls)
@@ -186,8 +208,9 @@ namespace Tankontroller
                     var position = new Vector2(float.Parse(pickup.Position[0]), float.Parse(pickup.Position[1]));
                     position.X = playArea.X + (playArea.Width * (position.X / 100.0f));
                     position.Y = playArea.Y + (playArea.Height * (position.Y / 100.0f));
+                    Dictionary <PickupType,bool> activatedPickups = pickup.ActivatedPickups;
 
-                    PickupSpawnPositions.Add(position);
+                    PickupSpawnPositions.Add(new PickupSpawnPoint(position,activatedPickups));
                 }
                 catch (Exception ex)
                 {
@@ -220,6 +243,7 @@ namespace Tankontroller
         public class PickupData
         {
             public string[] Position { get; set; }
+            public Dictionary<PickupType, bool> ActivatedPickups { get; set; }
         }
     }
 }

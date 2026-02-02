@@ -305,7 +305,40 @@ namespace TTMapEditor.Maps
                     Texture2D tex;
                     try { tex = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("circle"); }
                     catch { tex = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("circle"); }
-                    mPickups.Add(new Pickup(tex, rect));
+
+                    // Create preview pickup and apply activation map if present in the MapData
+                    var previewPickup = new Pickup(tex, rect);
+                    try
+                    {
+                        // if the deserialized PickupData contains ActivatedPickups (Dictionary<PickupType,bool>), apply it
+                        if (p.GetType().GetProperty("ActivatedPickups") != null)
+                        {
+                            var activatedProp = p.GetType().GetProperty("ActivatedPickups")!.GetValue(p);
+                            if (activatedProp is Dictionary<PickupType, bool> enumMap)
+                            {
+                                previewPickup.SetActivatedPickups(enumMap);
+                            }
+                            else if (activatedProp is Dictionary<string, bool> stringMap)
+                            {
+                                // convert string keys to enum where possible
+                                var converted = new Dictionary<PickupType, bool>();
+                                foreach (var kv in stringMap)
+                                {
+                                    if (Enum.TryParse<PickupType>(kv.Key, true, out var keyEnum))
+                                    {
+                                        converted[keyEnum] = kv.Value;
+                                    }
+                                }
+                                previewPickup.SetActivatedPickups(converted);
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // ignore if ActivatedPickups property isn't present or conversion fails
+                    }
+
+                    mPickups.Add(previewPickup);
                 }
             }
         }
@@ -370,7 +403,7 @@ namespace TTMapEditor.Maps
 
         public void AddObject(SceneObject pObject)
         {
-            switch(pObject)
+            switch (pObject)
             {
                 case RectWall wall:
                     mWalls.Add(wall);
@@ -388,7 +421,7 @@ namespace TTMapEditor.Maps
 
         public void RemoveObject(SceneObject pObject)
         {
-            switch(pObject)
+            switch (pObject)
             {
                 case RectWall wall:
                     mWalls.Remove(wall);
@@ -534,12 +567,14 @@ namespace TTMapEditor.Maps
                 float posY = (pickup.mRectangle.Y + pickup.mRectangle.Height / 2 - mPlayArea.Y) * 100.0f / mPlayArea.Height;
                 mMapData.Pickups.Add(new PickupData()
                 {
-                    Position = new string[] { posX.ToString(CultureInfo.InvariantCulture), posY.ToString(CultureInfo.InvariantCulture) }
+                    Position = new string[] { posX.ToString(CultureInfo.InvariantCulture), posY.ToString(CultureInfo.InvariantCulture) },
+                    ActivatedPickups = pickup.GetActivatedPickups()
                 });
             }
         }
     }
 }
+
 
 
 

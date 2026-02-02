@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using TTMapEditor.Objects;
 
 namespace TTMapEditor.Managers
 {
@@ -119,6 +120,8 @@ namespace TTMapEditor.Managers
     public class PickupData
     { 
         public string[] Position { get; set; }
+
+        public Dictionary<PickupType,bool> ActivatedPickups { get; set; }
     }
 
 }

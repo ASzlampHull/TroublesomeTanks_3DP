@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace TTMapEditor.Objects
 {
-    enum PickupType
+    public enum PickupType
     {
         HEALTH,
         EMP,
@@ -112,6 +112,13 @@ namespace TTMapEditor.Objects
             {
                 mActivatedPickups[type] = false;
             }
+        }
+
+        public Dictionary<PickupType, bool> GetActivatedPickups() => mActivatedPickups;
+
+        public void SetActivatedPickups(Dictionary<PickupType, bool> activatedPickups)
+        {
+            mActivatedPickups = activatedPickups;
         }
 
     }
