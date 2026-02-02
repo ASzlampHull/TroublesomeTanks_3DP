@@ -26,7 +26,7 @@ namespace Tankontroller.Scenes
 
         // Cooldown timers to prevent the menu selection from being too fast
         private float mSelectionCooldown = 0.0f;
-        private const float mSelectionCooldownTime = 0.2f;
+        private readonly float SELECTION_COOLDOWN_TIME = 0.2f;
 
         public MainMenuScene()
         {
@@ -83,7 +83,7 @@ namespace Tankontroller.Scenes
 
             mGameInstance.GetSoundManager().ReplaceCurrentMusicInstance("Music/Music_start", true);
 
-            mSelectionCooldown = mSelectionCooldownTime;
+            mSelectionCooldown = SELECTION_COOLDOWN_TIME;
         }
 
         public void SetDefaultMapFile(string mapFile)
@@ -130,12 +130,12 @@ namespace Tankontroller.Scenes
                 if (controller.IsPressed(Control.TURRET_LEFT) && mSelectionCooldown <= 0.0f)
                 {
                     mButtonList.SelectPreviousButton();
-                    mSelectionCooldown = mSelectionCooldownTime;
+                    mSelectionCooldown = SELECTION_COOLDOWN_TIME;
                 }
                 if (controller.IsPressed(Control.TURRET_RIGHT) && mSelectionCooldown <= 0.0f)
                 {
                     mButtonList.SelectNextButton();
-                    mSelectionCooldown = mSelectionCooldownTime;
+                    mSelectionCooldown = SELECTION_COOLDOWN_TIME;
                 }
 
                 if (controller.IsPressed(Control.FIRE) && !controller.WasPressed(Control.FIRE) ||
