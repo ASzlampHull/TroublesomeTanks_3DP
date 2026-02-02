@@ -1,7 +1,7 @@
 ﻿// WINDOW
-bool IS_FULL_SCREEN = true;
-int SCREENWIDTH = 1920;
-int SCREENHEIGHT = 1080;
+bool IS_FULL_SCREEN = false;
+int SCREENWIDTH = 720;
+int SCREENHEIGHT = 405;
 
 // MAP
 string DEFAULT_MAP_FILE = Default.json;
@@ -9,7 +9,7 @@ string DEFAULT_MAP_FILE = Default.json;
 // SCENES
 float SECONDS_TO_DISPLAY_FLASH_SCREEN = 1.5;
 float SECONDS_TO_DISPLAY_GAMEOVER_SCREEN = 30;
-float GAME_LENGTH = 180;
+float GAME_LENGTH = 10;
 
 // TANK
 int MAX_TANK_HEALTH = 3;
