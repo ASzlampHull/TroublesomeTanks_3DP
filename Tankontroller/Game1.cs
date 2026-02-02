@@ -41,9 +41,8 @@ namespace Tankontroller
         private SpriteBatch mBatch;
 
         private static IGame mGameInterface = null;
-
-        // Scaling factor for screen resolution
-        private float mScaleFactor = 1f;
+                
+        private float mScaleFactor = 1f; // Scaling factor for screen resolution
 
         public static IGame Instance()
         {
