@@ -16,6 +16,10 @@ namespace TTMapEditor.Saving
         bool mTypingNewName = true;
         string mNewFolderName = "";
         Rectangle mOverlay;
+        Rectangle mButtonNew;
+        Rectangle mButtonCancel;
+        Rectangle mButtonSelect;
+        Rectangle mButtonBack;
         float mTypingTimer = 0f;
         float mTypingDelay = 0.1f;
 
@@ -27,6 +31,10 @@ namespace TTMapEditor.Saving
             mFont = pFont;
             mCurrentPath = pStartingPath;
             mOverlay = new Rectangle(0, 0, 800, 600);
+            mButtonNew = new Rectangle(10, 550, 120, 30);
+            mButtonCancel = new Rectangle(140, 550, 120, 30);
+            mButtonSelect = new Rectangle(270, 550, 120, 30);
+            mButtonBack = new Rectangle(400, 550, 120, 30);
             mFont = TTMapEditor.Instance().GetContentManager().Load<SpriteFont>("FolderPickerText");
         }
 
@@ -78,17 +86,38 @@ namespace TTMapEditor.Saving
                     }
                 }
             }
+            MouseWithinButton(ref mButtonNew);
+            MouseWithinButton(ref mButtonCancel);
+            MouseWithinButton(ref mButtonSelect);
+            MouseWithinButton(ref mButtonBack);
         }
 
         public void Draw()
         {
             mSpriteBatch.Begin();
             mSpriteBatch.Draw(mPixel, mOverlay, Color.Black);
+            mSpriteBatch.Draw(mPixel, mButtonNew, Color.Gray);
+            mSpriteBatch.DrawString(mFont, "New Folder", new Vector2(mButtonNew.X + 10, mButtonNew.Y + 5), Color.White);
+            mSpriteBatch.Draw(mPixel, mButtonCancel, Color.Gray);
+            mSpriteBatch.DrawString(mFont, "Cancel", new Vector2(mButtonCancel.X + 10, mButtonCancel.Y + 5), Color.White);
+            mSpriteBatch.Draw(mPixel, mButtonSelect, Color.Gray);
+            mSpriteBatch.DrawString(mFont, "Select", new Vector2(mButtonSelect.X + 10, mButtonSelect.Y + 5), Color.White);
+            mSpriteBatch.Draw(mPixel, mButtonBack, Color.Gray);
+            mSpriteBatch.DrawString(mFont, "Back", new Vector2(mButtonBack.X + 10, mButtonBack.Y + 5), Color.White);
             mSpriteBatch.DrawString(mFont, "Current Path: " + mCurrentPath, new Vector2(10, 10), Color.White);
             mSpriteBatch.DrawString(mFont, mNewFolderName, new Vector2(10, 30), Color.White);
             mSpriteBatch.End();
         }
-    
-    
+
+        public void MouseWithinButton(ref Rectangle pButton)
+        {
+            Point mousePos = Mouse.GetState().Position;
+            if(pButton.Contains(mousePos))
+            {
+                pButton.Inflate(2, 2);
+            }
+        }
+
+
     }
 }
