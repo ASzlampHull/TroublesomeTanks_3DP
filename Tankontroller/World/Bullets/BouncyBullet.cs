@@ -37,7 +37,7 @@ namespace Tankontroller.World.Bullets
 
         public override bool DoCollision(RectWall pWall)
         {
-            Vector2 collisonNormal = GetCollisionNormal(pWall.Rectangle);
+            Vector2 collisonNormal = GetCollisionNormal(pWall.RectangleShape.ToRectangle());
             if (numOfBounces <= 0)
             {
                 CreateExplosion(collisonNormal);

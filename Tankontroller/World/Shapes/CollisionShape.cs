@@ -3,7 +3,7 @@ using Tankontroller.World.WorldObject;
 
 namespace Tankontroller.World.Shapes
 {
-    internal abstract class CollisionShape
+    public abstract class CollisionShape
     {
         private bool mEnabled = true;
 

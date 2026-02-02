@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ using Tankontroller.World.WorldObject;
 
 namespace Tankontroller.World.Shapes
 {
-    internal class RectangleOrientedShape : CollisionShape
+    public class RectangleOrientedShape : CollisionShape
     {
         // Full size in local space (width, height)
         public Vector2 Size { get; set; } = Vector2.One;
@@ -53,6 +54,8 @@ namespace Tankontroller.World.Shapes
             Size = pSize;
             LocalRotation = pLocalRotation;
         }
+
+        public Rectangle ToRectangle() => new((int)(WorldPosition.X), (int)(WorldPosition.Y), (int)Size.X, (int)Size.Y);
 
         public override CollisionEvent Intersects(CollisionShape pOther)
         {

@@ -476,7 +476,7 @@ namespace Tankontroller.World
                 // Check collision with walls
                 for (int j = 0; j < pWalls.Count; ++j)
                 {
-                    if (CollisionManager.Collide(m_Bullets[i], pWalls[j].Rectangle, false))
+                    if (CollisionManager.Collide(m_Bullets[i], pWalls[j].RectangleShape.ToRectangle(), false))
                     {
                         if (m_Bullets[i].DoCollision(pWalls[j]))
                         {

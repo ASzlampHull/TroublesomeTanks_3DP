@@ -6,7 +6,7 @@ namespace Tankontroller.World.WorldObject
     /// <summary>
     /// Stores position, rotation and scale of an object in the world
     /// </summary>
-    internal class Transform
+    public class Transform
     {
         public Vector2 Position { get; set; }
         public float Rotation { get; set; }
@@ -23,6 +23,13 @@ namespace Tankontroller.World.WorldObject
         {
             Position = pPosition;
             Rotation = 0f;
+            Scale = Vector2.One;
+        }
+
+        public Transform(Vector2 pPosition, float pRotation)
+        {
+            Position = pPosition;
+            Rotation = pRotation;
             Scale = Vector2.One;
         }
 

@@ -6,7 +6,7 @@ namespace Tankontroller.World.Shapes
     /// Represents the result of a collision detection operation.
     /// Stores useful collision information.
     /// </summary>
-    internal class CollisionEvent
+    public class CollisionEvent
     {
         /// <summary>
         /// Whether a collision has occurred

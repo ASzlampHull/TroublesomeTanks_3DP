@@ -88,7 +88,7 @@ namespace Tankontroller.Managers
         /// <returns> If the function fails return false, otherwise returns true</returns>
         static public bool ResolveTankWallCollision(Tank tank, RectWall wall)
         {
-            Rectangle r = wall.Rectangle;
+            Rectangle r = wall.RectangleShape.ToRectangle();
 
             // nothing to do if there's no collision
             if (!Collide(tank, r, false))

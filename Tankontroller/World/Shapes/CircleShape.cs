@@ -4,7 +4,7 @@ using Tankontroller.World.WorldObject;
 
 namespace Tankontroller.World.Shapes
 {
-    internal class CircleShape : CollisionShape
+    public class CircleShape : CollisionShape
     {
         public float Radius { get; private set; } = 1.0f;
 

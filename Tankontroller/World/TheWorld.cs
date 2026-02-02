@@ -163,7 +163,7 @@ namespace Tankontroller.World
                     // Wall collisions
                     foreach (RectWall wall in mWalls)
                     {
-                        Rectangle wallRect = wall.Rectangle;
+                        Rectangle wallRect = wall.RectangleShape.ToRectangle();
 
                         // tank collision using collision manager
                         if (CollisionManager.Collide(mTanks[tankIndex], wallRect, false))

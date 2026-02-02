@@ -1,35 +1,38 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Tankontroller.World.Shapes;
+using Tankontroller.World.WorldObject;
 
 namespace Tankontroller.World
 {
-    public class RectWall
+    public class RectWall : IWorldObject
     {
         private static readonly Color COLOUR = DGS.Instance.GetColour("COLOUR_WALLS");
-        public Rectangle Rectangle { get; private set; }
-        private Rectangle m_OutlineRectangle;
-        private Texture2D m_Texture;
 
-        public RectWall(Texture2D pTexture, Rectangle pRectangle)
+        public Transform Transform { get; private set; } = new Transform();
+        public CollisionShape CollisionShape => RectangleShape;
+        public RectangleOrientedShape RectangleShape { get; private set; }
+
+        private Texture2D mTexture;
+
+        public RectWall(Transform pTransform, Vector2 pSize, Texture2D pTexture)
         {
-            Rectangle = pRectangle;
-            m_OutlineRectangle = new Rectangle(pRectangle.X - 2, pRectangle.Y - 2, pRectangle.Width + 4, pRectangle.Height + 4);
-            m_Texture = pTexture;
+            Transform = pTransform;
+            RectangleShape = new RectangleOrientedShape(Transform, pSize);
+            mTexture = pTexture;
         }
 
         public void Draw(SpriteBatch pSpriteBatch)
         {
-            pSpriteBatch.Draw(m_Texture, Rectangle, COLOUR);
+            Rectangle rectangle = RectangleShape.ToRectangle();
+            pSpriteBatch.Draw(mTexture, rectangle, null, COLOUR, Transform.Rotation, new Vector2(0f,0f), SpriteEffects.None, 0f);
         }
 
         public void DrawOutlines(SpriteBatch pSpriteBatch)
         {
-            pSpriteBatch.Draw(m_Texture, m_OutlineRectangle, Color.Black);
+            Rectangle rectangle = RectangleShape.ToRectangle();
+            rectangle.Inflate(2, 2);
+            pSpriteBatch.Draw(mTexture, rectangle, null, Color.Black, Transform.Rotation, new Vector2(0f, 0f), SpriteEffects.None, 0f);
         }
     }
 }

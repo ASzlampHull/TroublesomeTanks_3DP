@@ -45,7 +45,7 @@ namespace Tankontroller.World.Bullets
 
         public override bool DoCollision(RectWall pWall)
         {
-            Vector2 collisonNormal = GetCollisionNormal(pWall.Rectangle);
+            Vector2 collisonNormal = GetCollisionNormal(pWall.RectangleShape.ToRectangle());
             Velocity = Vector2.Reflect(Velocity, collisonNormal);
             return false;
         }

@@ -8,7 +8,7 @@ using Tankontroller.World.WorldObject;
 
 namespace Tankontroller.World.Shapes
 {
-    internal class RectangleAxisAlignedShape : CollisionShape
+    public class RectangleAxisAlignedShape : CollisionShape
     {
         public Vector2 Size { get; set; } = Vector2.One;
         public Vector2 HalfExtents => Size * 0.5f;

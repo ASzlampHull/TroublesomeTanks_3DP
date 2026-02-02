@@ -41,7 +41,7 @@ namespace Tankontroller.World.Bullets
 
         public virtual bool Collide(RectWall pWall)
         {
-            Rectangle rectangle = pWall.Rectangle;
+            Rectangle rectangle = pWall.RectangleShape.ToRectangle();
             if (rectangle.Contains(Position))
             {
                 return true;

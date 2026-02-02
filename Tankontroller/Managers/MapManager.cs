@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Tankontroller.World;
+using Tankontroller.World.WorldObject;
 
 namespace Tankontroller
 {
@@ -94,9 +95,9 @@ namespace Tankontroller
                 //check if the current object is a wall or a tank
                 if (isWall)
                 {
-                    RectWall currentWall = new RectWall(
-                        Tankontroller.Instance().CM().Load<Texture2D>(texture),
-                        new Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y));
+                    Texture2D wallTexture = Tankontroller.Instance().CM().Load<Texture2D>(texture);
+                    Transform wallTransform = new(position, rotation);
+                    RectWall currentWall = new(wallTransform, new Vector2(size.X, size.Y), wallTexture);
                     Walls.Add(currentWall);
                     isWall = false;
                 }
@@ -151,9 +152,9 @@ namespace Tankontroller
                     size.X = playArea.Width * (size.X / 100.0f);
                     size.Y = playArea.Height * (size.Y / 100.0f);
 
-                    RectWall currentWall = new RectWall(
-                        Tankontroller.Instance().CM().Load<Texture2D>(texture),
-                        new Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y));
+                    Texture2D wallTexture = Tankontroller.Instance().CM().Load<Texture2D>(texture);
+                    Transform wallTransform = new(position, 0f);
+                    RectWall currentWall = new(wallTransform, new Vector2(size.X, size.Y), wallTexture);
                     Walls.Add(currentWall);
                 }
                 catch (Exception ex)
