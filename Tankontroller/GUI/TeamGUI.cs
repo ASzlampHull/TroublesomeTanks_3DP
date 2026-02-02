@@ -43,6 +43,14 @@ namespace Tankontroller.GUI
             int jackIcons_yValueOffset = powerBar_yValueOffset + (int)(powerBarHeight * 1.01f) - powerBarWidth;
             int labels_yValueOffset = powerBar_yValueOffset + (int)(powerBarWidth * 1.01f);
 
+            //y offset for 32:9 aspect ratio
+            if ((float)screenWidth / (float)screenHeight == 32f / 9f)
+            {
+                powerBar_yValueOffset -= screenHeight / 100 * 3;
+                jackIcons_yValueOffset -= screenHeight / 100 * 3;
+                labels_yValueOffset -= screenHeight / 100 * 8;
+            }
+
             bool isOnLeft = true;
             int xValue = screenWidth / 80 * 3;
             int xIncrement = Convert.ToInt32(powerBarWidth * 1.2);

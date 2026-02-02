@@ -20,13 +20,14 @@ namespace Tankontroller.World.Bullets
             Position = pPosition;
             Velocity = pVelocity;
             Colour = pColour;
-            Radius = 5.0f;
+            Radius = 5.0f * Tankontroller.Instance().ScaleFactor();
             LifeTime = lifeTime;
         }
 
         public virtual void Update(float pSeconds)
         {
-            Position = Position + Velocity * pSeconds;
+            // Move at the correct speed according to the frame time and resolution scale factor
+            Position = Position + Velocity * pSeconds * Tankontroller.Instance().ScaleFactor();
         }
 
         public virtual bool CollideWithPlayArea(Rectangle pRectangle)
