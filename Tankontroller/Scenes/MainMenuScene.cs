@@ -127,12 +127,12 @@ namespace Tankontroller.Scenes
                     continue; // If enabled in DSG skip any controller that isn't a keyboard
                 }
 
-                if (controller.IsPressed(Control.TURRET_LEFT) && mSelectionCooldown <= 0.0f)// && !controller.WasPressed(Control.TURRET_LEFT))
+                if (controller.IsPressed(Control.TURRET_LEFT) && mSelectionCooldown <= 0.0f)
                 {
                     mButtonList.SelectPreviousButton();
                     mSelectionCooldown = mSelectionCooldownTime;
                 }
-                if (controller.IsPressed(Control.TURRET_RIGHT) && mSelectionCooldown <= 0.0f)// && !controller.WasPressed(Control.TURRET_RIGHT))
+                if (controller.IsPressed(Control.TURRET_RIGHT) && mSelectionCooldown <= 0.0f)
                 {
                     mButtonList.SelectNextButton();
                     mSelectionCooldown = mSelectionCooldownTime;
