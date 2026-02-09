@@ -10,14 +10,9 @@ namespace Tankontroller.World.Pickups
 
         public HealthPickup(Vector2 pPosition) : base(mHeartTexture, new Rectangle(400, 500, 40, 40), pPosition) { }
 
-        public override bool PickUpCollision(Tank tank)
+        public override void TriggerEffect(Tank pTank)
         {
-            if (CollisionManager.Collide(tank, PickupRect, false))
-            {
-                tank.Heal();
-                return true;
-            }
-            return false;
+            pTank.Heal();
         }
     }
 }

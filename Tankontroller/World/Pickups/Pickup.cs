@@ -1,5 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Threading.Tasks;
+using Tankontroller.Managers;
+using Tankontroller.Utilities;
 using Tankontroller.World.Shapes;
 using Tankontroller.World.WorldObject;
 
@@ -8,9 +11,8 @@ namespace Tankontroller.World.Pickups
     public abstract class Pickup : IWorldObject
     {
         public Transform Transform { get; protected set; } = new Transform();
-        public CollisionShape CollisionShape => throw new System.NotImplementedException();
+        public CollisionShape CollisionShape => RectangleShape;
         public RectangleAxisAlignedShape RectangleShape { get; protected set; } = null;
-        public Rectangle PickupRect { get; protected set; }
         public Texture2D Texture { get; protected set; }
 
 
@@ -19,20 +21,35 @@ namespace Tankontroller.World.Pickups
         public float mScalerX;
         public float mScalerY;
 
-        protected Pickup(Texture2D pTexture, Rectangle pRectangle, Vector2 pPosition) {
+        protected Pickup(Texture2D pTexture, Rectangle pRectangle, Vector2 pPosition)
+        {
             mScalerX = ((float)screenWidth / 200f);
             mScalerY = ((float)screenHeight / 200f);
-            pRectangle = new Rectangle((int)((pRectangle.X / 10) * mScalerX), (int)((pRectangle.Y / 10) * mScalerY), (int)(pRectangle.Width/10  * mScalerX), (int)(pRectangle.Height/ 10 * mScalerY));
-            PickupRect = pRectangle;
-            Texture = pTexture;
             Transform.Position = pPosition;
+            RectangleShape = new RectangleAxisAlignedShape(Transform, new Vector2(40f * mScalerX, 40f * mScalerY));
+            Texture = pTexture;
         }
 
         public virtual void Draw(SpriteBatch pSpriteBatch)
         {
-            pSpriteBatch.Draw(Texture, PickupRect, Color.White);
+            Rectangle drawRectangle = RectangleShape.ToRectangle();
+            pSpriteBatch.Draw(Texture, drawRectangle, Color.White);
+            if (CollisionManager.DRAW_COLLISION_SHAPES)
+            {
+                DrawUtilities.DrawRectangle(pSpriteBatch, drawRectangle, Color.White, 0.0f, Transform.Position, 1.0f);
+            }
         }
 
-        public virtual bool PickUpCollision(Tank pTank) { return false; }
+        public bool PickUpCollision(Tank pTank)
+        {
+            if (CollisionManager.Collide(pTank, RectangleShape.ToRectangle(), false))
+            {
+                TriggerEffect(pTank);
+                return true;
+            }
+            return false;
+        }
+
+        public abstract void TriggerEffect(Tank pTank);
     }
 }

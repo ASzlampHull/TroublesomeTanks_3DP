@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Threading.Tasks;
 using Tankontroller.Managers;
 
 namespace Tankontroller.World.Pickups
@@ -8,16 +9,11 @@ namespace Tankontroller.World.Pickups
     {
         private static readonly Texture2D mMineTexture = Tankontroller.Instance().CM().Load<Texture2D>("MinePickup");
 
-        public MinePickup(Vector2 pPositon) : base(mMineTexture, new Rectangle(400, 500, 40, 40), pPositon) { }
+        public MinePickup(Vector2 pPosition) : base(mMineTexture, new Rectangle(400, 500, 40, 40), pPosition) { }
 
-        public override bool PickUpCollision(Tank tank)
+        public override void TriggerEffect(Tank pTank)
         {
-            if (CollisionManager.Collide(tank, PickupRect, false))
-            {
-                tank.SetBulletType(BulletType.MINE);
-                return true;
-            }
-            return false;
+            pTank.SetBulletType(BulletType.MINE);
         }
     }
 }
