@@ -154,7 +154,7 @@ namespace Tankontroller
                 {
                     if (Controller.DepleteCharge(Control.FIRE, BULLET_CHARGE_DEPLETION))
                     {
-                        Tank.Fire(Tank.mbulletType);
+                        Tank.Fire(Tank.mBulletType);
                         SoundEffectInstance bulletShot = Tankontroller.Instance().GetSoundManager().GetSoundEffectInstance("Sounds/Tank_Gun");
                         bulletShot.Play();
                     }

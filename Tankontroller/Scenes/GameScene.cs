@@ -89,7 +89,7 @@ namespace Tankontroller.Scenes
             {
                 if (player.GUI != null)
                 {
-                    player.GUI.Draw(spriteBatch, player.Tank.Health(), player.Tank.mbulletType, player.Tank.GetState());
+                    player.GUI.Draw(spriteBatch, player.Tank.Health(), player.Tank.mBulletType, player.Tank.GetState());
                 }
             }
 

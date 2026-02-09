@@ -65,8 +65,7 @@ namespace Tankontroller.World
 
         private int mHealth;
         private int mDestructibleHealth;
-        public BulletType mbulletType { get; protected set; }
-
+        public BulletType mBulletType { get; protected set; }
 
         private float mRotation;
         private float mOldRotation;
@@ -84,14 +83,14 @@ namespace Tankontroller.World
 
         private bool mIsInsideShockwave = false; // Needed so that Player knows to deplete charge from shockwave
 
-        private TankStates m_CurrentState = TankStates.ALIVE;
+        private TankStates mCurrentState = TankStates.ALIVE;
 
         public Tank(Vector2 pPos, float pRotation, float pScale) : this(pPos.X, pPos.Y, pRotation, pScale) { }
 
         public Tank(float pXPosition, float pYPosition, float pRotation, float pScale)
         {
             mHealth = MAX_HEALTH;
-            mbulletType = BulletType.DEFAULT;
+            mBulletType = BulletType.DEFAULT;
             mDestructibleHealth = MAX_DESTRUCTION_HEALTH;
 
             mColour = Color.White;
@@ -380,7 +379,7 @@ namespace Tankontroller.World
 
         public void Fire(BulletType bullet)
         {
-            if(m_CurrentState == TankStates.DEFEATED || m_CurrentState == TankStates.DESTROYED)
+            if(mCurrentState == TankStates.DEFEATED || mCurrentState == TankStates.DESTROYED)
             {
                 return;
             }
@@ -393,7 +392,7 @@ namespace Tankontroller.World
             if (bullet == BulletType.BOUNCY_EMP)
             {
                 mBullets.Add(new BouncyEMPBullet(endOfCannon, cannonDirection * BULLET_SPEED * 1.5f, mColour, 20.0f));
-                mbulletType = BulletType.DEFAULT;
+                mBulletType = BulletType.DEFAULT;
             }
             else if (bullet == BulletType.MINE)
             {
@@ -402,12 +401,12 @@ namespace Tankontroller.World
                 float behindOffset = 50.0f * mResolutionScale;
                 Vector2 behindTheTank = GetCannonWorldPosition() + backwardDirection * behindOffset;
                 mBullets.Add(new MineBullet(behindTheTank, Vector2.Zero, mColour, 600.0f));
-                mbulletType = BulletType.DEFAULT;
+                mBulletType = BulletType.DEFAULT;
             }
             else if (bullet == BulletType.BOUNCY_BULLET)
             {
                 mBullets.Add(new BouncyBullet(endOfCannon, cannonDirection * BULLET_SPEED, mColour, 2.0f));
-                mbulletType = BulletType.DEFAULT;
+                mBulletType = BulletType.DEFAULT;
             }
             else
             {
@@ -417,7 +416,7 @@ namespace Tankontroller.World
 
         public void SetBulletType(BulletType pBulletType)
         {
-            mbulletType = pBulletType;
+            mBulletType = pBulletType;
         }
 
         public void PutBack()
@@ -509,21 +508,21 @@ namespace Tankontroller.World
         /// <returns> Returns true if current tank state is alive, otherwise returns false</returns>
         public bool IsAlive()
         {
-            return m_CurrentState == TankStates.ALIVE;
+            return mCurrentState == TankStates.ALIVE;
         }
 
 
         
         public void TakeDamage()
         {
-            switch(m_CurrentState)
+            switch(mCurrentState)
             {
                 case TankStates.ALIVE:
                     mHealth--;
                     if (mHealth <= 0)
                     {
                         mHealth = 0;
-                        m_CurrentState = TankStates.DEFEATED;
+                        mCurrentState = TankStates.DEFEATED;
                     }
                     break;
                 case TankStates.DEFEATED:
@@ -531,7 +530,7 @@ namespace Tankontroller.World
                     if(mDestructibleHealth <= 0)
                     {
                         mDestructibleHealth = 0;
-                        m_CurrentState = TankStates.DESTROYED;
+                        mCurrentState = TankStates.DESTROYED;
                         Explode(100,36);
                     }
                     break;
@@ -566,7 +565,7 @@ namespace Tankontroller.World
         /// <returns>Returns the enum value related to the tanks current state</returns>
         public TankStates GetState()
         {
-            return m_CurrentState;
+            return mCurrentState;
         }
 
         public void Heal()
@@ -594,7 +593,7 @@ namespace Tankontroller.World
         public void Draw(SpriteBatch pSpriteBatch)
         {
             Rectangle trackRect = new Rectangle(0, 0, mLeftTrackTexture.Width, mLeftTrackTexture.Height / 15);
-            switch(m_CurrentState)
+            switch(mCurrentState)
             {
                 case TankStates.ALIVE:
                     trackRect.Y = mLeftTrackFrame * mLeftTrackTexture.Height / 15;
