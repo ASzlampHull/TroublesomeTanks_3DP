@@ -102,7 +102,7 @@ namespace TTMapEditor.Maps
                 }
             }
 
-            string fullPath;
+            string fullPath = null;
 
             // If the provided path is absolute and exists as a file, use it directly
             if (Path.IsPathRooted(mFilePath) && File.Exists(mFilePath))
@@ -130,6 +130,12 @@ namespace TTMapEditor.Maps
                     {
                         fullPath = candidate;
                     }
+                    else
+                    {
+                        // directory exists but no map.json -> mark fullPath to the directory so we can treat as new map
+                        // (we'll initialize empty MapData below)
+                        fullPath = Path.Combine(fullPath, "map.json");
+                    }
                 }
             }
 
@@ -137,7 +143,6 @@ namespace TTMapEditor.Maps
             if (!File.Exists(fullPath))
             {
                 string alt = fullPath;
-                // If fullPath currently points to a directory, alt was already handled above; otherwise try file inside path
                 if (!fullPath.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
                 {
                     alt = Path.Combine(fullPath, "map.json");
@@ -149,7 +154,21 @@ namespace TTMapEditor.Maps
                 }
                 else
                 {
-                    throw new FileNotFoundException($"Map file not found: {fullPath}");
+                    // File not found — this is valid when creating a new map.
+                    // Initialize empty MapData and empty preview lists and return.
+                    mMapData = new MapData()
+                    {
+                        Walls = new List<WallData>(),
+                        Tanks = new List<TankData>(),
+                        Pickups = new List<PickupData>()
+                    };
+
+                    mWalls = new List<RectWall>();
+                    mTanks = new List<Tank>();
+                    mPickups = new List<Pickup>();
+
+                    // Keep mFilePath as provided (full path where the file will be written when saved).
+                    return;
                 }
             }
 
@@ -181,12 +200,8 @@ namespace TTMapEditor.Maps
             {
                 Walls = mWalls.Select(w =>
                 {
-                    // We cannot reliably extract the original texture name from Texture2D,
-                    // so use a sensible default. If your RectWall stores the texture asset name,
-                    // replace the line below to use that property instead.
                     string textureName = "block";
 
-                    // convert back to percent-based Position / Size using play area
                     var rect = w.mRectangle;
                     float posX = (rect.X - mPlayArea.X) * 100.0f / mPlayArea.Width;
                     float posY = (rect.Y - mPlayArea.Y) * 100.0f / mPlayArea.Height;
@@ -437,7 +452,7 @@ namespace TTMapEditor.Maps
             }
         }
 
-        public void SaveMap()
+        public void SaveMap(string pMapName)
         {
             // Ensure MapData exists and lists are initialized
             if (mMapData == null)
@@ -472,37 +487,26 @@ namespace TTMapEditor.Maps
                 }
             }
 
-            string targetPath;
+            // Decide base directory to place the new file in
+            string outputBaseDir;
 
-            // If the provided path is absolute
             if (Path.IsPathRooted(mFilePath))
             {
-                // If it's an existing directory, save map.json inside it
-                if (Directory.Exists(mFilePath))
+                // If mFilePath is a directory (or looks like one), use it
+                if (Directory.Exists(mFilePath) || !Path.HasExtension(mFilePath))
                 {
-                    targetPath = Path.Combine(mFilePath, "map.json");
-                }
-                else if (!Path.HasExtension(mFilePath))
-                {
-                    // Treat an absolute path without extension as a filename -> create "<path>.json"
-                    string pathWithExt = mFilePath + ".json";
-                    string? dirName = Path.GetDirectoryName(pathWithExt);
-                    if (!string.IsNullOrEmpty(dirName))
-                        Directory.CreateDirectory(dirName);
-                    targetPath = pathWithExt;
+                    outputBaseDir = mFilePath;
                 }
                 else
                 {
-                    // treat as file path
-                    string? dirName = Path.GetDirectoryName(mFilePath);
-                    if (!string.IsNullOrEmpty(dirName))
-                        Directory.CreateDirectory(dirName);
-                    targetPath = mFilePath;
+                    // mFilePath is a file -> save sibling files in the same directory
+                    string? parent = Path.GetDirectoryName(mFilePath);
+                    outputBaseDir = !string.IsNullOrEmpty(parent) ? parent : mapsDir;
                 }
             }
             else
             {
-                // relative path: strip leading Maps\ if present
+                // relative path handling: strip leading "Maps\" if present
                 string relativePath = mFilePath;
                 string mapsPrefix1 = "Maps" + Path.DirectorySeparatorChar;
                 string mapsPrefix2 = "Maps" + Path.AltDirectorySeparatorChar;
@@ -513,26 +517,52 @@ namespace TTMapEditor.Maps
 
                 string combined = Path.Combine(mapsDir, relativePath);
 
-                if (Directory.Exists(combined))
+                if (Directory.Exists(combined) || !Path.HasExtension(combined))
                 {
-                    targetPath = Path.Combine(combined, "map.json");
-                }
-                else if (!Path.HasExtension(combined))
-                {
-                    // Treat a relative path without extension as a filename -> create "<combined>.json"
-                    string pathWithExt = combined + ".json";
-                    string? dirName = Path.GetDirectoryName(pathWithExt);
-                    if (!string.IsNullOrEmpty(dirName))
-                        Directory.CreateDirectory(dirName);
-                    targetPath = pathWithExt;
+                    outputBaseDir = combined;
                 }
                 else
                 {
-                    string? dirName = Path.GetDirectoryName(combined);
-                    if (!string.IsNullOrEmpty(dirName))
-                        Directory.CreateDirectory(dirName);
-                    targetPath = combined;
+                    string? parent = Path.GetDirectoryName(combined);
+                    outputBaseDir = !string.IsNullOrEmpty(parent) ? parent : mapsDir;
                 }
+            }
+
+            string targetPath;
+
+            // If the user typed a path (contains separator or is rooted) treat it as a path
+            bool nameLooksLikePath = Path.IsPathRooted(pMapName)
+                                     || pMapName.Contains(Path.DirectorySeparatorChar)
+                                     || pMapName.Contains(Path.AltDirectorySeparatorChar);
+
+            if (nameLooksLikePath)
+            {
+                // If typed value has an extension, treat it as the full filename
+                if (Path.HasExtension(pMapName))
+                {
+                    targetPath = Path.GetFullPath(pMapName);
+                    string? parent = Path.GetDirectoryName(targetPath);
+                    if (!string.IsNullOrEmpty(parent)) Directory.CreateDirectory(parent);
+                }
+                else
+                {
+                    // No extension: treat as directory -> save map.json inside it
+                    string candidateDir = Path.GetFullPath(pMapName);
+                    Directory.CreateDirectory(candidateDir);
+                    targetPath = Path.Combine(candidateDir, "map.json");
+                }
+            }
+            else
+            {
+                // simple name: create <outputBaseDir>\<name>.json
+                Directory.CreateDirectory(outputBaseDir);
+                string safeName = pMapName;
+                if (string.IsNullOrWhiteSpace(safeName))
+                {
+                    // fallback to "map" if the name is empty
+                    safeName = "map";
+                }
+                targetPath = Path.Combine(outputBaseDir, $"{safeName}.json");
             }
 
             // Serialize MapData and write

@@ -71,7 +71,7 @@ namespace TTMapEditor.Scenes
 
         public void NewMap()
         {
-            string newMapName = MapManager.createNewMap("New_Map");
+            string newMapName = "New Map " + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss");
             mGameInstance.GetSceneManager().Transition(new MapEditingScene(this, newMapName, true), false);
         }
 

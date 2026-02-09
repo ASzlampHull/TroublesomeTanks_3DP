@@ -174,71 +174,59 @@ namespace TTMapEditor.Scenes
 
         void HandleNewMapCreation(string pMapFile)
         {
-                // Use the configured maps root directory as a fallback only
-                string mapsRoot = MAP_ROOT;
+            // Use the configured maps root directory as a fallback only
+            string mapsRoot = MAP_ROOT;
 
-                // Normalize incoming path (strip leading "Maps\" if present)
-                string relative = pMapFile ?? string.Empty;
-                string mapsPrefix1 = "Maps" + Path.DirectorySeparatorChar;
-                string mapsPrefix2 = "Maps" + Path.AltDirectorySeparatorChar;
-                if (relative.StartsWith(mapsPrefix1) || relative.StartsWith(mapsPrefix2))
-                {
-                    relative = relative.Substring(5);
-                }
-
-                // If caller provided an absolute path or a path that contains separators,
-                // treat it as an explicit path. Only prepend mapsRoot for simple names.
-                string candidate;
-                if (string.IsNullOrWhiteSpace(relative))
-                {
-                    candidate = mapsRoot;
-                }
-                else if (Path.IsPathRooted(relative)
-                         || relative.Contains(Path.DirectorySeparatorChar)
-                         || relative.Contains(Path.AltDirectorySeparatorChar))
-                {
-                    candidate = relative;
-                }
-                else
-                {
-                    candidate = Path.Combine(mapsRoot, relative);
-                }
-
-                // Decide final target path: folder -> folder/map.json, otherwise the candidate file.
-                string targetPath;
-                if (Directory.Exists(candidate) || !Path.HasExtension(candidate))
-                {
-                    Directory.CreateDirectory(candidate); // ensure folder exists when candidate is a folder name
-                    targetPath = Path.Combine(candidate, "map.json");
-                }
-                else
-                {
-                    // candidate is a file path
-                    string? dir = Path.GetDirectoryName(candidate);
-                    if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
-                    targetPath = candidate;
-                }
-
-                // Ensure the directory for targetPath exists (defensive)
-                string? targetDir = Path.GetDirectoryName(targetPath);
-                if (!string.IsNullOrEmpty(targetDir)) Directory.CreateDirectory(targetDir);
-
-                // Create an empty MapData file only if it doesn't already exist
-                if (!File.Exists(targetPath))
-                {
-                    var emptyMap = new MapData
-                    {
-                        Walls = new List<WallData>(),
-                        Tanks = new List<TankData>(),
-                        Pickups = new List<PickupData>()
-                    };
-                    var opts = new JsonSerializerOptions { WriteIndented = true };
-                    File.WriteAllText(targetPath, JsonSerializer.Serialize(emptyMap, opts));
-                }
-
-                // Use the resolved absolute path when creating the preview so LoadMapPreview picks it up directly
-                mPreview = new MapPreview(pFilePath: Path.GetFullPath(targetPath));
+            // Normalize incoming path (strip leading "Maps\" if present)
+            string relative = pMapFile ?? string.Empty;
+            string mapsPrefix1 = "Maps" + Path.DirectorySeparatorChar;
+            string mapsPrefix2 = "Maps" + Path.AltDirectorySeparatorChar;
+            if (relative.StartsWith(mapsPrefix1) || relative.StartsWith(mapsPrefix2))
+            {
+                relative = relative.Substring(5);
             }
+
+            // If caller provided an absolute path or a path that contains separators,
+            // treat it as an explicit path. Only prepend mapsRoot for simple names.
+            string candidate;
+            if (string.IsNullOrWhiteSpace(relative))
+            {
+                candidate = mapsRoot;
+            }
+            else if (Path.IsPathRooted(relative)
+                     || relative.Contains(Path.DirectorySeparatorChar)
+                     || relative.Contains(Path.AltDirectorySeparatorChar))
+            {
+                candidate = relative;
+            }
+            else
+            {
+                candidate = Path.Combine(mapsRoot, relative);
+            }
+
+            // Decide final target path: folder -> folder/map.json, otherwise the candidate file.
+            string targetPath;
+            if (Directory.Exists(candidate) || !Path.HasExtension(candidate))
+            {
+                // ensure folder exists when candidate is a folder name (do not create the file)
+                Directory.CreateDirectory(candidate);
+                targetPath = Path.Combine(candidate, "map.json");
+            }
+            else
+            {
+                // candidate is a file path; ensure parent folder exists (do not create the file)
+                string? dir = Path.GetDirectoryName(candidate);
+                if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+                targetPath = candidate;
+            }
+
+            // Ensure the directory for targetPath exists (defensive)
+            string? targetDir = Path.GetDirectoryName(targetPath);
+            if (!string.IsNullOrEmpty(targetDir)) Directory.CreateDirectory(targetDir);
+
+            // DO NOT create the file here. Initialize the preview with the resolved path.
+            mPreview = new MapPreview(pFilePath: Path.GetFullPath(targetPath));
+        }
 
         /// <summary>
         /// Deselect every object in the preview.
@@ -389,6 +377,12 @@ namespace TTMapEditor.Scenes
             {
                 mGameInstance.GetSceneManager().Transition(mStartScene);
                 return;
+            }
+
+            if (mFileNamer.IsActive() && InputManager.isKeyPressed(Keys.Enter))
+            {
+                mName = mFileNamer.ReturnName();
+                SaveMap();
             }
 
             Vector2 mousePos = InputManager.GetMousePosition();
@@ -575,12 +569,6 @@ namespace TTMapEditor.Scenes
                 return;
             }
 
-            if(mFileNamer.IsActive() && InputManager.isKeyPressed(Keys.Enter))
-            {
-                mName = mFileNamer.ReturnName();
-                SaveMap();
-            }
-
             // Tank rotation
             if (mSelectedObject is Tank selectedTank)
             {
@@ -676,7 +664,7 @@ namespace TTMapEditor.Scenes
 
         void SaveMap()
         {
-            mPreview.SaveMap();
+            mPreview.SaveMap(mName);
         }
     }
 }

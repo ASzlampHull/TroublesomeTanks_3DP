@@ -17,10 +17,12 @@ namespace TTMapEditor.Managers
             if (string.IsNullOrWhiteSpace(pMapName))
                 throw new ArgumentException("map name must not be empty", nameof(pMapName));
 
-            // make a safe folder name
-            pMapName = SanitizeFileName(pMapName);
+            // Use only the file-name portion (prevent creation of directories if caller passed a path)
+            string rawName = Path.GetFileName(pMapName);
+            // make a safe file name
+            string safeBase = SanitizeFileName(rawName);
 
-            // Try to find an existing "Maps" folder up the directory tree (useful when running from bin/Debug)
+            // Prefer configured maps root if available (fallback to upward search or ./Maps)
             string mapsRoot = FindMapsRoot(Environment.CurrentDirectory) ?? Path.Combine(Environment.CurrentDirectory, "Maps");
 
             // Ensure the maps root exists
@@ -30,24 +32,20 @@ namespace TTMapEditor.Managers
             }
 
             // Strip an existing " (n)" suffix from the requested name so we always start from the base name.
-            // e.g. "MyMap (1)" -> "MyMap"
-            string baseName = Regex.Match(pMapName, @"^(.*?)(?: \(\d+\))?$").Groups[1].Value;
+            string baseName = Regex.Match(safeBase, @"^(.*?)(?: \(\d+\))?$").Groups[1].Value;
 
-            // Find a unique directory name by appending " (n)" when necessary.
-            string mapDirectory;
+            // Find a unique file name by appending " (n)" when necessary.
             int suffix = 0;
             string uniqueName = baseName;
-            mapDirectory = Path.Combine(mapsRoot, uniqueName);
-            while (Directory.Exists(mapDirectory))
+            string mapFilePath = Path.Combine(mapsRoot, $"{uniqueName}.json");
+            while (File.Exists(mapFilePath))
             {
                 suffix++;
                 uniqueName = $"{baseName} ({suffix})";
-                mapDirectory = Path.Combine(mapsRoot, uniqueName);
+                mapFilePath = Path.Combine(mapsRoot, $"{uniqueName}.json");
             }
 
-            // Create directory and default map.json
-            Directory.CreateDirectory(mapDirectory);
-
+            // Create default MapData and write single JSON file (no folder)
             MapData newMap = new MapData()
             {
                 Walls = new List<WallData>(),
@@ -56,10 +54,9 @@ namespace TTMapEditor.Managers
             };
 
             string json = JsonSerializer.Serialize(newMap, new JsonSerializerOptions() { WriteIndented = true });
-            string mapFilePath = Path.Combine(mapDirectory, "map.json");
             File.WriteAllText(mapFilePath, json);
 
-            // Return the created map folder name (not the full path)
+            // Return the created map base name (without extension)
             return uniqueName;
         }
 
