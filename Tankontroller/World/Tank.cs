@@ -61,10 +61,10 @@ namespace Tankontroller.World
             new Vector2(-TANK_HEIGHT / 2, TANK_WIDTH / 2), 
             new Vector2(TANK_HEIGHT / 2 - TANK_FRONT_BUFFER, TANK_WIDTH / 2) };
 
-        private List<Bullet> m_Bullets;
+        private List<Bullet> mBullets;
 
-        private int m_Health;
-        private int m_DestructibleHealth;
+        private int mHealth;
+        private int mDestructibleHealth;
         public BulletType mbulletType { get; protected set; }
 
 
@@ -78,8 +78,9 @@ namespace Tankontroller.World
 
         private Color mColour;
         private float mResolutionScale;
-        private int m_LeftTrackFrame;
-        private int m_RightTrackFrame;
+
+        private int mLeftTrackFrame;
+        private int mRightTrackFrame;
 
         private bool mIsInsideShockwave = false; // Needed so that Player knows to deplete charge from shockwave
 
@@ -89,15 +90,15 @@ namespace Tankontroller.World
 
         public Tank(float pXPosition, float pYPosition, float pRotation, float pScale)
         {
-            m_Health = MAX_HEALTH;
+            mHealth = MAX_HEALTH;
             mbulletType = BulletType.DEFAULT;
-            m_DestructibleHealth = MAX_DESTRUCTION_HEALTH;
+            mDestructibleHealth = MAX_DESTRUCTION_HEALTH;
 
             mColour = Color.White;
-            m_Bullets = new List<Bullet>();
+            mBullets = new List<Bullet>();
             mFired = 0;
-            m_LeftTrackFrame = 1;
-            m_RightTrackFrame = 1;
+            mLeftTrackFrame = 1;
+            mRightTrackFrame = 1;
 
             mResolutionScale = pScale;
             mPosition = new Vector3(pXPosition, pYPosition, 0);
@@ -114,14 +115,14 @@ namespace Tankontroller.World
 
         private void ChangeLeftTrackFrame(int pAmount)
         {
-            m_LeftTrackFrame += pAmount;
-            if (m_LeftTrackFrame < 1)
+            mLeftTrackFrame += pAmount;
+            if (mLeftTrackFrame < 1)
             {
-                m_LeftTrackFrame = 14;
+                mLeftTrackFrame = 14;
             }
-            else if (m_LeftTrackFrame > 14)
+            else if (mLeftTrackFrame > 14)
             {
-                m_LeftTrackFrame = 1;
+                mLeftTrackFrame = 1;
             }
 
             Vector2[] tankCorners = new Vector2[4];
@@ -135,14 +136,14 @@ namespace Tankontroller.World
 
         private void ChangeRightTrackFrame(int pAmount)
         {
-            m_RightTrackFrame += pAmount;
-            if (m_RightTrackFrame < 1)
+            mRightTrackFrame += pAmount;
+            if (mRightTrackFrame < 1)
             {
-                m_RightTrackFrame = 14;
+                mRightTrackFrame = 14;
             }
-            else if (m_RightTrackFrame > 14)
+            else if (mRightTrackFrame > 14)
             {
-                m_RightTrackFrame = 1;
+                mRightTrackFrame = 1;
             }
 
             Vector2[] tankCorners = new Vector2[4];
@@ -156,7 +157,7 @@ namespace Tankontroller.World
 
         public int Health()
         {
-            return m_Health;
+            return mHealth;
         }
         public Color Colour()
         {
@@ -391,7 +392,7 @@ namespace Tankontroller.World
             Vector2 endOfCannon = GetCannonWorldPosition() + cannonDirection * cannonOffset;
             if (bullet == BulletType.BOUNCY_EMP)
             {
-                m_Bullets.Add(new BouncyEMPBullet(endOfCannon, cannonDirection * BULLET_SPEED * 1.5f, mColour, 20.0f));
+                mBullets.Add(new BouncyEMPBullet(endOfCannon, cannonDirection * BULLET_SPEED * 1.5f, mColour, 20.0f));
                 mbulletType = BulletType.DEFAULT;
             }
             else if (bullet == BulletType.MINE)
@@ -400,17 +401,17 @@ namespace Tankontroller.World
                 Vector2 backwardDirection = new Vector2((float)Math.Cos(backwardRotation), (float)Math.Sin(backwardRotation));
                 float behindOffset = 50.0f * mResolutionScale;
                 Vector2 behindTheTank = GetCannonWorldPosition() + backwardDirection * behindOffset;
-                m_Bullets.Add(new MineBullet(behindTheTank, Vector2.Zero, mColour, 600.0f));
+                mBullets.Add(new MineBullet(behindTheTank, Vector2.Zero, mColour, 600.0f));
                 mbulletType = BulletType.DEFAULT;
             }
             else if (bullet == BulletType.BOUNCY_BULLET)
             {
-                m_Bullets.Add(new BouncyBullet(endOfCannon, cannonDirection * BULLET_SPEED, mColour, 2.0f));
+                mBullets.Add(new BouncyBullet(endOfCannon, cannonDirection * BULLET_SPEED, mColour, 2.0f));
                 mbulletType = BulletType.DEFAULT;
             }
             else
             {
-                m_Bullets.Add(new DefaultBullet(endOfCannon, cannonDirection * BULLET_SPEED, mColour, 1.0f));
+                mBullets.Add(new DefaultBullet(endOfCannon, cannonDirection * BULLET_SPEED, mColour, 1.0f));
             }
         }
 
@@ -433,7 +434,7 @@ namespace Tankontroller.World
         public void CheckBullets(List<Tank> pTanks, Rectangle pPlayArea, List<RectWall> pWalls)
         {
             
-            for (int i = 0; i < m_Bullets.Count; ++i)
+            for (int i = 0; i < mBullets.Count; ++i)
             {
                 bool bulletRemoved = false;
 
@@ -442,23 +443,23 @@ namespace Tankontroller.World
                 {
                     if (pTanks[j].GetState() == TankStates.DESTROYED) continue; // Skips bullet collision with destroyed tanks
                     
-                    if (CollisionManager.Collide(m_Bullets[i], pTanks[j]))
+                    if (CollisionManager.Collide(mBullets[i], pTanks[j]))
                     {
-                        if (m_Bullets[i] is BouncyEMPBullet)
+                        if (mBullets[i] is BouncyEMPBullet)
                         {
-                            m_Bullets[i].DoCollision(pTanks[j]);
-                            m_Bullets.Add(new Shockwave(m_Bullets[i].Position, Vector2.Zero, Color.Aqua, 5.0f));
-                            m_Bullets.RemoveAt(i);
+                            mBullets[i].DoCollision(pTanks[j]);
+                            mBullets.Add(new Shockwave(mBullets[i].Position, Vector2.Zero, Color.Aqua, 5.0f));
+                            mBullets.RemoveAt(i);
                             bulletRemoved = true;
                             break;
                         }
-                        if (m_Bullets[i] is Shockwave)
+                        if (mBullets[i] is Shockwave)
                         {
                             pTanks[j].mIsInsideShockwave = true;
                         }
-                        if (m_Bullets[i].DoCollision(pTanks[j]))
+                        if (mBullets[i].DoCollision(pTanks[j]))
                         {
-                            m_Bullets.RemoveAt(i);
+                            mBullets.RemoveAt(i);
                             pTanks[j].TakeDamage();
                             bulletRemoved = true;
                             break;
@@ -469,11 +470,11 @@ namespace Tankontroller.World
                 if (bulletRemoved) continue;
 
                 // Check collision with play area
-                if (CollisionManager.Collide(m_Bullets[i], pPlayArea, true))
+                if (CollisionManager.Collide(mBullets[i], pPlayArea, true))
                 {
-                    if (m_Bullets[i].DoCollision(pPlayArea))
+                    if (mBullets[i].DoCollision(pPlayArea))
                     {
-                        m_Bullets.RemoveAt(i);
+                        mBullets.RemoveAt(i);
                         continue;
                     }
                 }
@@ -481,11 +482,11 @@ namespace Tankontroller.World
                 // Check collision with walls
                 for (int j = 0; j < pWalls.Count; ++j)
                 {
-                    if (CollisionManager.Collide(m_Bullets[i], pWalls[j].RectangleShape.ToRectangle(), false))
+                    if (CollisionManager.Collide(mBullets[i], pWalls[j].RectangleShape.ToRectangle(), false))
                     {
-                        if (m_Bullets[i].DoCollision(pWalls[j]))
+                        if (mBullets[i].DoCollision(pWalls[j]))
                         {
-                            m_Bullets.RemoveAt(i);
+                            mBullets.RemoveAt(i);
                             bulletRemoved = true;
                             break;
                         }
@@ -495,9 +496,9 @@ namespace Tankontroller.World
                 if (bulletRemoved) continue;
 
                 // Check bullet lifetime
-                if (m_Bullets[i].LifeTimeExpired())
+                if (mBullets[i].LifeTimeExpired())
                 {
-                    m_Bullets.RemoveAt(i);
+                    mBullets.RemoveAt(i);
                 }
             }
         }
@@ -518,18 +519,18 @@ namespace Tankontroller.World
             switch(m_CurrentState)
             {
                 case TankStates.ALIVE:
-                    m_Health--;
-                    if (m_Health <= 0)
+                    mHealth--;
+                    if (mHealth <= 0)
                     {
-                        m_Health = 0;
+                        mHealth = 0;
                         m_CurrentState = TankStates.DEFEATED;
                     }
                     break;
                 case TankStates.DEFEATED:
-                    m_DestructibleHealth--;
-                    if(m_DestructibleHealth <= 0)
+                    mDestructibleHealth--;
+                    if(mDestructibleHealth <= 0)
                     {
-                        m_DestructibleHealth = 0;
+                        mDestructibleHealth = 0;
                         m_CurrentState = TankStates.DESTROYED;
                         Explode(100,36);
                     }
@@ -570,10 +571,10 @@ namespace Tankontroller.World
 
         public void Heal()
         {
-            m_Health++;
-            if (m_Health > MAX_HEALTH)
+            mHealth++;
+            if (mHealth > MAX_HEALTH)
             {
-                m_Health = MAX_HEALTH;
+                mHealth = MAX_HEALTH;
             }
         }
 
@@ -584,7 +585,7 @@ namespace Tankontroller.World
             {
                 mFired--;
             }
-            foreach (Bullet bullet in m_Bullets)
+            foreach (Bullet bullet in mBullets)
             {
                 bullet.Update(pSeconds);
             }
@@ -596,9 +597,9 @@ namespace Tankontroller.World
             switch(m_CurrentState)
             {
                 case TankStates.ALIVE:
-                    trackRect.Y = m_LeftTrackFrame * mLeftTrackTexture.Height / 15;
+                    trackRect.Y = mLeftTrackFrame * mLeftTrackTexture.Height / 15;
                     pSpriteBatch.Draw(mLeftTrackTexture, GetWorldPosition(), trackRect, mColour, mRotation, new Vector2(mBaseTexture.Width / 2, mBaseTexture.Height / 2), mResolutionScale, SpriteEffects.None, 0.0f);
-                    trackRect.Y = m_RightTrackFrame * mLeftTrackTexture.Height / 15;
+                    trackRect.Y = mRightTrackFrame * mLeftTrackTexture.Height / 15;
                     pSpriteBatch.Draw(mRightTrackTexture, GetWorldPosition(), trackRect, mColour, mRotation, new Vector2(mBaseTexture.Width / 2, mBaseTexture.Height / 2), mResolutionScale, SpriteEffects.None, 0.0f);
                     pSpriteBatch.Draw(mBaseTexture, GetWorldPosition(), null, mColour, mRotation, new Vector2(mBaseTexture.Width / 2, mBaseTexture.Height / 2), mResolutionScale, SpriteEffects.None, 0.0f);
                     if (mFired == 0)
@@ -611,7 +612,7 @@ namespace Tankontroller.World
                     }
                     break;
                 case TankStates.DEFEATED:
-                    Color blend = Color.Lerp(mColour, Color.SlateGray, (1.0f - (float)m_DestructibleHealth/(float)MAX_DESTRUCTION_HEALTH) + 0.3f); // Greys the tank out more after each shot to provide visual feedback
+                    Color blend = Color.Lerp(mColour, Color.SlateGray, (1.0f - (float)mDestructibleHealth/(float)MAX_DESTRUCTION_HEALTH) + 0.3f); // Greys the tank out more after each shot to provide visual feedback
                     pSpriteBatch.Draw(mBrokenTexture, GetWorldPosition(), null, blend, GetRotation(), new Vector2(mBrokenTexture.Width / 2, mBrokenTexture.Height / 2), mResolutionScale, SpriteEffects.None, 0.0f);
                     break;
                 case TankStates.DESTROYED: 
@@ -627,7 +628,7 @@ namespace Tankontroller.World
 
         public void DrawBullets(SpriteBatch pSpriteBatch, Texture2D pTexture)
         {
-            foreach (Bullet bullet in m_Bullets)
+            foreach (Bullet bullet in mBullets)
             {
                 bullet.Draw(pSpriteBatch, pTexture);
             }
