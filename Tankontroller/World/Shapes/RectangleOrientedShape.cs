@@ -23,27 +23,6 @@ namespace Tankontroller.World.Shapes
         // World rotation (radians)
         public float WorldRotation => Owner.Rotation + LocalRotation;
 
-        // World-space axes (unit vectors)
-        public Vector2 WorldAxisX
-        {
-            get
-            {
-                float cos = (float)Math.Cos(WorldRotation);
-                float sin = (float)Math.Sin(WorldRotation);
-                return new Vector2(cos, sin);
-            }
-        }
-
-        public Vector2 WorldAxisY
-        {
-            get
-            {
-                float cos = (float)Math.Cos(WorldRotation);
-                float sin = (float)Math.Sin(WorldRotation);
-                return new Vector2(-sin, cos);
-            }
-        }
-
         public RectangleOrientedShape(Transform pOwner, Vector2 pSize, bool pEnabled = true) : base(pOwner, pEnabled)
         {
             Size = pSize;
@@ -69,6 +48,34 @@ namespace Tankontroller.World.Shapes
             };
         }
 
+        public override CollisionEvent Intersects(Vector2 point)
+        {
+            // Make point local space relative to rectangle center
+            Vector2 pointLocal = point - WorldPosition;
+
+            // Rotate by negative world rotation to align rectangle axes with world axes
+            float minusRotation = -WorldRotation;
+            float cos = (float)Math.Cos(minusRotation);
+            float sin = (float)Math.Sin(minusRotation);
+            Vector2 localSpacePoint = new(
+                pointLocal.X * cos - pointLocal.Y * sin,
+                pointLocal.X * sin + pointLocal.Y * cos
+            );
+
+            // Check if local point is within the rectangle's half-extents
+            if (localSpacePoint.X >= -HalfExtents.X &&
+                localSpacePoint.X <= HalfExtents.X &&
+                localSpacePoint.Y >= -HalfExtents.Y &&
+                localSpacePoint.Y <= HalfExtents.Y)
+            {
+                // Use vector from rectangle center to point (in world space), normalized.
+                Vector2 normal = NormalizeZeroSafe(WorldPosition - point);
+                return new CollisionEvent(true, point, normal);
+            }
+
+            return new CollisionEvent(false);
+        }
+
         /// <summary>
         /// Checks for intersection with a point - if the point is inside the rectangle.
         /// </summary>
@@ -77,10 +84,7 @@ namespace Tankontroller.World.Shapes
         /// 2. The normal of the collision (pointing into the rectangle). </returns>
         public CollisionEvent IntersectsPoint(PointShape pPoint)
         {
-            CollisionEvent collisionEvent = pPoint.IntersectsOrientedRectangle(this);
-            if (collisionEvent.CollisionNormal.HasValue)
-                collisionEvent.CollisionNormal *= -1;
-            return collisionEvent;
+            return Intersects(pPoint.WorldPosition);
         }
 
         /// <summary>
@@ -122,13 +126,13 @@ namespace Tankontroller.World.Shapes
             // Build local axes for both rectangles in world space
             float cosA = (float)Math.Cos(WorldRotation);
             float sinA = (float)Math.Sin(WorldRotation);
-            Vector2 axisA_X = new(cosA, sinA);
-            Vector2 axisA_Y = new(-sinA, cosA);
+            Vector2 thisAxisX = new(cosA, sinA);
+            Vector2 thisAxisY = new(-sinA, cosA);
 
             float cosB = (float)Math.Cos(pRectangleOriented.WorldRotation);
             float sinB = (float)Math.Sin(pRectangleOriented.WorldRotation);
-            Vector2 axisB_X = new(cosB, sinB);
-            Vector2 axisB_Y = new(-sinB, cosB);
+            Vector2 otherAxisX = new(cosB, sinB);
+            Vector2 otherAxisY = new(-sinB, cosB);
 
             Vector2 centerA = WorldPosition;
             Vector2 centerB = pRectangleOriented.WorldPosition;
@@ -137,7 +141,7 @@ namespace Tankontroller.World.Shapes
             Vector2 halfB = pRectangleOriented.HalfExtents;
 
             // Candidate axes: face normals of both rectangles
-            Vector2[] axes = { axisA_X, axisA_Y, axisB_X, axisB_Y };
+            Vector2[] axes = { thisAxisX, thisAxisY, otherAxisX, otherAxisY };
 
             float minOverlap = float.MaxValue;
             Vector2 minAxis = Vector2.Zero;
@@ -149,8 +153,8 @@ namespace Tankontroller.World.Shapes
                 float projCenterB = Vector2.Dot(centerB, axis);
 
                 // Projected half extents for each rectangle onto axis
-                float projHalfA = halfA.X * MathF.Abs(Vector2.Dot(axisA_X, axis)) + halfA.Y * MathF.Abs(Vector2.Dot(axisA_Y, axis));
-                float projHalfB = halfB.X * MathF.Abs(Vector2.Dot(axisB_X, axis)) + halfB.Y * MathF.Abs(Vector2.Dot(axisB_Y, axis));
+                float projHalfA = halfA.X * MathF.Abs(Vector2.Dot(thisAxisX, axis)) + halfA.Y * MathF.Abs(Vector2.Dot(thisAxisY, axis));
+                float projHalfB = halfB.X * MathF.Abs(Vector2.Dot(otherAxisX, axis)) + halfB.Y * MathF.Abs(Vector2.Dot(otherAxisY, axis));
 
                 float distance = MathF.Abs(projCenterA - projCenterB);
                 float overlap = projHalfA + projHalfB - distance;
@@ -172,13 +176,13 @@ namespace Tankontroller.World.Shapes
             Vector2 collisionNormal = NormalizeZeroSafe(minAxis * sign);
 
             // Support points: pick rectangle-support points in the direction of the collision normal, then midpoint
-            float signAX = MathF.Sign(Vector2.Dot(collisionNormal, axisA_X));
-            float signAY = MathF.Sign(Vector2.Dot(collisionNormal, axisA_Y));
-            Vector2 supportA = centerA + axisA_X * (signAX * halfA.X) + axisA_Y * (signAY * halfA.Y);
+            float signAX = MathF.Sign(Vector2.Dot(collisionNormal, thisAxisX));
+            float signAY = MathF.Sign(Vector2.Dot(collisionNormal, thisAxisY));
+            Vector2 supportA = centerA + thisAxisX * (signAX * halfA.X) + thisAxisY * (signAY * halfA.Y);
 
-            float signBX = MathF.Sign(Vector2.Dot(collisionNormal, axisB_X));
-            float signBY = MathF.Sign(Vector2.Dot(collisionNormal, axisB_Y));
-            Vector2 supportB = centerB + axisB_X * (signBX * halfB.X) + axisB_Y * (signBY * halfB.Y);
+            float signBX = MathF.Sign(Vector2.Dot(collisionNormal, otherAxisX));
+            float signBY = MathF.Sign(Vector2.Dot(collisionNormal, otherAxisY));
+            Vector2 supportB = centerB + otherAxisX * (signBX * halfB.X) + otherAxisY * (signBY * halfB.Y);
 
             Vector2 collisionPosition = (supportA + supportB) * 0.5f;
 

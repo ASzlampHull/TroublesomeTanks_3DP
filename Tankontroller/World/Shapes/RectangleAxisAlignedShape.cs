@@ -37,6 +37,25 @@ namespace Tankontroller.World.Shapes
             };
         }
 
+        public override CollisionEvent Intersects(Vector2 point)
+        {
+            // Build AABB min/max from rectangle center and half-extents
+            Vector2 rectangleMin = Min;
+            Vector2 rectangleMax = Max;
+
+            // Check if point is inside AABB and report collision event
+            if (point.X >= rectangleMin.X &&
+                point.X <= rectangleMax.X &&
+                point.Y >= rectangleMin.Y &&
+                point.Y <= rectangleMax.Y)
+            {
+                Vector2 normal = NormalizeZeroSafe(WorldPosition - point);
+                return new CollisionEvent(true, point, normal);
+            }
+
+            return new CollisionEvent(false);
+        }
+
         /// <summary>
         /// Checks for intersection with a point shape - if the point is inside the rectangle.
         /// </summary>
@@ -45,10 +64,7 @@ namespace Tankontroller.World.Shapes
         /// 2. The normal of the collision (pointing into the rectangle center). </returns>
         public CollisionEvent IntersectsPoint(PointShape pPoint)
         {
-            CollisionEvent collisionEvent = pPoint.IntersectsAlignedRectangle(this);
-            if (collisionEvent.CollisionNormal.HasValue)
-                collisionEvent.CollisionNormal *= -1;
-            return collisionEvent;
+            return Intersects(pPoint.WorldPosition);
         }
 
         /// <summary>

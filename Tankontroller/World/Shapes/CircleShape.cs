@@ -30,6 +30,17 @@ namespace Tankontroller.World.Shapes
             };
         }
 
+        public override CollisionEvent Intersects(Vector2 point)
+        {
+            Vector2 difference = WorldPosition - point;
+            if (difference.LengthSquared() <= Radius * Radius)
+            {
+                Vector2 normal = NormalizeZeroSafe(difference);
+                return new CollisionEvent(true, point, normal);
+            }
+            return new CollisionEvent(false);
+        }
+
         /// <summary>
         /// Check for intersection with a point shape - if the point is inside the circle.
         /// </summary>
@@ -38,10 +49,7 @@ namespace Tankontroller.World.Shapes
         /// 2. The normal of the collision (pointing away from the point, into the circle) </returns>
         public CollisionEvent IntersectsPoint(PointShape pPoint)
         {
-            CollisionEvent collisionEvent = pPoint.IntersectsCircle(this);
-            if (collisionEvent.CollisionNormal.HasValue)
-                collisionEvent.CollisionNormal *= -1;
-            return collisionEvent;
+            return Intersects(pPoint.WorldPosition);
         }
 
         /// <summary>

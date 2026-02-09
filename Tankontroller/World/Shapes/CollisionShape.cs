@@ -52,6 +52,12 @@ namespace Tankontroller.World.Shapes
         /// <exception cref="NotImplementedException"> Thrown when intersection with an unsupported shape is attempted. </exception>
         public abstract CollisionEvent Intersects(CollisionShape other);
 
+        /// <summary>
+        /// Checks for intersection with a Vector2 point
+        /// </summary>
+        /// <returns> Collision event information, including whether a collision has occurred </returns>
+        public abstract CollisionEvent Intersects(Vector2 point);
+
 
         /// <summary>
         /// Normalizes a vector, returning a default unit vector if the input vector is zero-length.
