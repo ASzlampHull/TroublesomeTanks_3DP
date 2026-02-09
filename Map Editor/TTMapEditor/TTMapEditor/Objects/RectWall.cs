@@ -5,12 +5,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO.Pipes;
 
 namespace TTMapEditor.Objects
 {
     internal class RectWall : SceneObject
     {
-        private static readonly Color COLOUR = Color.DarkGray;
+        private static readonly Color COLOUR = DGS.Instance.GetColour("COLOUR_WALL");
+        private static readonly SpriteFont mFont = TTMapEditor.Instance().GetContentManager().Load<SpriteFont>("TitleFont");
+        bool mIsRotating = false;
+        bool mIsScaling = true;
 
         public RectWall(Texture2D pTexture, Rectangle pRectangle) : base(pTexture, pRectangle)
         {
@@ -28,6 +32,10 @@ namespace TTMapEditor.Objects
             Vector2 scale = new Vector2(mRectangle.Width / (float)mTexture.Width, mRectangle.Height / (float)mTexture.Height);
 
             pSpriteBatch.Draw(mTexture, position, null, tint, mRotation, origin, scale, SpriteEffects.None, 0f);
+            if(GetIsSelected())
+            {
+                pSpriteBatch.DrawString(mFont, mIsRotating ? "Rotating" : "Scaling", new Vector2(mRectangle.X, mRectangle.Y - 20), Color.Black);
+            }
         }
 
         public override void DrawOutline(SpriteBatch pSpriteBatch)
@@ -62,5 +70,15 @@ namespace TTMapEditor.Objects
         {
             mRotation += pDelta;
         }
+
+        public void SwitchRotationScaling()
+        {
+            mIsRotating = !mIsRotating;
+            mIsScaling = !mIsScaling;
+        }
+
+        public bool GetIsRotating() => mIsRotating;
+
+        public bool GetIsScaling() => mIsScaling;
     }
 }

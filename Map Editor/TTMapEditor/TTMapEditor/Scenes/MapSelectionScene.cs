@@ -17,6 +17,8 @@ namespace TTMapEditor.Scenes
         private MainMenuScene mStartScene;
         private static readonly Texture2D mBackgroundTexture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("background_01");
         private static readonly SpriteFont mSpriteFont = TTMapEditor.Instance().GetContentManager().Load<SpriteFont>("TitleFont");
+        private static readonly String MAP_DIRECTORY = DGS.Instance.GetString("MAP_FILE_PATH");
+        private static readonly Color BACKGROUND_COLOUR = DGS.Instance.GetColour("COLOUR_BACKGROUND");
         private Rectangle mBackgroundRectangle;
         private Vector2 mTitlePosition;
         private List<string> mMapFiles;
@@ -29,6 +31,7 @@ namespace TTMapEditor.Scenes
         Rectangle mNextRectangle;
         int mThumbnailWidth;
         int mThumbnailHeight;
+
 
         public MapSelectionScene(MainMenuScene pStartScene)
         {
@@ -44,54 +47,65 @@ namespace TTMapEditor.Scenes
             mThumbnailWidth = screenWidth * 96 / 100 / 4;
             mThumbnailHeight = screenHeight * 73 / 100 / 4;
 
-            string mapDirectory = Path.Combine(Environment.CurrentDirectory, "Maps");
-            if (!Directory.Exists(mapDirectory))
+            // Ensure map directory exists
+            if (!Directory.Exists(MAP_DIRECTORY))
             {
-                Directory.CreateDirectory(mapDirectory);
+                Directory.CreateDirectory(MAP_DIRECTORY);
             }
-            
-            string[] filePaths = Directory.GetFiles(mapDirectory, "*.json", SearchOption.AllDirectories);
+
+            // Find all json map files under configured maps directory
+            string[] filePaths = Directory.GetFiles(MAP_DIRECTORY, "*.json", SearchOption.AllDirectories);
+
+            // Store relative paths (relative to MAP_DIRECTORY) so UI shows short names,
+            // but always combine with MAP_DIRECTORY when reading/writing files.
             for (int i = 0; i < filePaths.Length; i++)
             {
-                filePaths[i] = filePaths[i].Replace(mapDirectory + "\\", "");
+                filePaths[i] = Path.GetRelativePath(MAP_DIRECTORY, filePaths[i]);
             }
             mMapFiles = new List<string>(filePaths);
 
             foreach (string mapFile in mMapFiles)
             {
-                string thumbnailFile = mapFile.Replace(".json", "_thumbnail.png");
+                // mapFile is relative path; build full path for file operations
+                string fullMapPath = Path.Combine(MAP_DIRECTORY, mapFile);
+
+                string thumbnailFileName = Path.GetFileNameWithoutExtension(fullMapPath) + "_thumbnail.png";
+                string thumbnailFile = Path.Combine(Path.GetDirectoryName(fullMapPath) ?? MAP_DIRECTORY, thumbnailFileName);
+
                 if (!File.Exists(thumbnailFile))
                 {
-                    MakeThumbnailTextureFromMapFile(mapFile);
+                    MakeThumbnailTextureFromMapFile(fullMapPath, thumbnailFile);
                 }
                 else
                 {
-                    using (FileStream fileStream = new FileStream(thumbnailFile, FileMode.Open))
+                    using (FileStream fileStream = new FileStream(thumbnailFile, FileMode.Open, FileAccess.Read, FileShare.Read))
                     {
                         mThumbnailTextures.Add(Texture2D.FromStream(mGameInstance.GetGraphicsDeviceManager().GraphicsDevice, fileStream));
                     }
                 }
             }
 
-                mPreviousRectangle = new Rectangle((screenWidth / 2) - (mThumbnailWidth / 2) - mThumbnailWidth,
-                    (screenHeight / 2) - (mThumbnailHeight / 2),
-                    mThumbnailWidth,
-                    mThumbnailHeight);
+            mPreviousRectangle = new Rectangle((screenWidth / 2) - (mThumbnailWidth / 2) - mThumbnailWidth,
+                (screenHeight / 2) - (mThumbnailHeight / 2),
+                mThumbnailWidth,
+                mThumbnailHeight);
 
-                mCurrentRectangle = new Rectangle((screenWidth / 2) - (mThumbnailWidth),
-                    (screenHeight / 2) - (mThumbnailHeight),
-                    mThumbnailWidth * 2,
-                    mThumbnailHeight * 2);
+            mCurrentRectangle = new Rectangle((screenWidth / 2) - (mThumbnailWidth),
+                (screenHeight / 2) - (mThumbnailHeight),
+                mThumbnailWidth * 2,
+                mThumbnailHeight * 2);
 
-                mNextRectangle = new Rectangle((screenWidth / 2) - (mThumbnailWidth / 2) + mThumbnailWidth,
-                    (screenHeight / 2) - (mThumbnailHeight / 2),
-                    mThumbnailWidth,
-                    mThumbnailHeight);
-            }
+            mNextRectangle = new Rectangle((screenWidth / 2) - (mThumbnailWidth / 2) + mThumbnailWidth,
+                (screenHeight / 2) - (mThumbnailHeight / 2),
+                mThumbnailWidth,
+                mThumbnailHeight);
+        }
 
         private void selectMap(string pMapName)
         {
-            mGameInstance.GetSceneManager().Transition(new MapEditingScene(mStartScene, pMapName, false), true);
+            // pMapName is stored as relative path. Pass an absolute path to the editor.
+            string fullMapPath = Path.Combine(MAP_DIRECTORY, pMapName);
+            mGameInstance.GetSceneManager().Transition(new MapEditingScene(mStartScene, fullMapPath, false), true);
         }
 
         public override void Draw(float pSeconds)
@@ -143,10 +157,10 @@ namespace TTMapEditor.Scenes
             }
         }
 
-        void MakeThumbnailTextureFromMapFile(string pMapFile)
+        // Now accepts full absolute path to the .json map and the destination thumbnail path.
+        void MakeThumbnailTextureFromMapFile(string fullMapPath, string thumbnailPath)
         {
-            pMapFile = "Maps\\" + pMapFile;
-            string mapContent = File.ReadAllText(pMapFile);
+            string mapContent = File.ReadAllText(fullMapPath);
             MapData mapData = JsonSerializer.Deserialize<MapData>(mapContent);
 
             int thumbnailWidth = mThumbnailWidth * 2;
@@ -167,7 +181,7 @@ namespace TTMapEditor.Scenes
 
             //Todo change to use a colour from the DGS
             Rectangle innerRect = new Rectangle(2, 2, thumbnailWidth - 4, thumbnailHeight - 4);
-            mSpriteBatch.Draw(mGameInstance.GetContentManager().Load<Texture2D>("block"), innerRect, Color.Wheat);
+            mSpriteBatch.Draw(mGameInstance.GetContentManager().Load<Texture2D>("block"), innerRect, BACKGROUND_COLOUR);
 
             // Draw outlines for walls
             foreach (var wall in mapData.Walls)
@@ -250,7 +264,10 @@ namespace TTMapEditor.Scenes
 
             Texture2D thumbnailTexture = renderTarget;
 
-            using (FileStream stream = new FileStream(pMapFile.Replace(".json", "_thumbnail.png"), FileMode.Create))
+            // Ensure directory exists for thumbnail, then save
+            string thumbnailDir = Path.GetDirectoryName(thumbnailPath) ?? MAP_DIRECTORY;
+            Directory.CreateDirectory(thumbnailDir);
+            using (FileStream stream = new FileStream(thumbnailPath, FileMode.Create))
             {
                 thumbnailTexture.SaveAsPng(stream, thumbnailWidth, thumbnailHeight);
             }

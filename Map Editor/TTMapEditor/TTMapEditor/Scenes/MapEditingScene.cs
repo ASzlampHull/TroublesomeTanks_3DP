@@ -12,7 +12,6 @@ using TTMapEditor.Managers;
 using TTMapEditor.Maps;
 using TTMapEditor.Objects;
 using System.Runtime.InteropServices;
-using TTMapEditor.Saving;
 
 
 namespace TTMapEditor.Scenes
@@ -35,14 +34,13 @@ namespace TTMapEditor.Scenes
         static readonly Texture2D mBackgroundTexture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("background_01");
         static readonly Texture2D mPixelTexture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("white_pixel");
         static readonly Texture2D mCircleTexture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("circle");
+        static readonly Color BACKGROUND_COLOUR = DGS.Instance.GetColour("COLOUR_BACKGROUND");
         Rectangle mBackgroundRectangle;
         Rectangle mPlayArea;
         Rectangle mPlayAreaOutline;
         RectWall mWall;
         MapPreview mPreview;
         bool mIsNewMap;
-        bool mSelectingSaveLocation = true;
-        FolderPicker mFolderPicker;
 
         // Selected object (any SceneObject-derived)
         SceneObject mSelectedObject;
@@ -76,6 +74,9 @@ namespace TTMapEditor.Scenes
         // max tanks allowed
         const int MaxTanks = 4;
 
+        // Use the requested folder as the maps root. Change this path if you move the maps directory.
+        private static readonly string MAP_ROOT = DGS.Instance.GetString("MAP_FILE_PATH");
+
         public MapEditingScene(MainMenuScene pStartScene, string pMapFile, bool pIsNewMap)
         {
             mGraphicsDevice = TTMapEditor.Instance().GetGraphicsDeviceManager().GraphicsDevice;
@@ -92,18 +93,20 @@ namespace TTMapEditor.Scenes
             }
             else
             {
-                mPreview = new MapPreview(pFilePath: pMapFile);
+                // Resolve the incoming path relative to the configured maps root when appropriate.
+                string resolved = ResolveMapPath(pMapFile);
+                mPreview = new MapPreview(pFilePath: resolved);
             }
 
             mPlayArea = mPreview.GetPlayArea();
             mPlayAreaOutline = new Rectangle(mPlayArea.X - 5, mPlayArea.Y - 5, mPlayArea.Width + 10, mPlayArea.Height + 10);
             mSpriteBatch = new SpriteBatch(mGraphicsDevice);
             mBackgroundRectangle = new Rectangle(0, 0, viewPortWidth, viewPortHeight);
-            
+
             mWall = new RectWall(mPixelTexture, new Rectangle(viewPortWidth - 5 * viewPortWidth / 8, 200, 200, 50));
             mTemplateTank = new Tank(mPixelTexture, new Rectangle(viewPortWidth - viewPortWidth / 8, 200, 14, 14));
             mTemplatePickup = new Pickup(mCircleTexture, new Rectangle(viewPortWidth - viewPortWidth / 3, 200, 14, 14));
-            
+
             mWallTemplate = new DraggableTemplate<RectWall>(mWall);
             mTankTemplate = new DraggableTemplate<Tank>(mTemplateTank);
             mPickupTemplate = new DraggableTemplate<Pickup>(mTemplatePickup);
@@ -112,12 +115,63 @@ namespace TTMapEditor.Scenes
             int saveButtonWidth = (int)(mTitleFont.MeasureString("Save").X + 20);
             int saveButtonHeight = (int)(mTitleFont.MeasureString("Save").Y + 10);
             mSaveButtonRect = new Rectangle(viewPortWidth - viewPortWidth + viewPortWidth / 16, 5, saveButtonWidth, saveButtonHeight);
-            mFolderPicker = new FolderPicker(mSpriteBatch, mPixelTexture, mTitleFont, Path.Combine(Environment.CurrentDirectory, "Maps"));
+        }
+
+        /// <summary>
+        /// Resolve a supplied map path into an absolute file path using sMapsRoot when the incoming value is a name or relative path.
+        /// If the provided value is already rooted it will be normalized and returned.
+        /// </summary>
+        string ResolveMapPath(string pMapFile)
+        {
+            if (string.IsNullOrWhiteSpace(pMapFile))
+            {
+                // default to a map.json inside the maps root
+                Directory.CreateDirectory(MAP_ROOT);
+                return Path.GetFullPath(Path.Combine(MAP_ROOT, "map.json"));
+            }
+
+            // If absolute path was provided, normalize and return (if it's a directory, return map.json inside it)
+            if (Path.IsPathRooted(pMapFile))
+            {
+                if (Directory.Exists(pMapFile) || !Path.HasExtension(pMapFile))
+                {
+                    Directory.CreateDirectory(pMapFile);
+                    return Path.GetFullPath(Path.Combine(pMapFile, "map.json"));
+                }
+                return Path.GetFullPath(pMapFile);
+            }
+
+            // Remove leading "Maps\" if present in the supplied value to avoid double "Maps\Maps\..."
+            string relative = pMapFile;
+            string mapsPrefix1 = "Maps" + Path.DirectorySeparatorChar;
+            string mapsPrefix2 = "Maps" + Path.AltDirectorySeparatorChar;
+            if (relative.StartsWith(mapsPrefix1) || relative.StartsWith(mapsPrefix2))
+            {
+                relative = relative.Substring(5);
+            }
+
+            // Combine with configured maps root
+            string candidate = Path.Combine(MAP_ROOT, relative);
+
+            // If caller supplied just a name (no extension) or a folder, create folder + "map.json"
+            if (Directory.Exists(candidate) || !Path.HasExtension(candidate))
+            {
+                Directory.CreateDirectory(candidate);
+                return Path.GetFullPath(Path.Combine(candidate, "map.json"));
+            }
+            else
+            {
+                // candidate is a file path
+                string? dir = Path.GetDirectoryName(candidate);
+                if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+                return Path.GetFullPath(candidate);
+            }
         }
 
         void HandleNewMapCreation(string pMapFile)
         {
-            string mapsRoot = Path.Combine(Environment.CurrentDirectory, "Maps");
+            // Use the configured maps root directory instead of Environment.CurrentDirectory
+            string mapsRoot = MAP_ROOT;
             Directory.CreateDirectory(mapsRoot);
 
             // Normalize incoming path (strip leading "Maps\" if present)
@@ -183,23 +237,42 @@ namespace TTMapEditor.Scenes
             DrawTemplates();
             DrawSaveButton();
             mSpriteBatch.End();
-            if (mSelectingSaveLocation)
-            {
-                mFolderPicker.Draw();
-                return;
-            }
         }
 
         void DrawBackgroundAndTitle()
         {
             mSpriteBatch.Draw(mBackgroundTexture, mBackgroundRectangle, Color.White);
-            mSpriteBatch.DrawString(mTitleFont, mName, new Vector2(100, 100), Color.Black);
+
+            // Show only the final path segment (file or folder name).
+            string displayName = mName ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(displayName))
+            {
+                // Trim any trailing separators then get the last segment.
+                displayName = Path.GetFileName(displayName.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+
+                // If Path.GetFileName returned empty (e.g. input was a root or ended with a separator),
+                // fall back to DirectoryInfo.Name to try to get the last folder name.
+                if (string.IsNullOrEmpty(displayName))
+                {
+                    try
+                    {
+                        displayName = new DirectoryInfo(mName).Name;
+                    }
+                    catch
+                    {
+                        // keep original if DirectoryInfo fails
+                        displayName = mName;
+                    }
+                }
+            }
+
+            mSpriteBatch.DrawString(mTitleFont, displayName, new Vector2(100, 100), Color.Black);
         }
 
         void DrawPlayAreaAndObjects()
         {
             mSpriteBatch.Draw(mPixelTexture, mPlayAreaOutline, Color.Black);
-            mSpriteBatch.Draw(mPixelTexture, mPlayArea, Color.Wheat);
+            mSpriteBatch.Draw(mPixelTexture, mPlayArea, BACKGROUND_COLOUR);
 
             foreach (RectWall wall in mPreview.GetWalls())
             {
@@ -247,9 +320,9 @@ namespace TTMapEditor.Scenes
 
         void handlePickupEnabling()
         {
-            if(mSelectedObject is Pickup)
+            if (mSelectedObject is Pickup)
             {
-                if(InputManager.isKeyPressed(Keys.D1))
+                if (InputManager.isKeyPressed(Keys.D1))
                 {
                     ((Pickup)mSelectedObject).TogglePickupType(PickupType.HEALTH);
                 }
@@ -312,10 +385,6 @@ namespace TTMapEditor.Scenes
 
             HandleKeyboardActions();
             handlePickupEnabling();
-            if(mSelectingSaveLocation)
-            {
-                mFolderPicker.Update(pSeconds);
-            }
         }
 
         /// <summary>
@@ -323,15 +392,15 @@ namespace TTMapEditor.Scenes
         /// </summary>
         void HandleTemplateWallDragging(Vector2 mousePos)
         {
-            if(!mWallTemplate.mIsDragging && mWallTemplate.mTemplate.IsPointWithin(mousePos) && InputManager.isLeftMouseClicked())
+            if (!mWallTemplate.mIsDragging && mWallTemplate.mTemplate.IsPointWithin(mousePos) && InputManager.isLeftMouseClicked())
             {
                 mWallTemplate.BeginDrag(mousePos);
             }
-            if(mWallTemplate.mIsDragging && !InputManager.isLeftMouseReleased())
+            if (mWallTemplate.mIsDragging && !InputManager.isLeftMouseReleased())
             {
                 mWallTemplate.Update(mousePos);
             }
-            if(mWallTemplate.mIsDragging && InputManager.isLeftMouseReleased())
+            if (mWallTemplate.mIsDragging && InputManager.isLeftMouseReleased())
             {
                 var final = mWallTemplate.EndDrag(pResetToOriginal: false);
                 if (IsRectWithinPlayArea(mWallTemplate.mTemplate.mRectangle))
@@ -498,31 +567,58 @@ namespace TTMapEditor.Scenes
             // Wall scaling
             if (mSelectedObject is RectWall selectedWall)
             {
-                float rotationStep = MathHelper.ToRadians(15.0f);
-                if (InputManager.isKeyPressed(Keys.Left))
+                if(InputManager.isKeyPressed(Keys.LeftShift) || InputManager.isKeyPressed(Keys.RightShift))
                 {
-                    selectedWall.Rotate(rotationStep);
+                    selectedWall.SwitchRotationScaling();
                 }
-                if (InputManager.isKeyPressed(Keys.Right))
+                switch (selectedWall.GetIsRotating())
                 {
-                    selectedWall.ScaleWidth(1.25f);
-                }
-                if (InputManager.isKeyPressed(Keys.Up))
-                {
-                    selectedWall.ScaleHeight(1.25f);
-                }
-                if (InputManager.isKeyPressed(Keys.Down))
-                {
-                    selectedWall.ScaleHeight(0.75f);
-                }
+                    case true:
+                        float rotationStep = MathHelper.ToRadians(15.0f);
+                        if (InputManager.isKeyPressed(Keys.Left))
+                        {
+                            selectedWall.Rotate(rotationStep);
+                        }
+                        if (InputManager.isKeyPressed(Keys.Right))
+                        {
+                            selectedWall.Rotate(-rotationStep);
+                        }
+                        if (!IsWallWithinPlayArea(selectedWall))
+                        {
+                            selectedWall.SetWallRectangle(mSelectedObjectPreviousRect);
+                        }
+                        else
+                        {
+                            mSelectedObjectPreviousRect = selectedWall.mRectangle;
+                        }
+                        break;
+                    case false:
+                        if (InputManager.isKeyPressed(Keys.Left))
+                        {
+                            selectedWall.ScaleWidth(0.75f);
+                        }
+                        if (InputManager.isKeyPressed(Keys.Right))
+                        {
+                            selectedWall.ScaleWidth(1.25f);
+                        }
+                        if (InputManager.isKeyPressed(Keys.Up))
+                        {
+                            selectedWall.ScaleHeight(1.25f);
+                        }
+                        if (InputManager.isKeyPressed(Keys.Down))
+                        {
+                            selectedWall.ScaleHeight(0.75f);
+                        }
 
-                if (!IsWallWithinPlayArea(selectedWall))
-                {
-                    selectedWall.SetWallRectangle(mSelectedObjectPreviousRect);
-                }
-                else
-                {
-                    mSelectedObjectPreviousRect = selectedWall.mRectangle;
+                        if (!IsWallWithinPlayArea(selectedWall))
+                        {
+                            selectedWall.SetWallRectangle(mSelectedObjectPreviousRect);
+                        }
+                        else
+                        {
+                            mSelectedObjectPreviousRect = selectedWall.mRectangle;
+                        }
+                        break;
                 }
             }
         }

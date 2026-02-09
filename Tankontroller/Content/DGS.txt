@@ -32,7 +32,7 @@ float BULLET_CHARGE_DEPLETION = 95;
 
 //PICKUPS
 bool PICKUPS_ON = true;
-float PICKUP_SPAWN_RATE = 20;
+float PICKUP_SPAWN_RATE = 1;
 bool ADD_PICKUP_HEALTH = true;
 bool ADD_PICKUP_EMP = true;
 bool ADD_PICKUP_MINE = true;
