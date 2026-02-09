@@ -65,7 +65,7 @@ namespace Tankontroller.World
 
         private int mHealth;
         private int mDestructibleHealth;
-        public BulletType mBulletType { get; protected set; }
+        public BulletType BulletType { get; protected set; }
 
         private float mRotation;
         private float mOldRotation;
@@ -90,7 +90,7 @@ namespace Tankontroller.World
         public Tank(float pXPosition, float pYPosition, float pRotation, float pScale)
         {
             mHealth = MAX_HEALTH;
-            mBulletType = BulletType.DEFAULT;
+            BulletType = BulletType.DEFAULT;
             mDestructibleHealth = MAX_DESTRUCTION_HEALTH;
 
             mColour = Color.White;
@@ -390,7 +390,7 @@ namespace Tankontroller.World
             if (bullet == BulletType.BOUNCY_EMP)
             {
                 mBullets.Add(new BouncyEMPBullet(endOfCannon, cannonDirection * BULLET_SPEED * 1.5f, mColour, 20.0f));
-                mBulletType = BulletType.DEFAULT;
+                BulletType = BulletType.DEFAULT;
             }
             else if (bullet == BulletType.MINE)
             {
@@ -399,12 +399,12 @@ namespace Tankontroller.World
                 float behindOffset = 50.0f * mResolutionScale;
                 Vector2 behindTheTank = GetCannonWorldPosition() + backwardDirection * behindOffset;
                 mBullets.Add(new MineBullet(behindTheTank, Vector2.Zero, mColour, 600.0f));
-                mBulletType = BulletType.DEFAULT;
+                BulletType = BulletType.DEFAULT;
             }
             else if (bullet == BulletType.BOUNCY_BULLET)
             {
                 mBullets.Add(new BouncyBullet(endOfCannon, cannonDirection * BULLET_SPEED, mColour, 2.0f));
-                mBulletType = BulletType.DEFAULT;
+                BulletType = BulletType.DEFAULT;
             }
             else
             {
@@ -414,7 +414,7 @@ namespace Tankontroller.World
 
         public void SetBulletType(BulletType pBulletType)
         {
-            mBulletType = pBulletType;
+            BulletType = pBulletType;
         }
 
         public void PutBack()
