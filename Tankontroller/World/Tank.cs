@@ -9,6 +9,8 @@ using Tankontroller.Managers;
 using Tankontroller.Utilities;
 using Tankontroller.World.Bullets;
 using Tankontroller.World.Particles;
+using Tankontroller.World.Shapes;
+using Tankontroller.World.WorldObject;
 
 public enum BulletType
 {
@@ -28,7 +30,7 @@ public enum TankStates
 
 namespace Tankontroller.World
 {
-    public class Tank
+    public class Tank : IWorldObject
     {
         public static readonly int MAX_HEALTH = DGS.Instance.GetInt("MAX_TANK_HEALTH");
         public static readonly float TANK_SPEED = DGS.Instance.GetFloat("TANK_SPEED");
@@ -49,7 +51,9 @@ namespace Tankontroller.World
         static private readonly Texture2D mCannonTexture = Tankontroller.Instance().CM().Load<Texture2D>("cannon");
         static private readonly Texture2D mCannonFireTexture = Tankontroller.Instance().CM().Load<Texture2D>("cannonFire");
 
-
+        public Transform Transform => new();
+        public CollisionShape CollisionShape => RectangleShape;
+        public RectangleOrientedShape RectangleShape => new(Transform, new Vector2(TANK_WIDTH, TANK_HEIGHT - TANK_FRONT_BUFFER), 0f, Vector2.Zero);
 
         private Vector2[] TANK_CORNERS = { 
             new Vector2(TANK_HEIGHT / 2 - TANK_FRONT_BUFFER, -TANK_WIDTH / 2), 
@@ -62,6 +66,7 @@ namespace Tankontroller.World
         private int m_Health;
         private int m_DestructibleHealth;
         public BulletType mbulletType { get; protected set; }
+
 
         private float mRotation;
         private float mOldRotation;
