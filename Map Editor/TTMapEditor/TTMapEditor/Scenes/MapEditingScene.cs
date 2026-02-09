@@ -567,7 +567,7 @@ namespace TTMapEditor.Scenes
             // Wall scaling
             if (mSelectedObject is RectWall selectedWall)
             {
-                if(InputManager.isKeyPressed(Keys.LeftShift) || InputManager.isKeyPressed(Keys.RightShift))
+                if(InputManager.isKeyPressed(Keys.LeftControl) || InputManager.isKeyPressed(Keys.RightControl))
                 {
                     selectedWall.SwitchRotationScaling();
                 }

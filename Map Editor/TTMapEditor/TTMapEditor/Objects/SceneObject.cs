@@ -26,7 +26,7 @@ namespace TTMapEditor.Objects
 
         public virtual void DrawOutline(SpriteBatch spriteBatch) => spriteBatch.Draw(mTexture, mOutlineRectangle, Color.Black);
 
-        public bool IsPointWithin(Vector2 point) => mRectangle.Contains(point);
+        public virtual bool IsPointWithin(Vector2 point) => mRectangle.Contains(point);
 
         public void UpdatePosition(int x, int y) => SetRectangle(new Rectangle(x, y, mRectangle.Width, mRectangle.Height));
 

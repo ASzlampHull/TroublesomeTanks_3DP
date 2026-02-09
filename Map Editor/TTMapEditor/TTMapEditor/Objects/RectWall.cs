@@ -80,5 +80,24 @@ namespace TTMapEditor.Objects
         public bool GetIsRotating() => mIsRotating;
 
         public bool GetIsScaling() => mIsScaling;
+
+        public override bool IsPointWithin(Vector2 point)
+        {
+            // center of the rectangle
+            Vector2 center = new Vector2(mRectangle.Center.X, mRectangle.Center.Y);
+
+            // translate to origin
+            Vector2 local = point - center;
+
+            // rotate by -mRotation
+            float cos = (float)Math.Cos(-mRotation);
+            float sin = (float)Math.Sin(-mRotation);
+            Vector2 rotated = new Vector2(local.X * cos - local.Y * sin, local.X * sin + local.Y * cos);
+
+            float halfW = mRectangle.Width / 2f;
+            float halfH = mRectangle.Height / 2f;
+
+            return rotated.X >= -halfW && rotated.X <= halfW && rotated.Y >= -halfH && rotated.Y <= halfH;
+        }
     }
 }
