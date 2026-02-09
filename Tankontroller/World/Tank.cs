@@ -51,9 +51,9 @@ namespace Tankontroller.World
         static private readonly Texture2D mCannonTexture = Tankontroller.Instance().CM().Load<Texture2D>("cannon");
         static private readonly Texture2D mCannonFireTexture = Tankontroller.Instance().CM().Load<Texture2D>("cannonFire");
 
-        public Transform Transform => new();
+        public Transform Transform { get; private set; } = new Transform();
         public CollisionShape CollisionShape => RectangleShape;
-        public RectangleOrientedShape RectangleShape => new(Transform, new Vector2(TANK_WIDTH, TANK_HEIGHT - TANK_FRONT_BUFFER), 0f, Vector2.Zero);
+        public RectangleOrientedShape RectangleShape { get; private set; }
 
         private Vector2[] TANK_CORNERS = { 
             new Vector2(TANK_HEIGHT / 2 - TANK_FRONT_BUFFER, -TANK_WIDTH / 2), 
@@ -61,16 +61,14 @@ namespace Tankontroller.World
             new Vector2(-TANK_HEIGHT / 2, TANK_WIDTH / 2), 
             new Vector2(TANK_HEIGHT / 2 - TANK_FRONT_BUFFER, TANK_WIDTH / 2) };
 
+        private Vector2 mOldPosition;
+        private float mOldRotation;
+
         private List<Bullet> mBullets;
 
         private int mHealth;
         private int mDestructibleHealth;
         public BulletType BulletType { get; protected set; }
-
-        private float mRotation;
-        private float mOldRotation;
-        private Vector3 mPosition;
-        private Vector3 mOldPosition;
 
         private float mCannonRotation;
         private int mFired; // Number of frames since the player fired
@@ -100,11 +98,13 @@ namespace Tankontroller.World
             mRightTrackFrame = 1;
 
             mResolutionScale = pScale;
-            mPosition = new Vector3(pXPosition, pYPosition, 0);
-            mRotation = pRotation;
+            Transform.Position = new Vector2(pXPosition, pYPosition);
+            Transform.Rotation = pRotation;
             mCannonRotation = pRotation;
-            mOldPosition = mPosition;
-            mOldRotation = mRotation;
+            mOldPosition = Transform.Position;
+            mOldRotation = Transform.Rotation;
+
+            RectangleShape = new RectangleOrientedShape(Transform, new Vector2(TANK_WIDTH, TANK_HEIGHT - TANK_FRONT_BUFFER), 0f, Vector2.Zero);
         }
 
         public void SetColour(Color pColour)
@@ -175,27 +175,17 @@ namespace Tankontroller.World
 
         public void Rotate(float pRotate)
         {
-            mOldRotation = mRotation;
-            mRotation += pRotate;
-        }
-
-        public float GetRotation()
-        {
-            return mRotation;
-        }
-
-        public Vector2 GetWorldPosition()
-        {
-            return new Vector2(mPosition.X, mPosition.Y);
+            mOldRotation = Transform.Rotation;
+            Transform.Rotation += pRotate;
         }
 
         public void Translate(float distance)
         {
             Vector3 translationVector = new Vector3(distance, 0, 0);
-            translationVector = Vector3.Transform(translationVector, Matrix.CreateRotationZ(mRotation));
+            translationVector = Vector3.Transform(translationVector, Matrix.CreateRotationZ(Transform.Rotation));
             translationVector *= mResolutionScale; // Scale the translation according to the tank's scale
-            mOldPosition = mPosition;
-            mPosition += translationVector;
+            mOldPosition = Transform.Position;
+            Transform.Position += new Vector2(translationVector.X, translationVector.Y);
         }
 
         public Vector2 GetIndexedCorner(int pIndex)
@@ -203,8 +193,8 @@ namespace Tankontroller.World
             Vector3 temp = Vector3.Zero;
             temp.X = TANK_CORNERS[pIndex].X * mResolutionScale;
             temp.Y = TANK_CORNERS[pIndex].Y * mResolutionScale;
-            temp = Vector3.Transform(temp, Matrix.CreateRotationZ(mRotation));
-            temp = temp + mPosition;
+            temp = Vector3.Transform(temp, Matrix.CreateRotationZ(Transform.Rotation));
+            temp += new Vector3(Transform.Position.X, Transform.Position.Y, 0);
             return new Vector2(temp.X, temp.Y);
         }
 
@@ -247,8 +237,8 @@ namespace Tankontroller.World
                 {
                     temp.X = TANK_CORNERS[i].X * mResolutionScale;
                     temp.Y = TANK_CORNERS[i].Y * mResolutionScale;
-                    temp = Vector3.Transform(temp, Matrix.CreateRotationZ(mRotation));
-                    temp = temp + mPosition;
+                    temp = Vector3.Transform(temp, Matrix.CreateRotationZ(Transform.Rotation));
+                    temp += new Vector3(Transform.Position.X, Transform.Position.Y, 0);
                     pCorners[i].X = temp.X;
                     pCorners[i].Y = temp.Y;
                 }
@@ -256,7 +246,6 @@ namespace Tankontroller.World
         }
 
         public float GetCannonWorldRotation() { return mCannonRotation; }
-        public Vector2 GetCannonWorldPosition() { return GetWorldPosition(); }
 
         public void CannonLeft(float pSeconds) { mCannonRotation -= BASE_TURRET_ROTATION_ANGLE * pSeconds; }
         public void CannonRight(float pSeconds) { mCannonRotation += BASE_TURRET_ROTATION_ANGLE * pSeconds; }
@@ -315,9 +304,9 @@ namespace Tankontroller.World
             float arcLength = (float)Math.Sqrt(2 * offsetSqrd - 2 * offsetSqrd * Math.Cos(pAngle));
             arcLength = pForwards ? arcLength : arcLength * -1;
             Vector3 translationVector = new Vector3(arcLength, 0, 0);
-            translationVector = Vector3.Transform(translationVector, Matrix.CreateRotationZ(mRotation));
-            mOldPosition = mPosition;
-            mPosition += translationVector;
+            translationVector = Vector3.Transform(translationVector, Matrix.CreateRotationZ(Transform.Rotation));
+            mOldPosition = Transform.Position;
+            Transform.Position += new Vector2(translationVector.X, translationVector.Y);
         }
 
         public bool PointIsInTank(Vector2 pPoint)
@@ -346,9 +335,9 @@ namespace Tankontroller.World
         public bool TankInRadius(float pRadius, Vector2 pPoint)
         {
             // Transform the world point into tank-local coordinates (centered on tank, unrotated).
-            Vector2 tankCenter = new(mPosition.X, mPosition.Y);
+            Vector2 tankCenter = Transform.Position;
             Vector2 localPoint = pPoint - tankCenter;
-            localPoint = Vector2.Transform(localPoint, Matrix.CreateRotationZ(-mRotation));
+            localPoint = Vector2.Transform(localPoint, Matrix.CreateRotationZ(-Transform.Rotation));
 
             // Build the tank's local AABB from the unrotated, scaled corner definitions.
             float minX = float.MaxValue, maxX = float.MinValue;
@@ -386,7 +375,7 @@ namespace Tankontroller.World
             float cannonRotation = GetCannonWorldRotation();
             Vector2 cannonDirection = new Vector2((float)Math.Cos(cannonRotation), (float)Math.Sin(cannonRotation));
             float cannonOffset = 50.0f * mResolutionScale;
-            Vector2 endOfCannon = GetCannonWorldPosition() + cannonDirection * cannonOffset;
+            Vector2 endOfCannon = Transform.Position + cannonDirection * cannonOffset;
             if (bullet == BulletType.BOUNCY_EMP)
             {
                 mBullets.Add(new BouncyEMPBullet(endOfCannon, cannonDirection * BULLET_SPEED * 1.5f, mColour, 20.0f));
@@ -394,10 +383,10 @@ namespace Tankontroller.World
             }
             else if (bullet == BulletType.MINE)
             {
-                float backwardRotation = mRotation + MathHelper.ToRadians(180);
+                float backwardRotation = Transform.Rotation + MathHelper.ToRadians(180);
                 Vector2 backwardDirection = new Vector2((float)Math.Cos(backwardRotation), (float)Math.Sin(backwardRotation));
                 float behindOffset = 50.0f * mResolutionScale;
-                Vector2 behindTheTank = GetCannonWorldPosition() + backwardDirection * behindOffset;
+                Vector2 behindTheTank = Transform.Position + backwardDirection * behindOffset;
                 mBullets.Add(new MineBullet(behindTheTank, Vector2.Zero, mColour, 600.0f));
                 BulletType = BulletType.DEFAULT;
             }
@@ -419,13 +408,13 @@ namespace Tankontroller.World
 
         public void PutBack()
         {
-            mPosition = mOldPosition;
-            mRotation = mOldRotation;
+            Transform.Position = mOldPosition;
+            Transform.Rotation = mOldRotation;
         }
 
         public void OffsetPosition(Vector2 delta)
         {
-            mPosition += new Vector3(delta, 0);
+            Transform.Position += delta;
         }
 
         public void CheckBullets(List<Tank> pTanks, Rectangle pPlayArea, List<RectWall> pWalls)
@@ -545,7 +534,7 @@ namespace Tankontroller.World
         /// <param name="pDirections"></param>
         public void Explode(int pTotalParticles, int pDirections)
         {
-            Vector2 center = GetWorldPosition();
+            Vector2 center = Transform.Position;
             int particlesPerDirection = pTotalParticles / pDirections;
 
             for (int i = 0; i < pDirections; i++)
@@ -595,22 +584,22 @@ namespace Tankontroller.World
             {
                 case TankStates.ALIVE:
                     trackRect.Y = mLeftTrackFrame * mLeftTrackTexture.Height / 15;
-                    pSpriteBatch.Draw(mLeftTrackTexture, GetWorldPosition(), trackRect, mColour, mRotation, new Vector2(mBaseTexture.Width / 2, mBaseTexture.Height / 2), mResolutionScale, SpriteEffects.None, 0.0f);
+                    pSpriteBatch.Draw(mLeftTrackTexture, Transform.Position, trackRect, mColour, Transform.Rotation, new Vector2(mBaseTexture.Width / 2, mBaseTexture.Height / 2), mResolutionScale, SpriteEffects.None, 0.0f);
                     trackRect.Y = mRightTrackFrame * mLeftTrackTexture.Height / 15;
-                    pSpriteBatch.Draw(mRightTrackTexture, GetWorldPosition(), trackRect, mColour, mRotation, new Vector2(mBaseTexture.Width / 2, mBaseTexture.Height / 2), mResolutionScale, SpriteEffects.None, 0.0f);
-                    pSpriteBatch.Draw(mBaseTexture, GetWorldPosition(), null, mColour, mRotation, new Vector2(mBaseTexture.Width / 2, mBaseTexture.Height / 2), mResolutionScale, SpriteEffects.None, 0.0f);
+                    pSpriteBatch.Draw(mRightTrackTexture, Transform.Position, trackRect, mColour, Transform.Rotation, new Vector2(mBaseTexture.Width / 2, mBaseTexture.Height / 2), mResolutionScale, SpriteEffects.None, 0.0f);
+                    pSpriteBatch.Draw(mBaseTexture, Transform.Position, null, mColour, Transform.Rotation, new Vector2(mBaseTexture.Width / 2, mBaseTexture.Height / 2), mResolutionScale, SpriteEffects.None, 0.0f);
                     if (mFired == 0)
                     {
-                        pSpriteBatch.Draw(mCannonTexture, GetCannonWorldPosition(), null, mColour, mCannonRotation, new Vector2(mCannonTexture.Width / 2, mCannonTexture.Height / 2), mResolutionScale, SpriteEffects.None, 0.0f);
+                        pSpriteBatch.Draw(mCannonTexture, Transform.Position, null, mColour, mCannonRotation, new Vector2(mCannonTexture.Width / 2, mCannonTexture.Height / 2), mResolutionScale, SpriteEffects.None, 0.0f);
                     }
                     else
                     {
-                        pSpriteBatch.Draw(mCannonFireTexture, GetCannonWorldPosition(), null, mColour, mCannonRotation, new Vector2(mCannonTexture.Width / 2, mCannonTexture.Height / 2), mResolutionScale, SpriteEffects.None, 0.0f);
+                        pSpriteBatch.Draw(mCannonFireTexture, Transform.Position, null, mColour, mCannonRotation, new Vector2(mCannonTexture.Width / 2, mCannonTexture.Height / 2), mResolutionScale, SpriteEffects.None, 0.0f);
                     }
                     break;
                 case TankStates.DEFEATED:
                     Color blend = Color.Lerp(mColour, Color.SlateGray, (1.0f - (float)mDestructibleHealth/(float)MAX_DESTRUCTION_HEALTH) + 0.3f); // Greys the tank out more after each shot to provide visual feedback
-                    pSpriteBatch.Draw(mBrokenTexture, GetWorldPosition(), null, blend, GetRotation(), new Vector2(mBrokenTexture.Width / 2, mBrokenTexture.Height / 2), mResolutionScale, SpriteEffects.None, 0.0f);
+                    pSpriteBatch.Draw(mBrokenTexture, Transform.Position, null, blend, Transform.Rotation, new Vector2(mBrokenTexture.Width / 2, mBrokenTexture.Height / 2), mResolutionScale, SpriteEffects.None, 0.0f);
                     break;
                 case TankStates.DESTROYED: 
                     break;
@@ -619,7 +608,7 @@ namespace Tankontroller.World
             // Draw collision shape if enabled in DGS
             if (CollisionManager.DRAW_COLLISION_SHAPES)
             {
-                DrawUtilities.DrawRectangle(pSpriteBatch, ConvertUtilities.ToRectangle(TANK_CORNERS), Color.Magenta, mRotation, GetWorldPosition(), mResolutionScale);
+                DrawUtilities.DrawRectangle(pSpriteBatch, ConvertUtilities.ToRectangle(TANK_CORNERS), Color.Magenta, Transform.Rotation, Transform.Position, mResolutionScale);
             }
         }
 

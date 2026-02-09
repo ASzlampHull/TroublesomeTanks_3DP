@@ -170,7 +170,7 @@ namespace Tankontroller.Scenes
                         {
                             continue;
                         }
-                        trackSystem.AddTrack(p.Tank.GetWorldPosition(), p.Tank.GetRotation(), p.Tank.Colour());
+                        trackSystem.AddTrack(p.Tank.Transform.Position, p.Tank.Transform.Rotation, p.Tank.Colour());
                     }
                 }
             }

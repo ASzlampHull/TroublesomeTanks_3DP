@@ -95,7 +95,7 @@ namespace Tankontroller.Managers
                 return false;
 
             // tank center in world coords
-            Vector2 center = tank.GetWorldPosition();
+            Vector2 center = tank.Transform.Position;
 
             // closest point on the rect to the tank center
             float cx = Math.Clamp(center.X, r.Left, r.Right);
@@ -215,7 +215,7 @@ namespace Tankontroller.Managers
             }
 
             // Fallback: nudge tank iteratively toward the nearest valid center inside play area
-            Vector2 center = tank.GetWorldPosition();
+            Vector2 center = tank.Transform.Position;
             Vector2 targetCenter = new Vector2(
                 Math.Clamp(center.X, leftBound + 1f, rightBound - 1f),
                 Math.Clamp(center.Y, topBound + 1f, bottomBound - 1f)

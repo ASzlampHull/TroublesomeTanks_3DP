@@ -50,7 +50,7 @@ namespace Tankontroller.World.Bullets
 
         public override bool DoCollision(Tank pTank)
         {
-            CreateExplosion(Vector2.Normalize(Position - pTank.GetWorldPosition()));
+            CreateExplosion(Vector2.Normalize(Position - pTank.Transform.Position));
             return true;
         }
 
