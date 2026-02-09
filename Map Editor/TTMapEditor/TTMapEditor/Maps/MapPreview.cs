@@ -484,9 +484,12 @@ namespace TTMapEditor.Maps
                 }
                 else if (!Path.HasExtension(mFilePath))
                 {
-                    // treat as directory path to create
-                    Directory.CreateDirectory(mFilePath);
-                    targetPath = Path.Combine(mFilePath, "map.json");
+                    // Treat an absolute path without extension as a filename -> create "<path>.json"
+                    string pathWithExt = mFilePath + ".json";
+                    string? dirName = Path.GetDirectoryName(pathWithExt);
+                    if (!string.IsNullOrEmpty(dirName))
+                        Directory.CreateDirectory(dirName);
+                    targetPath = pathWithExt;
                 }
                 else
                 {
@@ -516,9 +519,12 @@ namespace TTMapEditor.Maps
                 }
                 else if (!Path.HasExtension(combined))
                 {
-                    // create directory and save inside
-                    Directory.CreateDirectory(combined);
-                    targetPath = Path.Combine(combined, "map.json");
+                    // Treat a relative path without extension as a filename -> create "<combined>.json"
+                    string pathWithExt = combined + ".json";
+                    string? dirName = Path.GetDirectoryName(pathWithExt);
+                    if (!string.IsNullOrEmpty(dirName))
+                        Directory.CreateDirectory(dirName);
+                    targetPath = pathWithExt;
                 }
                 else
                 {

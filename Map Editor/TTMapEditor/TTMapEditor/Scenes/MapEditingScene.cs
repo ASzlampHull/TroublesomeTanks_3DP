@@ -12,6 +12,7 @@ using TTMapEditor.Managers;
 using TTMapEditor.Maps;
 using TTMapEditor.Objects;
 using System.Runtime.InteropServices;
+using TTMapEditor.Saving;
 
 
 namespace TTMapEditor.Scenes
@@ -67,6 +68,8 @@ namespace TTMapEditor.Scenes
         private DraggableTemplate<Tank> mTankTemplate;
         private DraggableTemplate<Pickup> mPickupTemplate;
 
+        private FileNamer mFileNamer;
+
 
         // Button for saving map
         Rectangle mSaveButtonRect;
@@ -85,6 +88,7 @@ namespace TTMapEditor.Scenes
             mIsNewMap = pIsNewMap;
             int viewPortWidth = mGraphicsDevice.Viewport.Width;
             int viewPortHeight = mGraphicsDevice.Viewport.Height;
+            mFileNamer = new FileNamer();
 
             // If this is a new map request, create an initial empty MapData file so MapPreview can load it.
             if (mIsNewMap)
@@ -170,52 +174,71 @@ namespace TTMapEditor.Scenes
 
         void HandleNewMapCreation(string pMapFile)
         {
-            // Use the configured maps root directory instead of Environment.CurrentDirectory
-            string mapsRoot = MAP_ROOT;
-            Directory.CreateDirectory(mapsRoot);
+                // Use the configured maps root directory as a fallback only
+                string mapsRoot = MAP_ROOT;
 
-            // Normalize incoming path (strip leading "Maps\" if present)
-            string relative = pMapFile;
-            string mapsPrefix1 = "Maps" + Path.DirectorySeparatorChar;
-            string mapsPrefix2 = "Maps" + Path.AltDirectorySeparatorChar;
-            if (relative.StartsWith(mapsPrefix1) || relative.StartsWith(mapsPrefix2))
-            {
-                relative = relative.Substring(5);
-            }
-
-            string candidate = Path.Combine(mapsRoot, relative);
-
-            // If caller supplied just a name (no extension) or a folder, create folder + "map.json"
-            string targetPath;
-            if (Directory.Exists(candidate) || !Path.HasExtension(candidate))
-            {
-                Directory.CreateDirectory(candidate);
-                targetPath = Path.Combine(candidate, "map.json");
-            }
-            else
-            {
-                // candidate is a file path
-                string? dir = Path.GetDirectoryName(candidate);
-                if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
-                targetPath = candidate;
-            }
-
-            // Create an empty MapData file only if it doesn't already exist
-            if (!File.Exists(targetPath))
-            {
-                var emptyMap = new MapData
+                // Normalize incoming path (strip leading "Maps\" if present)
+                string relative = pMapFile ?? string.Empty;
+                string mapsPrefix1 = "Maps" + Path.DirectorySeparatorChar;
+                string mapsPrefix2 = "Maps" + Path.AltDirectorySeparatorChar;
+                if (relative.StartsWith(mapsPrefix1) || relative.StartsWith(mapsPrefix2))
                 {
-                    Walls = new List<WallData>(),
-                    Tanks = new List<TankData>(),
-                    Pickups = new List<PickupData>()
-                };
-                var opts = new JsonSerializerOptions { WriteIndented = true };
-                File.WriteAllText(targetPath, JsonSerializer.Serialize(emptyMap, opts));
-            }
+                    relative = relative.Substring(5);
+                }
 
-            // Use the resolved absolute path when creating the preview so LoadMapPreview picks it up directly
-            mPreview = new MapPreview(pFilePath: Path.GetFullPath(targetPath));
-        }
+                // If caller provided an absolute path or a path that contains separators,
+                // treat it as an explicit path. Only prepend mapsRoot for simple names.
+                string candidate;
+                if (string.IsNullOrWhiteSpace(relative))
+                {
+                    candidate = mapsRoot;
+                }
+                else if (Path.IsPathRooted(relative)
+                         || relative.Contains(Path.DirectorySeparatorChar)
+                         || relative.Contains(Path.AltDirectorySeparatorChar))
+                {
+                    candidate = relative;
+                }
+                else
+                {
+                    candidate = Path.Combine(mapsRoot, relative);
+                }
+
+                // Decide final target path: folder -> folder/map.json, otherwise the candidate file.
+                string targetPath;
+                if (Directory.Exists(candidate) || !Path.HasExtension(candidate))
+                {
+                    Directory.CreateDirectory(candidate); // ensure folder exists when candidate is a folder name
+                    targetPath = Path.Combine(candidate, "map.json");
+                }
+                else
+                {
+                    // candidate is a file path
+                    string? dir = Path.GetDirectoryName(candidate);
+                    if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+                    targetPath = candidate;
+                }
+
+                // Ensure the directory for targetPath exists (defensive)
+                string? targetDir = Path.GetDirectoryName(targetPath);
+                if (!string.IsNullOrEmpty(targetDir)) Directory.CreateDirectory(targetDir);
+
+                // Create an empty MapData file only if it doesn't already exist
+                if (!File.Exists(targetPath))
+                {
+                    var emptyMap = new MapData
+                    {
+                        Walls = new List<WallData>(),
+                        Tanks = new List<TankData>(),
+                        Pickups = new List<PickupData>()
+                    };
+                    var opts = new JsonSerializerOptions { WriteIndented = true };
+                    File.WriteAllText(targetPath, JsonSerializer.Serialize(emptyMap, opts));
+                }
+
+                // Use the resolved absolute path when creating the preview so LoadMapPreview picks it up directly
+                mPreview = new MapPreview(pFilePath: Path.GetFullPath(targetPath));
+            }
 
         /// <summary>
         /// Deselect every object in the preview.
@@ -236,6 +259,7 @@ namespace TTMapEditor.Scenes
             DrawPlayAreaAndObjects();
             DrawTemplates();
             DrawSaveButton();
+            mFileNamer.Draw(mSpriteBatch);
             mSpriteBatch.End();
         }
 
@@ -359,6 +383,7 @@ namespace TTMapEditor.Scenes
         public override void Update(float pSeconds)
         {
             InputManager.Update();
+            mFileNamer.Update(pSeconds);
 
             if (InputManager.isKeyPressed(Keys.Escape))
             {
@@ -370,7 +395,7 @@ namespace TTMapEditor.Scenes
 
             if (mSaveButtonRect.Contains(mousePos) && InputManager.isLeftMouseClicked())
             {
-                SaveMap();
+                mFileNamer.StartTyping();
             }
 
             HandleTemplateWallDragging(mousePos);
@@ -548,6 +573,12 @@ namespace TTMapEditor.Scenes
                 mPreview.RemoveObject(mSelectedObject);
                 mSelectedObject = null;
                 return;
+            }
+
+            if(mFileNamer.IsActive() && InputManager.isKeyPressed(Keys.Enter))
+            {
+                mName = mFileNamer.ReturnName();
+                SaveMap();
             }
 
             // Tank rotation
