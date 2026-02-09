@@ -22,7 +22,7 @@ namespace Tankontroller.World.Bullets
             EMPTextures.Add(EMPTexture2);
             EMPTextures.Add(EMPTexture3);
             EMPTextures.Add(EMPTexture4);
-            Radius *= 3.0f;
+            CircleShape.Radius *= 3.0f;
         }
         private float Rotation = 0.0f;
 

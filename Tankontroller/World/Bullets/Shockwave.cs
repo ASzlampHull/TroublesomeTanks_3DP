@@ -12,7 +12,7 @@ namespace Tankontroller.World.Bullets
         public Shockwave(Vector2 pPosition, Vector2 pVelocity, Color pColour, float pLifeTime) : base(pPosition, pVelocity, pColour, pLifeTime) { }
         public override void Update(float pSeconds)
         {
-            Radius += 0.5f;
+            CircleShape.Radius += 0.5f;
             LifeTime -= pSeconds;
             base.Update(pSeconds);
         }

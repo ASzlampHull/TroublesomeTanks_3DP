@@ -13,7 +13,7 @@ namespace Tankontroller.World.Bullets
         private readonly Texture2D MineTexture = Tankontroller.Instance().CM().Load<Texture2D>("Mine");
         public MineBullet(Vector2 pPosition, Vector2 pVelocity, Color pColour, float pLifeTime) : base(pPosition, pVelocity, pColour, pLifeTime)
         {
-            Radius *= 3.5f;
+            CircleShape.Radius *= 3.5f;
         }
         public override void Update(float pSeconds)
         {

@@ -6,7 +6,7 @@ namespace Tankontroller.World.Shapes
 {
     public class CircleShape : CollisionShape
     {
-        public float Radius { get; private set; } = 1.0f;
+        public float Radius { get; set; } = 1.0f;
 
         public CircleShape(Transform pOwner, float pRadius, bool pEnabled = true) : base(pOwner, pEnabled)
         {

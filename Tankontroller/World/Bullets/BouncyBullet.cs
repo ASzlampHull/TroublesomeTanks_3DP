@@ -15,7 +15,7 @@ namespace Tankontroller.World.Bullets
         float numOfBounces;
         public BouncyBullet(Vector2 pPosition, Vector2 pVelocity, Color pColour, float pNumOfBounces) : base(pPosition, pVelocity, pColour, pNumOfBounces) {
             numOfBounces = pNumOfBounces;
-            Radius *= 3.0f;
+            CircleShape.Radius *= 3.0f;
         }
         public override void Update(float pSeconds)
         {
