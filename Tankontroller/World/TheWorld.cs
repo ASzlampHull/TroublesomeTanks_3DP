@@ -72,7 +72,7 @@ namespace Tankontroller.World
                 //Checks for any pickups at this position to prevent spawn overlap
                 foreach (Pickup p in mPickups)
                 {
-                    if (p.m_Position == mPickupSpawnPositions[randPos])
+                    if (p.Transform.Position == mPickupSpawnPositions[randPos])
                     {
                         return;
                     }
