@@ -26,7 +26,7 @@ namespace Tankontroller.World.Pickups
             mScalerX = ((float)screenWidth / 200f);
             mScalerY = ((float)screenHeight / 200f);
             Transform.Position = pPosition;
-            RectangleShape = new RectangleAxisAlignedShape(Transform, new Vector2(40f * mScalerX, 40f * mScalerY));
+            RectangleShape = new RectangleAxisAlignedShape(Transform, new Vector2(4f * mScalerX, 4f * mScalerY));
             Texture = pTexture;
         }
 
@@ -36,7 +36,7 @@ namespace Tankontroller.World.Pickups
             pSpriteBatch.Draw(Texture, drawRectangle, Color.White);
             if (CollisionManager.DRAW_COLLISION_SHAPES)
             {
-                DrawUtilities.DrawRectangle(pSpriteBatch, drawRectangle, Color.White, 0.0f, Transform.Position, 1.0f);
+                DrawUtilities.DrawRectangle(pSpriteBatch, drawRectangle, Color.White, Transform.Rotation, Transform.Position, 1.0f);
             }
         }
 

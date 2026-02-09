@@ -24,15 +24,13 @@ namespace Tankontroller.World
 
         public void Draw(SpriteBatch pSpriteBatch)
         {
-            Rectangle rectangle = RectangleShape.ToRectangle();
-            pSpriteBatch.Draw(mTexture, rectangle, null, COLOUR, Transform.Rotation, new Vector2(0f,0f), SpriteEffects.None, 0f);
+            RectangleShape.Draw(pSpriteBatch, mTexture, COLOUR);
         }
 
         public void DrawOutlines(SpriteBatch pSpriteBatch)
         {
-            Rectangle rectangle = RectangleShape.ToRectangle();
-            rectangle.Inflate(2, 2);
-            pSpriteBatch.Draw(mTexture, rectangle, null, Color.Black, Transform.Rotation, new Vector2(0f, 0f), SpriteEffects.None, 0f);
+            //RectangleOrientedShape outlineShape = new(Transform, RectangleShape.Size + new Vector2(2f, 2f), RectangleShape.LocalRotation, RectangleShape.LocalOffset);
+            //outlineShape.Draw(pSpriteBatch, mTexture, Color.Black);
         }
     }
 }

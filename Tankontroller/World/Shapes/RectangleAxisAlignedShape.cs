@@ -25,7 +25,11 @@ namespace Tankontroller.World.Shapes
             Size = pSize;
         }
 
-        public Rectangle ToRectangle() => new((int)(WorldPosition.X), (int)(WorldPosition.Y), (int)Size.X, (int)Size.Y);
+        public Rectangle ToRectangle()
+        {
+            Vector2 min = WorldPosition - HalfExtents;
+            return new Rectangle((int)MathF.Floor(min.X), (int)MathF.Floor(min.Y), (int)MathF.Ceiling(Size.X), (int)MathF.Ceiling(Size.Y));
+        }
 
         public override CollisionEvent Intersects(CollisionShape pOther)
         {
