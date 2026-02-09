@@ -95,7 +95,7 @@ namespace Tankontroller.Scenes
             {
                 if (player.GUI != null)
                 {
-                    player.GUI.Draw(spriteBatch, player.Tank.Health(), player.Tank.mbulletType);
+                    player.GUI.Draw(spriteBatch, player.Tank.Health(), player.Tank.mbulletType, player.Tank.GetState());
                 }
             }
 
@@ -187,6 +187,10 @@ namespace Tankontroller.Scenes
                     TrackSystem trackSystem = TrackSystem.GetInstance();
                     foreach (Player p in m_Teams)
                     {
+                        if(p.Tank.GetState() == TankStates.DESTROYED)
+                        {
+                            continue;
+                        }
                         trackSystem.AddTrack(p.Tank.GetWorldPosition(), p.Tank.GetRotation(), p.Tank.Colour());
                     }
                 }

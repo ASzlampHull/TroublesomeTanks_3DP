@@ -5,6 +5,7 @@ on:
     branches:
       - master     # Every push to master triggers a new release
       - working/resolution
+      - working/game-elements-scaling
 
 jobs:
   build:

@@ -134,53 +134,60 @@ namespace Tankontroller.World
             // Check collisions for each tank
             for (int tankIndex = 0; tankIndex < mTanks.Count; tankIndex++)
             {
-                
-                mTanks[tankIndex].Update(pSeconds);
 
-                mTanks[tankIndex].CheckBullets(mTanks, mPlayArea, mWalls);
-
-                // Pickup collision
-                foreach (Pickup p in mPickups)
+                if (mTanks[tankIndex].GetState() == TankStates.DESTROYED)
                 {
-                    // This is to avoid any dead tanks from picking up a pickup
-                    if (mTanks[tankIndex].Health() == 0)
-                    {
-                        continue;
-                    }
-                    else if (p.PickUpCollision(mTanks[tankIndex]))
-                    {
-                        mPickups.Remove(p);
-                        break;
-                    }
+                    continue;
                 }
-
-                // Wall collisions
-                foreach (RectWall wall in mWalls)
+                else
                 {
-                    Rectangle wallRect = wall.Rectangle;
+                    mTanks[tankIndex].Update(pSeconds);
 
-                    // tank collision using collision manager
-                    if (CollisionManager.Collide(mTanks[tankIndex], wallRect, false))
-                    {   
-                        CollisionManager.ResolveTankWallCollision(mTanks[tankIndex], wall);
-                    }
-                }
+                    mTanks[tankIndex].CheckBullets(mTanks, mPlayArea, mWalls);
 
-                // Collisions with other tanks
-                for (int i = 0; i < mTanks.Count; i++)
-                {
-                    if (tankIndex == i) // Skip collision with self
+                    // Pickup collision
+                    foreach (Pickup p in mPickups)
                     {
-                        continue;
+                        // This is to avoid any dead tanks from picking up a pickup
+                        if (mTanks[tankIndex].GetState() != TankStates.ALIVE)
+                        {
+                            continue;
+                        }
+                        else if (p.PickUpCollision(mTanks[tankIndex]))
+                        {
+                            mPickups.Remove(p);
+                            break;
+                        }
                     }
-                    // tank against tanks using collision manager
-                    if (CollisionManager.Collide(mTanks[tankIndex], mTanks[i]))
-                        mTanks[tankIndex].PutBack();
-                }
 
-                // Collisions with the play area
-                if (CollisionManager.Collide(mTanks[tankIndex], mPlayArea, true)) // True tp check inside the play area
-                    CollisionManager.ResolveTankPlayAreaCollision(mTanks[tankIndex], mPlayArea);
+                    // Wall collisions
+                    foreach (RectWall wall in mWalls)
+                    {
+                        Rectangle wallRect = wall.Rectangle;
+
+                        // tank collision using collision manager
+                        if (CollisionManager.Collide(mTanks[tankIndex], wallRect, false))
+                        {
+                            CollisionManager.ResolveTankWallCollision(mTanks[tankIndex], wall);
+                        }
+                    }
+
+                    // Collisions with other tanks
+                    for (int i = 0; i < mTanks.Count; i++)
+                    {
+                        if (tankIndex == i || mTanks[i].GetState() == TankStates.DESTROYED) // Skip collision with self and if the tanks is destroyed
+                        {
+                            continue;
+                        }
+                        // tank against tanks using collision manager
+                        if (CollisionManager.Collide(mTanks[tankIndex], mTanks[i]))
+                            mTanks[tankIndex].PutBack();
+                    }
+
+                    // Collisions with the play area
+                    if (CollisionManager.Collide(mTanks[tankIndex], mPlayArea, true)) // True tp check inside the play area
+                        CollisionManager.ResolveTankPlayAreaCollision(mTanks[tankIndex], mPlayArea);
+                }
             }
         }
 

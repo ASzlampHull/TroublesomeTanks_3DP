@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Tankontroller.Managers;
+using Tankontroller.Utilities;
 using Tankontroller.World.Particles;
 
 namespace Tankontroller.World.Bullets
@@ -18,13 +20,14 @@ namespace Tankontroller.World.Bullets
             Position = pPosition;
             Velocity = pVelocity;
             Colour = pColour;
-            Radius = 5.0f;
+            Radius = 5.0f * Tankontroller.Instance().ScaleFactor();
             LifeTime = lifeTime;
         }
 
         public virtual void Update(float pSeconds)
         {
-            Position = Position + Velocity * pSeconds;
+            // Move at the correct speed according to the frame time and resolution scale factor
+            Position = Position + Velocity * pSeconds * Tankontroller.Instance().ScaleFactor();
         }
 
         public virtual bool CollideWithPlayArea(Rectangle pRectangle)
@@ -96,6 +99,12 @@ namespace Tankontroller.World.Bullets
         {
             Particle.DrawCircle(pBatch, pTexture, (int)Radius + 2 * Particle.EDGE_THICKNESS, Position, Color.Black);
             Particle.DrawCircle(pBatch, pTexture, (int)Radius, Position, Colour);
+
+            // Draw collision shape if enabled in DGS
+            if (CollisionManager.DRAW_COLLISION_SHAPES)
+            {
+                DrawUtilities.DrawCircle(pBatch, Position, Radius, Color.DodgerBlue);
+            }
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Tankontroller.Managers;
+using Tankontroller.Utilities;
 using Tankontroller.World.Particles;
 
 namespace Tankontroller.World.Bullets
@@ -40,6 +42,12 @@ namespace Tankontroller.World.Bullets
             Color ShockWaveColour = Color.Yellow;
             ShockWaveColour.A = (byte)(0.0f);
             Particle.DrawCircle(pBatch, ShockWaveTexture, (int)Radius, Position, ShockWaveColour);
+
+            // Draw collision shape if enabled in DGS
+            if (CollisionManager.DRAW_COLLISION_SHAPES)
+            {
+                DrawUtilities.DrawRing(pBatch, Position, Radius, Color.DodgerBlue);
+            }
         }
     }
 }
