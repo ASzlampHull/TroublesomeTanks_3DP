@@ -51,7 +51,11 @@ namespace Tankontroller.World
 
 
 
-        private Vector2[] TANK_CORNERS = { new Vector2(TANK_HEIGHT / 2 - TANK_FRONT_BUFFER, -TANK_WIDTH / 2), new Vector2(-TANK_HEIGHT / 2, -TANK_WIDTH / 2), new Vector2(-TANK_HEIGHT / 2, TANK_WIDTH / 2), new Vector2(TANK_HEIGHT / 2 - TANK_FRONT_BUFFER, TANK_WIDTH / 2) };
+        private Vector2[] TANK_CORNERS = { 
+            new Vector2(TANK_HEIGHT / 2 - TANK_FRONT_BUFFER, -TANK_WIDTH / 2), 
+            new Vector2(-TANK_HEIGHT / 2, -TANK_WIDTH / 2), 
+            new Vector2(-TANK_HEIGHT / 2, TANK_WIDTH / 2), 
+            new Vector2(TANK_HEIGHT / 2 - TANK_FRONT_BUFFER, TANK_WIDTH / 2) };
 
         private List<Bullet> m_Bullets;
 
@@ -114,7 +118,13 @@ namespace Tankontroller.World
             {
                 m_LeftTrackFrame = 1;
             }
-            DustInitialisationPolicy dust = new DustInitialisationPolicy(GetLeftFrontCorner(), GetLeftBackCorner());
+
+            Vector2[] tankCorners = new Vector2[4];
+            GetCorners(tankCorners);
+            Vector2 leftTopCorner = tankCorners[0];
+            Vector2 leftBottomCorner = tankCorners[1];
+
+            DustInitialisationPolicy dust = new DustInitialisationPolicy(leftTopCorner, leftBottomCorner);
             ParticleManager.Instance().InitialiseParticles(dust, 4);
         }
 
@@ -129,7 +139,13 @@ namespace Tankontroller.World
             {
                 m_RightTrackFrame = 1;
             }
-            DustInitialisationPolicy dust = new DustInitialisationPolicy(GetRightFrontCorner(), GetRightBackCorner());
+
+            Vector2[] tankCorners = new Vector2[4];
+            GetCorners(tankCorners);
+            Vector2 rightTopCorner = tankCorners[2];
+            Vector2 rightBottomCorner = tankCorners[3];
+
+            DustInitialisationPolicy dust = new DustInitialisationPolicy(rightTopCorner, rightBottomCorner);
             ParticleManager.Instance().InitialiseParticles(dust, 4);
         }
 
@@ -174,6 +190,7 @@ namespace Tankontroller.World
         {
             Vector3 translationVector = new Vector3(distance, 0, 0);
             translationVector = Vector3.Transform(translationVector, Matrix.CreateRotationZ(mRotation));
+            translationVector *= m_Scale; // Scale the translation according to the tank's scale
             mOldPosition = mPosition;
             mPosition += translationVector;
         }
@@ -365,7 +382,8 @@ namespace Tankontroller.World
             mFired = BLAST_DELAY;
             float cannonRotation = GetCannonWorldRotation();
             Vector2 cannonDirection = new Vector2((float)Math.Cos(cannonRotation), (float)Math.Sin(cannonRotation));
-            Vector2 endOfCannon = GetCannonWorldPosition() + cannonDirection * 40;
+            float cannonOffset = 50.0f * m_Scale;
+            Vector2 endOfCannon = GetCannonWorldPosition() + cannonDirection * cannonOffset;
             if (bullet == BulletType.BOUNCY_EMP)
             {
                 m_Bullets.Add(new BouncyEMPBullet(endOfCannon, cannonDirection * BULLET_SPEED * 1.5f, mColour, 20.0f));
@@ -375,7 +393,8 @@ namespace Tankontroller.World
             {
                 float backwardRotation = mRotation + MathHelper.ToRadians(180);
                 Vector2 backwardDirection = new Vector2((float)Math.Cos(backwardRotation), (float)Math.Sin(backwardRotation));
-                Vector2 behindTheTank = GetCannonWorldPosition() + backwardDirection * 40;
+                float behindOffset = 50.0f * m_Scale;
+                Vector2 behindTheTank = GetCannonWorldPosition() + backwardDirection * behindOffset;
                 m_Bullets.Add(new MineBullet(behindTheTank, Vector2.Zero, mColour, 600.0f));
                 mbulletType = BulletType.DEFAULT;
             }
