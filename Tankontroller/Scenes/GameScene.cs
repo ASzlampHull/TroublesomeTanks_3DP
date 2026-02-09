@@ -9,6 +9,7 @@ using Tankontroller.Controller;
 using Tankontroller.GUI;
 using Tankontroller.World;
 using Tankontroller.World.Particles;
+using Tankontroller.World.Gameplay;
 using static Tankontroller.MapManager;
 
 namespace Tankontroller.Scenes
@@ -45,6 +46,9 @@ namespace Tankontroller.Scenes
         private GameTimer m_GameTimer;
         // configured match length in seconds (from DGS). If <= 0 timer is disabled.
         private double m_GameLengthSeconds = 0.0;
+
+        // Gameplay: Death Ring (shrinking safe zone)
+        private DeathRing m_DeathRing;
 
         public GameScene(List<Player> pPlayers, string mapFile)
         {
@@ -101,6 +105,9 @@ namespace Tankontroller.Scenes
 
             // World draws play area, walls, tanks, bullets, and particle effects
             m_World.Draw(spriteBatch);
+
+            // Draw death ring overlay (if active)
+            m_DeathRing?.Draw(spriteBatch);
 
             if (!mControllersConnected)
             {
@@ -202,6 +209,11 @@ namespace Tankontroller.Scenes
                     var gt = new GameTime(TimeSpan.Zero, TimeSpan.FromSeconds(pSeconds));
                     m_GameTimer.Update(gt);
 
+                    // DeathRing: compute remaining seconds and pass tank list
+                    float remainingSecondsForRing = (float)Math.Max(0.0, m_GameLengthSeconds - m_GameTimer.GetTotalTime().TotalSeconds);
+                    List<Tank> tanksList = m_Teams.Select(p => p.Tank).ToList();
+                    m_DeathRing?.Update(pSeconds, remainingSecondsForRing, tanksList);
+
                     // If elapsed >= configured length, end match
                     if (m_GameTimer.GetTotalTime().TotalSeconds >= m_GameLengthSeconds)
                     {
@@ -211,6 +223,13 @@ namespace Tankontroller.Scenes
                         game.SM().Transition(new GameOverScene(mBackgroundTexture, m_Teams, winner));
                         return;
                     }
+                }
+                else
+                {
+                    // If there's no configured timer the ring won't activate, but still keep updating if desired:
+                    // build tanks list and update with 'infinite' remaining time so it stays inactive.
+                    List<Tank> tanksListNoTimer = m_Teams.Select(p => p.Tank).ToList();
+                    m_DeathRing?.Update(pSeconds, float.MaxValue, tanksListNoTimer);
                 }
             }
             else // At least one controller is disconnected
@@ -261,6 +280,16 @@ namespace Tankontroller.Scenes
             else
             {
                 m_GameTimer = null; // timer disabled
+            }
+
+            // Create DeathRing instance (uses world play area to compute center/start radius)
+            if (m_World != null)
+            {
+                m_DeathRing = new DeathRing(m_World.PlayArea);
+            }
+            else
+            {
+                m_DeathRing = null;
             }
         }
 

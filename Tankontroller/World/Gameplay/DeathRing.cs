@@ -5,6 +5,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Tankontroller.World;
 using Tankontroller.World.Particles;
+using Tankontroller.Utilities;
+
 
 namespace Tankontroller.World.Gameplay
 {
@@ -18,7 +20,7 @@ namespace Tankontroller.World.Gameplay
         private readonly float m_startRadius;       // computed from play area if not set in DGS
         private readonly float m_endRadius;         // final safe radius
         private readonly float m_damagePerSecond;   // DPS applied outside safe zone
-        private readonly float m_graceSeconds;      // grace time outside before damage begins
+        private readonly float m_graceSeconds;      // Seconds a tank can survive outside the ring before the first "tick" of damage.
 
         // State
         private readonly Vector2 m_center;
@@ -136,12 +138,12 @@ namespace Tankontroller.World.Gameplay
         {
             if (!m_active) return;
 
-            Color hazardColor = new Color(200, 30, 30, 120);
-            Color safeColor = new Color(25, 25, 25, 220);
+            // color for ring (RGBA). adjust alpha to taste.
+            Color ringColor = new Color(200, 30, 30, 200);
 
-            // Draw outer hazard overlay then draw inner safe circle to create ring
-            Particle.DrawCircle(spriteBatch, m_CircleTexture, (int)m_startRadius, m_center, hazardColor);
-            Particle.DrawCircle(spriteBatch, m_CircleTexture, (int)m_currentRadius, m_center, safeColor);
+            // Draw a ring outline using DrawUtilities. This draws a pregenerated ring texture with transparent centre.
+            DrawUtilities.DrawRing(spriteBatch, m_center, m_currentRadius, ringColor);
+
         }
 
         public bool IsActive() => m_active;
