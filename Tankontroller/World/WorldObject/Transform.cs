@@ -9,6 +9,7 @@ namespace Tankontroller.World.WorldObject
     public class Transform
     {
         public Vector2 Position { get; set; }
+        /// <summary> In radians </summary>
         public float Rotation { get; set; }
         public Vector2 Scale { get; set; }
 
