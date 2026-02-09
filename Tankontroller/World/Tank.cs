@@ -186,9 +186,7 @@ namespace Tankontroller.World
 
         public Vector2 GetWorldPosition()
         {
-            Matrix localTransformation = Matrix.CreateRotationZ(mRotation) * Matrix.CreateTranslation(mPosition);
-            Vector3 v = localTransformation.Translation;
-            return new Vector2(v.X, v.Y);
+            return new Vector2(mPosition.X, mPosition.Y);
         }
 
         public void Translate(float distance)
