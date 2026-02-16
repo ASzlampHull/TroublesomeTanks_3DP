@@ -107,7 +107,9 @@ namespace Tankontroller.Scenes
             int buttonX = (int)(366 * scaleFactor);
             int buttonY = (int)(54 * scaleFactor);
             Rectangle buttonRect = new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
-            Vector2 buttonTextPosition = new Vector2(buttonRect.X, buttonRect.Y);
+            int buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 2.5);
+            int buttonTextY = Convert.ToInt32(buttonRect.Y + buttonRect.Height / 2.5);
+            Vector2 buttonTextPosition = new Vector2(buttonTextX, buttonTextY);
 
             // Selection "None" button
             Button selectionNoneButton = new Button(pickupSelectionOffTexture, pickupSelectionOffHighlightTexture, buttonRect, Color.Red, DUMMYFUNCTION);
@@ -118,7 +120,8 @@ namespace Tankontroller.Scenes
 
             // Selection "Low" button
             buttonRect.X += buttonWidth;
-            buttonTextPosition = new Vector2(buttonRect.X, buttonRect.Y);
+            buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 2.4);
+            buttonTextPosition = new Vector2(buttonTextX, buttonTextY);
             Button selectionLowButton = new Button(pickupSelectionOffTexture, pickupSelectionOffHighlightTexture, buttonRect, Color.Red, DUMMYFUNCTION);
             selectionLowButton.Selected = false;
             mButtonList.Add(selectionLowButton);
@@ -127,7 +130,8 @@ namespace Tankontroller.Scenes
 
             // Selection "Med" button
             buttonRect.X += buttonWidth;
-            buttonTextPosition = new Vector2(buttonRect.X, buttonRect.Y);
+            buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 2.5);
+            buttonTextPosition = new Vector2(buttonTextX, buttonTextY);
             Button selectionMedButton = new Button(pickupSelectionOffTexture, pickupSelectionOffHighlightTexture, buttonRect, Color.Red, DUMMYFUNCTION);
             selectionMedButton.Selected = false;
             mButtonList.Add(selectionMedButton);
@@ -136,7 +140,8 @@ namespace Tankontroller.Scenes
 
             // Selection "High" button
             buttonRect.X += buttonWidth;
-            buttonTextPosition = new Vector2(buttonRect.X, buttonRect.Y);
+            buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 2.5);
+            buttonTextPosition = new Vector2(buttonTextX, buttonTextY);
             Button selectionHighButton = new Button(pickupSelectionOffTexture, pickupSelectionOffHighlightTexture, buttonRect, Color.Red, DUMMYFUNCTION);
             selectionHighButton.Selected = false;
             mButtonList.Add(selectionHighButton);
@@ -157,7 +162,9 @@ namespace Tankontroller.Scenes
             buttonX = (int)(428 * scaleFactor);
             buttonY = (int)(208 * scaleFactor);
             buttonRect = new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
-            buttonTextPosition = new Vector2(buttonRect.X, buttonRect.Y);
+            buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 3.8);
+            buttonTextY = Convert.ToInt32(buttonRect.Y + buttonRect.Height / 2.5);
+            buttonTextPosition = new Vector2(buttonTextX, buttonTextY);
 
             // Health Pickup button
             Button pickupHealthButton = new Button(pickupHealthOffTexture, pickupHealthOffHighlightTexture, buttonRect, Color.Red, DUMMYFUNCTION);
@@ -168,7 +175,9 @@ namespace Tankontroller.Scenes
 
             // Ball Pickup button
             buttonRect.Y += buttonHeight;
-            buttonTextPosition = new Vector2(buttonRect.X, buttonRect.Y);
+            buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 3.8);
+            buttonTextY = Convert.ToInt32(buttonRect.Y + buttonRect.Height / 3.0);
+            buttonTextPosition = new Vector2(buttonTextX, buttonTextY);
             Button pickupBallButton = new Button(pickupBallOffTexture, pickupBallOffHighlightTexture, buttonRect, Color.Red, DUMMYFUNCTION);
             pickupBallButton.Selected = false;
             mButtonList.Add(pickupBallButton);
@@ -177,7 +186,9 @@ namespace Tankontroller.Scenes
 
             // EMP Pickup button
             buttonRect.Y += buttonHeight;
-            buttonTextPosition = new Vector2(buttonRect.X, buttonRect.Y);
+            buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 3.8);
+            buttonTextY = Convert.ToInt32(buttonRect.Y + buttonRect.Height / 2.7);
+            buttonTextPosition = new Vector2(buttonTextX, buttonTextY);
             Button pickupEMPButton = new Button(pickupEMPOffTexture, pickupEMPOffHighlightTexture, buttonRect, Color.Red, DUMMYFUNCTION);
             pickupEMPButton.Selected = false;
             mButtonList.Add(pickupEMPButton);
@@ -186,7 +197,9 @@ namespace Tankontroller.Scenes
 
             // Mine Pickup button
             buttonRect.Y += buttonHeight;
-            buttonTextPosition = new Vector2(buttonRect.X, buttonRect.Y);
+            buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 3.8);
+            buttonTextY = Convert.ToInt32(buttonRect.Y + buttonRect.Height / 2.45);
+            buttonTextPosition = new Vector2(buttonTextX, buttonTextY);
             Button pickupMineButton = new Button(pickupMineOffTexture, pickupMineOffHighlightTexture, buttonRect, Color.Red, DUMMYFUNCTION);
             pickupMineButton.Selected = false;
             mButtonList.Add(pickupMineButton);
