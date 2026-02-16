@@ -35,16 +35,17 @@ namespace Tankontroller.World.Shapes
         }
 
 
-        public Rectangle ToRectangle() => new((int)WorldPosition.X, (int)WorldPosition.Y, (int)Size.X, (int)Size.Y);
+        public Rectangle ToRectangle() => 
+            new((int)MathF.Round(WorldPosition.X - HalfExtents.X), (int)MathF.Round(WorldPosition.Y - HalfExtents.Y), (int)MathF.Round(Size.X), (int)MathF.Round(Size.Y));
 
-        public void Draw(SpriteBatch pSpriteBatch, Texture2D pTexture, Color color)
+        public void Draw(SpriteBatch pSpriteBatch, Texture2D pTexture, Color pColor)
         {
             Rectangle referenceRectangle = ToRectangle();
             Vector2 position = new Vector2(referenceRectangle.Center.X, referenceRectangle.Center.Y);
             Vector2 origin = new Vector2(pTexture.Width / 2f, pTexture.Height / 2f);
             Vector2 scale = new Vector2(referenceRectangle.Width / (float)pTexture.Width, referenceRectangle.Height / (float)pTexture.Height);
 
-            pSpriteBatch.Draw(pTexture, position, null, color, WorldRotation, origin, scale, SpriteEffects.None, 0f);
+            pSpriteBatch.Draw(pTexture, WorldPosition, null, pColor, WorldRotation, origin, scale, SpriteEffects.None, 0f);
         }
 
         public override CollisionEvent Intersects(CollisionShape pOther)

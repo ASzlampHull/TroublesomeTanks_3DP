@@ -153,7 +153,7 @@ namespace Tankontroller
                     size.Y = playArea.Height * (size.Y / 100.0f);
 
                     Texture2D wallTexture = Tankontroller.Instance().CM().Load<Texture2D>(texture);
-                    Transform wallTransform = new(position, 0f);
+                    Transform wallTransform = new(position + size/2f, 0f);
                     RectWall currentWall = new(wallTransform, new Vector2(size.X, size.Y), wallTexture);
                     Walls.Add(currentWall);
                 }

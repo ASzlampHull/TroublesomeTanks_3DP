@@ -26,7 +26,8 @@ namespace Tankontroller.World.Shapes
             Size = pSize;
         }
 
-        public Rectangle ToRectangle() => new((int)WorldPosition.X, (int)WorldPosition.Y, (int)Size.X, (int)Size.Y);
+        public Rectangle ToRectangle() =>
+            new((int)MathF.Round(WorldPosition.X - HalfExtents.X), (int)MathF.Round(WorldPosition.Y - HalfExtents.Y), (int)MathF.Round(Size.X), (int)MathF.Round(Size.Y));
 
         public void Draw(SpriteBatch pSpriteBatch, Texture2D pTexture, Color color)
         {

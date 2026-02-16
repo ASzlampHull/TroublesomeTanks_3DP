@@ -20,9 +20,9 @@ namespace Tankontroller.World
         {
             Transform = pTransform;
             RectangleShape = new RectangleOrientedShape(Transform, pSize);
-            RectangleShape.LocalRotation = MathHelper.ToRadians(0f);
+            RectangleShape.LocalRotation = MathHelper.ToRadians(15f);
             float outlineSize = 4f;
-            mOutlineShape = new(Transform, RectangleShape.Size + new Vector2(outlineSize), RectangleShape.LocalRotation, RectangleShape.LocalOffset - new Vector2(outlineSize / 2f));
+            mOutlineShape = new(Transform, RectangleShape.Size + new Vector2(outlineSize), RectangleShape.LocalRotation, RectangleShape.LocalOffset);
             mTexture = pTexture;
         }
 
