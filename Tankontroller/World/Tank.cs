@@ -198,36 +198,6 @@ namespace Tankontroller.World
             return new Vector2(temp.X, temp.Y);
         }
 
-        public Vector2 GetRightFrontCorner()
-        {
-            return GetIndexedCorner(3);
-        }
-
-        public Vector2 GetLeftTrackMidpoint()
-        {
-            return GetLeftBackCorner();
-        }
-
-        public Vector2 GetRightTrackMidpoint()
-        {
-            return GetRightBackCorner();
-        }
-
-        public Vector2 GetRightBackCorner()
-        {
-            return GetIndexedCorner(2);
-        }
-
-        public Vector2 GetLeftFrontCorner()
-        {
-            return GetIndexedCorner(0);
-        }
-
-        public Vector2 GetLeftBackCorner()
-        {
-            return GetIndexedCorner(1);
-        }
-
         public void GetCorners(Vector2[] pCorners)
         {
             if (pCorners.Length == 4)
