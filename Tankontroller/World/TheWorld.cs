@@ -164,11 +164,12 @@ namespace Tankontroller.World
                 {
                     mTanks[tankIndex].Update(pSeconds);
 
-                    // Bullet collisions
+                    // Create a combined list of wall colliders and play area colliders
                     List<CollisionShape> wallColliders = new();
-                    mWalls.ForEach(w => wallColliders.Add(w.CollisionShape));
+                    mWalls.ForEach(wall => wallColliders.Add(wall.CollisionShape));
                     wallColliders.AddRange(mPlayAreaCollisionShapes);
 
+                    // Bullet collisions
                     mTanks[tankIndex].HandleBulletCollisions(mTanks, wallColliders);
 
                     // Pickup collisions
@@ -188,15 +189,9 @@ namespace Tankontroller.World
                     }
 
                     // Wall collisions
-                    foreach (RectWall wall in mWalls)
+                    foreach (CollisionShape wall in wallColliders)
                     {
-                        Rectangle wallRect = wall.RectangleShape.ToRectangle();
-
-                        // tank collision using collision manager
-                        if (CollisionManager.Collide(mTanks[tankIndex], wallRect, false))
-                        {
-                            CollisionManager.ResolveTankWallCollision(mTanks[tankIndex], wall);
-                        }
+                        CollisionManager.ResolveTankWallCollision(mTanks[tankIndex], wall);
                     }
 
                     // Collisions with other tanks
@@ -210,10 +205,6 @@ namespace Tankontroller.World
                         if (CollisionManager.Collide(mTanks[tankIndex], mTanks[i]))
                             mTanks[tankIndex].PutBack();
                     }
-
-                    // Collisions with the play area
-                    if (CollisionManager.Collide(mTanks[tankIndex], mPlayArea, true)) // True tp check inside the play area
-                        CollisionManager.ResolveTankPlayAreaCollision(mTanks[tankIndex], mPlayArea);
                 }
             }
         }
