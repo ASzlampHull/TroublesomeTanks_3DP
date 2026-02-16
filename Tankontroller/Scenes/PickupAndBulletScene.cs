@@ -95,6 +95,11 @@ namespace Tankontroller.Scenes
             float scaleFactor = Tankontroller.Instance().ScaleFactor();
             int screenWidth = mGameInstance.GDM().GraphicsDevice.Viewport.Width;
             int screenHeight = mGameInstance.GDM().GraphicsDevice.Viewport.Height;
+            //y offset for 32:9 aspect ratio
+            if ((float)screenWidth / (float)screenHeight == 32f / 9f)
+            {
+                scaleFactor = 1f;
+            }
 
             mButtonList = new ButtonList();
             mTextList = new TextList();
@@ -102,10 +107,11 @@ namespace Tankontroller.Scenes
             Texture2D pickupSelectionOffTexture = mGameInstance.CM().Load<Texture2D>("PickupMenu/pickupinfo_selection_off");
             Texture2D pickupSelectionOffHighlightTexture = mGameInstance.CM().Load<Texture2D>("PickupMenu/pickupinfo_selection_off_highlight");
 
-            int buttonWidth = (int)(pickupSelectionOffTexture.Width * Tankontroller.Instance().ScaleFactor());
-            int buttonHeight = (int)(pickupSelectionOffTexture.Height * Tankontroller.Instance().ScaleFactor());
-            int buttonX = (int)(366 * scaleFactor);
-            int buttonY = (int)(54 * scaleFactor);
+            int buttonWidth = (int)(pickupSelectionOffTexture.Width * scaleFactor);
+            int buttonHeight = (int)(pickupSelectionOffTexture.Height * scaleFactor);
+            int buttonX = Convert.ToInt32((screenWidth - buttonWidth) / 5);
+            int buttonY = (int)(screenHeight / 35.55);
+            int buttonXPadding = (int)(screenWidth / 6);
             Rectangle buttonRect = new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
             int buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 2.5);
             int buttonTextY = Convert.ToInt32(buttonRect.Y + buttonRect.Height / 2.5);
@@ -115,37 +121,37 @@ namespace Tankontroller.Scenes
             Button selectionNoneButton = new Button(pickupSelectionOffTexture, pickupSelectionOffHighlightTexture, buttonRect, Color.Red, DUMMYFUNCTION);
             selectionNoneButton.Selected = true;
             mButtonList.Add(selectionNoneButton);
-            Text selectionNoneButtonText = new Text(m_SpriteFont, "None", buttonTextPosition, Color.White);
+            Text selectionNoneButtonText = new Text(m_SpriteFont, "None", buttonTextPosition, Color.White, scaleFactor);
             mTextList.Add(selectionNoneButtonText);
 
             // Selection "Low" button
-            buttonRect.X += buttonWidth;
-            buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 2.4);
+            buttonRect.X += buttonXPadding;
+            buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 2.3);
             buttonTextPosition = new Vector2(buttonTextX, buttonTextY);
             Button selectionLowButton = new Button(pickupSelectionOffTexture, pickupSelectionOffHighlightTexture, buttonRect, Color.Red, DUMMYFUNCTION);
             selectionLowButton.Selected = false;
             mButtonList.Add(selectionLowButton);
-            Text selectionLowButtonText = new Text(m_SpriteFont, "Low", buttonTextPosition, Color.White);
+            Text selectionLowButtonText = new Text(m_SpriteFont, "Low", buttonTextPosition, Color.White, scaleFactor);
             mTextList.Add(selectionLowButtonText);
 
             // Selection "Med" button
-            buttonRect.X += buttonWidth;
-            buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 2.5);
+            buttonRect.X += buttonXPadding;
+            buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 2.4);
             buttonTextPosition = new Vector2(buttonTextX, buttonTextY);
             Button selectionMedButton = new Button(pickupSelectionOffTexture, pickupSelectionOffHighlightTexture, buttonRect, Color.Red, DUMMYFUNCTION);
             selectionMedButton.Selected = false;
             mButtonList.Add(selectionMedButton);
-            Text selectionMedButtonText = new Text(m_SpriteFont, "Med", buttonTextPosition, Color.White);
+            Text selectionMedButtonText = new Text(m_SpriteFont, "Med", buttonTextPosition, Color.White, scaleFactor);
             mTextList.Add(selectionMedButtonText);
 
             // Selection "High" button
-            buttonRect.X += buttonWidth;
-            buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 2.5);
+            buttonRect.X += buttonXPadding;
+            buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 2.4);
             buttonTextPosition = new Vector2(buttonTextX, buttonTextY);
             Button selectionHighButton = new Button(pickupSelectionOffTexture, pickupSelectionOffHighlightTexture, buttonRect, Color.Red, DUMMYFUNCTION);
             selectionHighButton.Selected = false;
             mButtonList.Add(selectionHighButton);
-            Text selectionHighButtonText = new Text(m_SpriteFont, "High", buttonTextPosition, Color.White);
+            Text selectionHighButtonText = new Text(m_SpriteFont, "High", buttonTextPosition, Color.White, scaleFactor);
             mTextList.Add(selectionHighButtonText);
 
             Texture2D pickupHealthOffTexture = mGameInstance.CM().Load<Texture2D>("PickupMenu/pickupinfo_health_off");
@@ -159,8 +165,9 @@ namespace Tankontroller.Scenes
 
             buttonWidth = (int)(pickupBallOffTexture.Width * scaleFactor);
             buttonHeight = (int)(pickupBallOffTexture.Height * scaleFactor);
-            buttonX = (int)(428 * scaleFactor);
-            buttonY = (int)(208 * scaleFactor);
+            buttonX = Convert.ToInt32((screenWidth-buttonWidth) / 2);
+            buttonY = (int)(screenHeight / 4.23);
+            int buttonYPadding = (int)(screenHeight / 5.68);
             buttonRect = new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
             buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 3.8);
             buttonTextY = Convert.ToInt32(buttonRect.Y + buttonRect.Height / 2.5);
@@ -170,40 +177,40 @@ namespace Tankontroller.Scenes
             Button pickupHealthButton = new Button(pickupHealthOffTexture, pickupHealthOffHighlightTexture, buttonRect, Color.Red, DUMMYFUNCTION);
             pickupHealthButton.Selected = false;
             mButtonList.Add(pickupHealthButton);
-            Text pickupHealthButtonText = new Text(m_SpriteFont, "The Health - Heals the tank for 1 hp", buttonTextPosition, Color.White);
+            Text pickupHealthButtonText = new Text(m_SpriteFont, "The Health - Heals the tank for 1 hp", buttonTextPosition, Color.White, scaleFactor);
             mTextList.Add(pickupHealthButtonText);
 
             // Ball Pickup button
-            buttonRect.Y += buttonHeight;
+            buttonRect.Y += buttonYPadding;
             buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 3.8);
             buttonTextY = Convert.ToInt32(buttonRect.Y + buttonRect.Height / 3.0);
             buttonTextPosition = new Vector2(buttonTextX, buttonTextY);
             Button pickupBallButton = new Button(pickupBallOffTexture, pickupBallOffHighlightTexture, buttonRect, Color.Red, DUMMYFUNCTION);
             pickupBallButton.Selected = false;
             mButtonList.Add(pickupBallButton);
-            Text pickupBallButtonText = new Text(m_SpriteFont, "The Bouncy - A bullet that can bounce off walls", buttonTextPosition, Color.White);
+            Text pickupBallButtonText = new Text(m_SpriteFont, "The Bouncy - A bullet that can bounce off walls", buttonTextPosition, Color.White, scaleFactor);
             mTextList.Add(pickupBallButtonText);
 
             // EMP Pickup button
-            buttonRect.Y += buttonHeight;
+            buttonRect.Y += buttonYPadding;
             buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 3.8);
             buttonTextY = Convert.ToInt32(buttonRect.Y + buttonRect.Height / 2.7);
             buttonTextPosition = new Vector2(buttonTextX, buttonTextY);
             Button pickupEMPButton = new Button(pickupEMPOffTexture, pickupEMPOffHighlightTexture, buttonRect, Color.Red, DUMMYFUNCTION);
             pickupEMPButton.Selected = false;
             mButtonList.Add(pickupEMPButton);
-            Text pickupEMPButtonText = new Text(m_SpriteFont, "The EMP - Drains the energy of any tank in its shockwave", buttonTextPosition, Color.White);
+            Text pickupEMPButtonText = new Text(m_SpriteFont, "The EMP - Drains the energy of any tank in its shockwave", buttonTextPosition, Color.White, scaleFactor);
             mTextList.Add(pickupEMPButtonText);
 
             // Mine Pickup button
-            buttonRect.Y += buttonHeight;
+            buttonRect.Y += buttonYPadding;
             buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 3.8);
             buttonTextY = Convert.ToInt32(buttonRect.Y + buttonRect.Height / 2.45);
             buttonTextPosition = new Vector2(buttonTextX, buttonTextY);
             Button pickupMineButton = new Button(pickupMineOffTexture, pickupMineOffHighlightTexture, buttonRect, Color.Red, DUMMYFUNCTION);
             pickupMineButton.Selected = false;
             mButtonList.Add(pickupMineButton);
-            Text pickupMineButtonText = new Text(m_SpriteFont, "The Mine - Damages the tank who drives over it", buttonTextPosition, Color.White);
+            Text pickupMineButtonText = new Text(m_SpriteFont, "The Mine - Damages the tank who drives over it", buttonTextPosition, Color.White, scaleFactor);
             mTextList.Add(pickupMineButtonText);
         }
     }

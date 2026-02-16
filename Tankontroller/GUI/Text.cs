@@ -22,9 +22,9 @@ namespace Tankontroller.GUI
         public float Scale { get; private set; }
         //TODO: Add localization support for the text.
 
-        public Text(SpriteFont pFont, string pMessage, Vector2 pPos, Color pTextColour)
+        public Text(SpriteFont pFont, string pMessage, Vector2 pPos, Color pTextColour, float pScale)
         {
-            Scale = Tankontroller.Instance().ScaleFactor();
+            Scale = pScale;
             Position = pPos;
             Font = pFont;
             Message = pMessage;
