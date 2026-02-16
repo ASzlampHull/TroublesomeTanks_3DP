@@ -38,43 +38,6 @@ namespace Tankontroller.World.Bullets
             Transform.Position = Position + Velocity * pSeconds * Tankontroller.Instance().ScaleFactor();
         }
 
-        public virtual bool CollideWithPlayArea(Rectangle pRectangle)
-        {
-            if (!pRectangle.Contains(Position))
-            {
-                return true;
-            }
-            return false;
-        }
-
-        public virtual bool Collide(RectWall pWall)
-        {
-            Rectangle rectangle = pWall.RectangleShape.ToRectangle();
-            if (rectangle.Contains(Position))
-            {
-                return true;
-            }
-            return false;
-        }
-
-        public virtual bool Collide(Tank pTank)
-        {
-            if (pTank.PointIsInTank(Position))
-            {
-                return true;
-            }
-            return false;
-        }
-
-        public virtual bool Collide(Bullet pBullet) // This is unused but I'm keeping it for potential implementation
-        {
-            if (Vector2.Distance(Position, pBullet.Position) < 2 * Radius)
-            {
-                return true;
-            }
-            return false;
-        }
-
         protected Vector2 GetCollisionNormal(Rectangle pRect)
         {
             float difference = Math.Abs(Position.X - pRect.Left);
