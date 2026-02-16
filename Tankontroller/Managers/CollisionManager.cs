@@ -59,29 +59,6 @@ namespace Tankontroller.Managers
             return false;
         }
 
-        static public bool Collide(Bullet pBullet, Tank pTank) //Bullet and Tank Collision
-        {
-            if (pTank.TankInRadius(pBullet.Radius, pBullet.Position))
-            {
-                return true;
-            }
-            return false;
-        }
-        
-        static public bool Collide(Bullet pBullet, Rectangle pRectangle, bool inverse) //Bullet and Rectangle Collision
-        {
-            //if the inverse case is true, then we want to check if the bullet is outside the rectangle
-            if (inverse) {
-                if (!pRectangle.Contains(pBullet.Position))
-                    return true;
-            }
-            else {
-                if (pRectangle.Contains(pBullet.Position))
-                    return true;
-            }
-            return false;
-        }
-
         /// <summary>
         /// This is the collision response for moving a tank away from a wall when a tank collides with a wall
         /// </summary>
