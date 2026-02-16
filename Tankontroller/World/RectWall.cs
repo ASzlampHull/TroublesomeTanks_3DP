@@ -19,6 +19,7 @@ namespace Tankontroller.World
         {
             Transform = pTransform;
             RectangleShape = new RectangleOrientedShape(Transform, pSize);
+            //RectangleShape.LocalRotation = MathHelper.ToRadians(45f);
             mTexture = pTexture;
         }
 
@@ -29,8 +30,8 @@ namespace Tankontroller.World
 
         public void DrawOutlines(SpriteBatch pSpriteBatch)
         {
-            //RectangleOrientedShape outlineShape = new(Transform, RectangleShape.Size + new Vector2(2f, 2f), RectangleShape.LocalRotation, RectangleShape.LocalOffset);
-            //outlineShape.Draw(pSpriteBatch, mTexture, Color.Black);
+            RectangleOrientedShape outlineShape = new(Transform, RectangleShape.Size + new Vector2(2f, 2f), RectangleShape.LocalRotation, RectangleShape.LocalOffset - new Vector2(1f, 1f));
+            outlineShape.Draw(pSpriteBatch, mTexture, Color.Black);
         }
     }
 }

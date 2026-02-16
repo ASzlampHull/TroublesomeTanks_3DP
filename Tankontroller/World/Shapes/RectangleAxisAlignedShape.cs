@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,10 @@ namespace Tankontroller.World.Shapes
 
         public Rectangle ToRectangle() => new((int)WorldPosition.X, (int)WorldPosition.Y, (int)Size.X, (int)Size.Y);
 
+        public void Draw(SpriteBatch pSpriteBatch, Texture2D pTexture, Color color)
+        {
+            pSpriteBatch.Draw(pTexture, WorldPosition, ToRectangle(), color, 0.0f, Vector2.Zero, Owner.Scale, SpriteEffects.None, 0f);
+        }
 
         public override CollisionEvent Intersects(CollisionShape pOther)
         {
