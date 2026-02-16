@@ -417,7 +417,7 @@ namespace Tankontroller.World
             Transform.Position += delta;
         }
 
-        public void CheckBullets(List<Tank> pTanks, Rectangle pPlayArea, List<RectWall> pWalls)
+        public void CheckBullets(List<Tank> pTanks, List<CollisionShape> pWallColliders)
         {
             
             for (int i = 0; i < mBullets.Count; ++i)
@@ -455,22 +455,13 @@ namespace Tankontroller.World
 
                 if (bulletRemoved) continue;
 
-                // Check collision with play area
-                if (CollisionManager.Collide(mBullets[i], pPlayArea, true))
+                // Check and resolve bullet-wall collisions (including play area)
+                foreach (CollisionShape shape in pWallColliders)
                 {
-                    if (mBullets[i].DoCollision(pPlayArea))
+                    CollisionEvent collisionEvent = mBullets[i].CollisionShape.Intersects(shape);
+                    if (collisionEvent.HasCollided)
                     {
-                        mBullets.RemoveAt(i);
-                        continue;
-                    }
-                }
-
-                // Check collision with walls
-                for (int j = 0; j < pWalls.Count; ++j)
-                {
-                    if (CollisionManager.Collide(mBullets[i], pWalls[j].RectangleShape.ToRectangle(), false))
-                    {
-                        if (mBullets[i].DoCollision(pWalls[j]))
+                        if (mBullets[i].WallCollisionResponse(collisionEvent))
                         {
                             mBullets.RemoveAt(i);
                             bulletRemoved = true;

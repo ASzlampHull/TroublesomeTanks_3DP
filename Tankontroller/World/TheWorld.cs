@@ -164,7 +164,12 @@ namespace Tankontroller.World
                 {
                     mTanks[tankIndex].Update(pSeconds);
 
-                    mTanks[tankIndex].CheckBullets(mTanks, mPlayArea, mWalls);
+                    // Get all wall colliders (including play area) for bullet collision checks
+                    List<CollisionShape> wallColliders = new();
+                    mWalls.ForEach(w => wallColliders.Add(w.CollisionShape));
+                    wallColliders.AddRange(mPlayAreaCollisionShapes);
+
+                    mTanks[tankIndex].CheckBullets(mTanks, wallColliders);
 
                     // Pickup collision
                     foreach (Pickup p in mPickups)

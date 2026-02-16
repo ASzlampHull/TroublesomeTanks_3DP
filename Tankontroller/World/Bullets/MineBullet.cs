@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Tankontroller.Managers;
 using Tankontroller.Utilities;
 using Tankontroller.World.Particles;
+using Tankontroller.World.Shapes;
 
 namespace Tankontroller.World.Bullets
 {
@@ -21,16 +22,6 @@ namespace Tankontroller.World.Bullets
             base.Update(pSeconds);
         }
 
-        public override bool DoCollision(Rectangle pRectangle)
-        {
-            return false;
-        }
-
-        public override bool DoCollision(RectWall pWall)
-        {
-            return false;
-        }
-
         public override bool DoCollision(Tank pTank)
         {
             MineBlastInitPolicy explosion = new MineBlastInitPolicy(Position, 1.0f);
@@ -38,10 +29,9 @@ namespace Tankontroller.World.Bullets
             return true;
         }
 
-        public override bool DoCollision(Bullet pBullet)
-        {
-            return false;
-        }
+        public override bool DoCollision(Bullet pBullet) => false;
+
+        public override bool WallCollisionResponse(CollisionEvent collisionEvent) => false;
 
         public override bool LifeTimeExpired()
         {

@@ -20,8 +20,6 @@ namespace Tankontroller.World.Bullets
         public Color Colour { get; private set; }
         public float LifeTime { get; protected set; }
 
-
-
         public Bullet(Vector2 pPosition, Vector2 pVelocity, Color pColour, float lifeTime)
         {
             Transform.Position = pPosition;
@@ -60,9 +58,13 @@ namespace Tankontroller.World.Bullets
         }
 
         public abstract bool DoCollision(Tank pTank);
-        public abstract bool DoCollision(Rectangle pRectangle);
-        public abstract bool DoCollision(RectWall pWall);
         public abstract bool DoCollision(Bullet pBullet);
+
+        /// <summary>
+        /// Handles the response to a collision with a wall.
+        /// </summary>
+        /// <returns> True if the bullet should be removed, false otherwise.</returns>
+        public abstract bool WallCollisionResponse(CollisionEvent collisionEvent);
 
         public abstract bool LifeTimeExpired();
 

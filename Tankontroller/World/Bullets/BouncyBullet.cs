@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Tankontroller.Managers;
 using Tankontroller.Utilities;
 using Tankontroller.World.Particles;
+using Tankontroller.World.Shapes;
 
 namespace Tankontroller.World.Bullets
 {
@@ -22,40 +23,24 @@ namespace Tankontroller.World.Bullets
             base.Update(pSeconds);
         }
 
-        public override bool DoCollision(Rectangle pRectangle)
-        {
-            Vector2 collisonNormal = GetCollisionNormal(pRectangle);
-            if (numOfBounces <= 0)
-            {
-                CreateExplosion(-collisonNormal);
-                return true;
-            }
-            Velocity = Vector2.Reflect(Velocity, collisonNormal);
-            numOfBounces--;
-            return false;
-        }
-
-        public override bool DoCollision(RectWall pWall)
-        {
-            Vector2 collisonNormal = GetCollisionNormal(pWall.RectangleShape.ToRectangle());
-            if (numOfBounces <= 0)
-            {
-                CreateExplosion(collisonNormal);
-                return true;
-            }
-            Velocity = Vector2.Reflect(Velocity, collisonNormal);
-            numOfBounces--;
-            return false;
-        }
-
         public override bool DoCollision(Tank pTank)
         {
             CreateExplosion(Vector2.Normalize(Position - pTank.Transform.Position));
             return true;
         }
 
-        public override bool DoCollision(Bullet pBullet)
+        public override bool DoCollision(Bullet pBullet) => false;
+
+        public override bool WallCollisionResponse(CollisionEvent collisionEvent)
         {
+            Vector2 collisionNormal = collisionEvent.CollisionNormal ?? Vector2.One;
+            if (numOfBounces <= 0)
+            {
+                CreateExplosion(-collisionNormal);
+                return true;
+            }
+            Velocity = Vector2.Reflect(Velocity, collisionNormal);
+            numOfBounces--;
             return false;
         }
 
