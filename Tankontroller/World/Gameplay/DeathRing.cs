@@ -42,17 +42,20 @@ namespace Tankontroller.World.Gameplay
                 try { return DGS.Instance.GetFloat(key); } catch { return def; }
             }
 
-            m_activationTime = SafeFloat("DEATH_RING_ACTIVATION_TIME", 30f);
+            m_activationTime = SafeFloat("DEATH_RING_ACTIVATION_TIME", 45f);
             m_duration = SafeFloat("DEATH_RING_DURATION", Math.Max(1f, m_activationTime));
-            m_endRadius = SafeFloat("DEATH_RING_END_RADIUS", 80f);
             m_damagePerSecond = SafeFloat("DEATH_RING_DPS", 10f);
             m_graceSeconds = SafeFloat("DEATH_RING_GRACE", 1f);
 
             m_center = new Vector2(playArea.X + playArea.Width / 2f, playArea.Y + playArea.Height / 2f);
 
-            float defaultStart = MathF.Max(playArea.Width, playArea.Height) * 0.6f;
+            float defaultStart = MathF.Max(playArea.Width, playArea.Height) * 1.2f;
             float configuredStart = SafeFloat("DEATH_RING_START_RADIUS", defaultStart);
             m_startRadius = configuredStart > 0 ? configuredStart : defaultStart;
+
+            float defaultEnd = MathF.Max(playArea.Width, playArea.Height) * 0.6f;
+            float configuredEnd = SafeFloat("DEATH_RING_END_RADIUS", defaultEnd);
+            m_endRadius = configuredStart > 0 ? configuredEnd : defaultEnd;
 
             m_currentRadius = m_startRadius;
         }
@@ -79,10 +82,11 @@ namespace Tankontroller.World.Gameplay
                 }
             }
 
-            // Progress shrink (linear)
+            // Progress shrink (linear), clamped to not shrink below endRadius
             m_elapsedSinceStart += deltaSeconds;
             float t = (m_duration <= 0f) ? 1f : MathF.Min(1f, m_elapsedSinceStart / m_duration);
-            m_currentRadius = MathHelper.Lerp(m_startRadius, m_endRadius, t);
+            m_currentRadius = MathHelper.Clamp(MathHelper.Lerp(m_startRadius, m_endRadius, t), m_endRadius, m_startRadius);
+
 
             // Damage application: continuous DPS after grace
             foreach (var tank in tanks)
@@ -140,6 +144,9 @@ namespace Tankontroller.World.Gameplay
 
             // color for ring (RGBA). adjust alpha to taste.
             Color ringColor = new Color(200, 30, 30, 200);
+
+            // Warning ring color (yellow/orange, more transparent)
+            Color warningColor = new Color(200, 30, 30, 200);
 
             // Draw a ring outline using DrawUtilities. This draws a pregenerated ring texture with transparent centre.
             DrawUtilities.DrawRing(spriteBatch, m_center, m_currentRadius, ringColor);
