@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -28,6 +29,10 @@ namespace Tankontroller.Scenes
         private ButtonList mButtonList = null;
         private TextList mTextList = null;
 
+        // Cooldown timers to prevent the menu selection from being too fast
+        private float mSelectionCooldown = 0.0f;
+        private readonly float SELECTION_COOLDOWN_TIME = 0.2f;
+
         public PickupAndBulletScene(MainMenuScene startScene)
         {
             mStartScene = startScene;
@@ -41,6 +46,7 @@ namespace Tankontroller.Scenes
             mContinueButtonRectangle = new Rectangle(10, screenHeight / 2, mContinueButtonTexture.Width / 2, mContinueButtonTexture.Height / 2);
             mContinueTextTexture = game.CM().Load<Texture2D>("back");
             mContinueTextRectangle = new Rectangle(20 + mContinueButtonTexture.Width / 2, screenHeight / 2 + mContinueButtonTexture.Height / 4, mContinueTextTexture.Width, mContinueTextTexture.Height);
+            mSelectionCooldown = SELECTION_COOLDOWN_TIME;
 
             GenerateButtons();
         }
@@ -62,15 +68,37 @@ namespace Tankontroller.Scenes
             Escape();
             mGameInstance.GetControllerManager().DetectControllers();
 
+            mSelectionCooldown -= pSeconds;
+
             foreach (IController controller in mGameInstance.GetControllerManager().GetControllers())
             {
                 controller.UpdateController();
-                if (controller.IsPressed(Control.FIRE))
+
+                if (controller.IsPressed(Control.TURRET_LEFT) && mSelectionCooldown <= 0.0f)
                 {
-                    IGame game = Tankontroller.Instance();
-                    game.GetControllerManager().SetAllTheLEDsWhite();
-                    game.SM().Transition(null);
+                    mButtonList.SelectPreviousButton();
+                    mSelectionCooldown = SELECTION_COOLDOWN_TIME;
                 }
+                if (controller.IsPressed(Control.TURRET_RIGHT) && mSelectionCooldown <= 0.0f)
+                {
+                    mButtonList.SelectNextButton();
+                    mSelectionCooldown = SELECTION_COOLDOWN_TIME;
+                }
+
+                if (controller.IsPressed(Control.FIRE) && !controller.WasPressed(Control.FIRE) ||
+                    controller.IsPressed(Control.RECHARGE) && !controller.WasPressed(Control.RECHARGE))
+                {
+                    SoundEffectInstance buttonPress = mGameInstance.GetSoundManager().GetSoundEffectInstance("Sounds/Button_Push");
+                    buttonPress.Play();
+                    mButtonList.PressSelectedButton();
+                }
+
+                //if (controller.IsPressed(Control.FIRE))
+                //{
+                //    IGame game = Tankontroller.Instance();
+                //    game.GetControllerManager().SetAllTheLEDsWhite();
+                //    game.SM().Transition(null);
+                //}
             }
         }
         public override void Escape()
