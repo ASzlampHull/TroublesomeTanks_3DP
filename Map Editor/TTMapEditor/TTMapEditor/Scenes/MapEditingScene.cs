@@ -42,6 +42,7 @@ namespace TTMapEditor.Scenes
         RectWall mWall;
         MapPreview mPreview;
         bool mIsNewMap;
+        bool mFileNameEntered = false;
 
         // Selected object (any SceneObject-derived)
         SceneObject mSelectedObject;
@@ -94,12 +95,14 @@ namespace TTMapEditor.Scenes
             if (mIsNewMap)
             {
                 HandleNewMapCreation(pMapFile);
+                mFileNameEntered = false;
             }
             else
             {
                 // Resolve the incoming path relative to the configured maps root when appropriate.
                 string resolved = ResolveMapPath(pMapFile);
                 mPreview = new MapPreview(pFilePath: resolved);
+                mFileNameEntered = true;
             }
 
             mPlayArea = mPreview.GetPlayArea();
@@ -204,27 +207,19 @@ namespace TTMapEditor.Scenes
                 candidate = Path.Combine(mapsRoot, relative);
             }
 
-            // Decide final target path: folder -> folder/map.json, otherwise the candidate file.
             string targetPath;
             if (Directory.Exists(candidate) || !Path.HasExtension(candidate))
             {
-                // ensure folder exists when candidate is a folder name (do not create the file)
-                Directory.CreateDirectory(candidate);
+                // Do NOT create the directory here — just resolve the target path
                 targetPath = Path.Combine(candidate, "map.json");
             }
             else
             {
-                // candidate is a file path; ensure parent folder exists (do not create the file)
-                string? dir = Path.GetDirectoryName(candidate);
-                if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+                // candidate is a file path; do not create parent here
                 targetPath = candidate;
             }
 
-            // Ensure the directory for targetPath exists (defensive)
-            string? targetDir = Path.GetDirectoryName(targetPath);
-            if (!string.IsNullOrEmpty(targetDir)) Directory.CreateDirectory(targetDir);
-
-            // DO NOT create the file here. Initialize the preview with the resolved path.
+            // DO NOT create directories here. Initialize the preview with the resolved path.
             mPreview = new MapPreview(pFilePath: Path.GetFullPath(targetPath));
         }
 
@@ -383,13 +378,21 @@ namespace TTMapEditor.Scenes
             {
                 mName = mFileNamer.ReturnName();
                 SaveMap();
+                mFileNameEntered = true;
             }
 
             Vector2 mousePos = InputManager.GetMousePosition();
 
             if (mSaveButtonRect.Contains(mousePos) && InputManager.isLeftMouseClicked())
             {
-                mFileNamer.StartTyping();
+                if (!mFileNameEntered)
+                {
+                    mFileNamer.StartTyping();
+                }
+                else
+                {
+                    SaveMap();
+                }
             }
 
             HandleTemplateWallDragging(mousePos);
@@ -549,7 +552,33 @@ namespace TTMapEditor.Scenes
                 {
                     int newX = (int)(mousePos.X - mSelectedDragOffset.X);
                     int newY = (int)(mousePos.Y - mSelectedDragOffset.Y);
+
+                    // Store previous position before updating
+                    Rectangle previousRect = obj.mRectangle;
+
                     obj.UpdatePosition(newX, newY);
+
+                    // Check if the new position is valid
+                    bool isValid = true;
+                    if (obj is RectWall wall)
+                    {
+                        isValid = IsWallWithinPlayArea(wall);
+                    }
+                    else
+                    {
+                        isValid = IsRectWithinPlayArea(obj.mRectangle);
+                    }
+
+                    // If invalid, revert to previous position
+                    if (!isValid)
+                    {
+                        obj.SetRectangle(previousRect);
+                    }
+                    else
+                    {
+                        // Update the stored previous rect for successful moves
+                        mSelectedObjectPreviousRect = obj.mRectangle;
+                    }
                 }
             }
         }
@@ -594,21 +623,35 @@ namespace TTMapEditor.Scenes
                 {
                     case true:
                         float rotationStep = MathHelper.ToRadians(15.0f);
+                        // Store current state before attempting rotation
+                        float previousRotation = selectedWall.mRotation;
+                        Vector2 previousPositon = selectedWall.mRectangle.Location.ToVector2();
+
                         if (InputManager.isKeyPressed(Keys.Left))
                         {
                             selectedWall.Rotate(rotationStep);
+                            if (!IsWallWithinPlayArea(selectedWall))
+                            {
+                                // Revert rotation
+                                selectedWall.mRotation = previousRotation;
+                            }
+                            else
+                            {
+                                mSelectedObjectPreviousRect = selectedWall.mRectangle;
+                            }
                         }
                         if (InputManager.isKeyPressed(Keys.Right))
                         {
                             selectedWall.Rotate(-rotationStep);
-                        }
-                        if (!IsWallWithinPlayArea(selectedWall))
-                        {
-                            selectedWall.SetWallRectangle(mSelectedObjectPreviousRect);
-                        }
-                        else
-                        {
-                            mSelectedObjectPreviousRect = selectedWall.mRectangle;
+                            if (!IsWallWithinPlayArea(selectedWall))
+                            {
+                                // Revert rotation
+                                selectedWall.mRotation = previousRotation;
+                            }
+                            else
+                            {
+                                mSelectedObjectPreviousRect = selectedWall.mRectangle;
+                            }
                         }
                         break;
                     case false:
@@ -653,13 +696,42 @@ namespace TTMapEditor.Scenes
                 && r.Bottom <= mPlayArea.Bottom;
         }
 
+        /// <summary>
+        /// Rotates the wall's corners and checks if any are outside the play area.
+        /// </summary>
+        /// <param name="pWall"></param>
+        /// <returns>
+        /// True if all corners of wall within play area, false if any corner outside.
+        /// </returns>
         public bool IsWallWithinPlayArea(RectWall pWall)
         {
-            Rectangle r = pWall.mRectangle;
-            return r.Left >= mPlayArea.Left
-                && r.Top >= mPlayArea.Top
-                && r.Right <= mPlayArea.Right
-                && r.Bottom <= mPlayArea.Bottom;
+            Vector2 center = new Vector2(pWall.mRectangle.Center.X,pWall.mRectangle.Center.Y);
+
+            Vector2[] corners = new Vector2[4]
+            {
+                new Vector2(-pWall.mRectangle.Width / 2f, -pWall.mRectangle.Height / 2f),
+                new Vector2(pWall.mRectangle.Width / 2f, -pWall.mRectangle.Height / 2f),
+                new Vector2(pWall.mRectangle.Width / 2f, pWall.mRectangle.Height / 2f),
+                new Vector2(-pWall.mRectangle.Width / 2f, pWall.mRectangle.Height / 2f)
+            };
+
+            float cos = MathF.Cos(pWall.mRotation);
+            float sin = MathF.Sin(pWall.mRotation);
+
+            for(int i = 0; i < corners.Length; i++)
+            {
+                // Rotate corner
+                float rotatedX = corners[i].X * cos - corners[i].Y * sin;
+                float rotatedY = corners[i].X * sin + corners[i].Y * cos;
+                // Translate back to world position
+                Vector2 worldPos = new Vector2(center.X + rotatedX, center.Y + rotatedY);
+                if (worldPos.X < mPlayArea.Left || worldPos.X > mPlayArea.Right || worldPos.Y < mPlayArea.Top || worldPos.Y > mPlayArea.Bottom)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         void SaveMap()

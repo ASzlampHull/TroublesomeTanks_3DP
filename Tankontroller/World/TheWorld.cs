@@ -66,7 +66,7 @@ namespace Tankontroller.World
         public void AddPickup()
         {
             mPickupSpawnTimer = PICKUP_SPAWN_TIME;
-            if (PICKUP_SPAWN && mActivatedPickups.Count() > 0)
+            if (PICKUP_SPAWN && mActivatedPickups.Count() > 0 && mPickupSpawnPositions.Count() > 0)
             {
                 int randPos = new Random().Next(0, mPickupSpawnPositions.Count());
                 //Checks for any pickups at this position to prevent spawn overlap
