@@ -11,7 +11,8 @@ namespace Tankontroller.World
 
         public Transform Transform { get; private set; } = new Transform();
         public CollisionShape CollisionShape => RectangleShape;
-        public RectangleOrientedShape RectangleShape { get; private set; }
+        public RectangleOrientedShape RectangleShape { get; private set; } = null;
+        private RectangleOrientedShape mOutlineShape = null;
 
         private Texture2D mTexture;
 
@@ -19,7 +20,9 @@ namespace Tankontroller.World
         {
             Transform = pTransform;
             RectangleShape = new RectangleOrientedShape(Transform, pSize);
-            //RectangleShape.LocalRotation = MathHelper.ToRadians(45f);
+            RectangleShape.LocalRotation = MathHelper.ToRadians(45f);
+            float outlineSize = 4f;
+            mOutlineShape = new(Transform, RectangleShape.Size + new Vector2(outlineSize), RectangleShape.LocalRotation, RectangleShape.LocalOffset - new Vector2(outlineSize / 2f));
             mTexture = pTexture;
         }
 
@@ -30,8 +33,7 @@ namespace Tankontroller.World
 
         public void DrawOutlines(SpriteBatch pSpriteBatch)
         {
-            RectangleOrientedShape outlineShape = new(Transform, RectangleShape.Size + new Vector2(2f, 2f), RectangleShape.LocalRotation, RectangleShape.LocalOffset - new Vector2(1f, 1f));
-            outlineShape.Draw(pSpriteBatch, mTexture, Color.Black);
+            mOutlineShape.Draw(pSpriteBatch, mTexture, Color.Black);
         }
     }
 }

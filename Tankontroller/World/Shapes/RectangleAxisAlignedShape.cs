@@ -30,7 +30,7 @@ namespace Tankontroller.World.Shapes
 
         public void Draw(SpriteBatch pSpriteBatch, Texture2D pTexture, Color color)
         {
-            pSpriteBatch.Draw(pTexture, WorldPosition, ToRectangle(), color, 0.0f, Vector2.Zero, Owner.Scale, SpriteEffects.None, 0f);
+            pSpriteBatch.Draw(pTexture, ToRectangle(), color);
         }
 
         public override CollisionEvent Intersects(CollisionShape pOther)
