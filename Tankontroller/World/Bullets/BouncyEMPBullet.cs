@@ -53,7 +53,7 @@ namespace Tankontroller.World.Bullets
         {
             Vector2 collisionNormal = collisionEvent.CollisionNormal ?? Vector2.One;
             Velocity = Vector2.Reflect(Velocity, collisionNormal);
-            return true;
+            return false;
         }
 
         public override bool LifeTimeExpired()
