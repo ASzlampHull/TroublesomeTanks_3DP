@@ -63,6 +63,11 @@ namespace Tankontroller.GUI
             mButtons[currentSelectedButtonIndex].PressButton();
         }
 
+        public void TurnOffButton(int index)
+        {
+            mButtons[index].OnOffState = false;
+        }
+
         public void Draw(SpriteBatch pSpriteBatch)
         {
             foreach (Button button in mButtons)
