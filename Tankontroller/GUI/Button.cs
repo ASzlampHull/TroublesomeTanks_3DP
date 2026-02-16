@@ -47,6 +47,11 @@ namespace Tankontroller.GUI
         }
         public bool PressButton() 
         {
+            if (doButton != null && TextureOnState != null) {
+                OnOffState = !OnOffState;
+                doButton(); 
+                return true;
+            }
             if (doButton != null) {
                 doButton(); 
                 return true;
