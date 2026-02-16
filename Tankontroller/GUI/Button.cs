@@ -14,20 +14,36 @@ namespace Tankontroller.GUI
     public class Button
     {
         public Texture2D Texture { get; private set; } 
-        public Texture2D TexturePressed { get; private set; }
+        public Texture2D TextureHighlighted { get; private set; }
+        public Texture2D TextureOnState { get; private set; } 
+        public Texture2D TextureOnStateHighlighted { get; private set; }
         public Color SelectedColour { get; private set; }
         public Rectangle Rect { get; private set; }
         public bool Selected { get; set; } 
+        public bool OnOffState { get; set; } = false;
         public delegate void Action(); 
         private Action doButton;
 
-        public Button(Texture2D pTexture, Texture2D pTexturePressed, Rectangle pRect, Color pColour, Action pDoButton)
+        public Button(Texture2D pTexture, Texture2D pTextureHighlighted, Rectangle pRect, Color pColour, Action pDoButton)
         {
             Texture = pTexture;
-            TexturePressed = pTexturePressed;
+            TextureHighlighted = pTextureHighlighted;
             Rect = pRect;
             SelectedColour = pColour;
             doButton = pDoButton;
+            OnOffState = false;
+        }
+
+        public Button(Texture2D pTexture, Texture2D pTextureHighlighted, Texture2D pTextureOn, Texture2D pTextureOnHighlighted, Rectangle pRect, Color pColour, Action pDoButton, bool pOnOffState)
+        {
+            Texture = pTexture;
+            TextureHighlighted = pTextureHighlighted;
+            TextureOnState = pTextureOn;
+            TextureOnStateHighlighted = pTextureOnHighlighted;
+            Rect = pRect;
+            SelectedColour = pColour;
+            doButton = pDoButton;
+            OnOffState = pOnOffState;
         }
         public bool PressButton() 
         {
