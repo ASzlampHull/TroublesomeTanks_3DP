@@ -188,16 +188,6 @@ namespace Tankontroller.World
             Transform.Position += new Vector2(translationVector.X, translationVector.Y);
         }
 
-        public Vector2 GetIndexedCorner(int pIndex)
-        {
-            Vector3 temp = Vector3.Zero;
-            temp.X = TANK_CORNERS[pIndex].X * mResolutionScale;
-            temp.Y = TANK_CORNERS[pIndex].Y * mResolutionScale;
-            temp = Vector3.Transform(temp, Matrix.CreateRotationZ(Transform.Rotation));
-            temp += new Vector3(Transform.Position.X, Transform.Position.Y, 0);
-            return new Vector2(temp.X, temp.Y);
-        }
-
         public void GetCorners(Vector2[] pCorners)
         {
             if (pCorners.Length == 4)
