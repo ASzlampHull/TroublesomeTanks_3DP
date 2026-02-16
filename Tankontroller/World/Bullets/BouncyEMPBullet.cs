@@ -43,7 +43,7 @@ namespace Tankontroller.World.Bullets
             return true;
         }
 
-        public override bool DoCollision(Bullet pBullet)
+        public override bool BulletCollisionResponse(Bullet pBullet)
         {
             Vector2 collisionNormal = Vector2.Normalize(Velocity);
             return false;

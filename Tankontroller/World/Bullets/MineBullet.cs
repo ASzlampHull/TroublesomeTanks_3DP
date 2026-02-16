@@ -30,7 +30,7 @@ namespace Tankontroller.World.Bullets
             return true;
         }
 
-        public override bool DoCollision(Bullet pBullet) => false;
+        public override bool BulletCollisionResponse(Bullet pBullet) => false;
 
         public override bool WallCollisionResponse(CollisionEvent collisionEvent) => false;
 
