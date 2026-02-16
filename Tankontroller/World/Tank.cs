@@ -104,7 +104,7 @@ namespace Tankontroller.World
             mOldPosition = Transform.Position;
             mOldRotation = Transform.Rotation;
 
-            RectangleShape = new RectangleOrientedShape(Transform, new Vector2(TANK_WIDTH, TANK_HEIGHT - TANK_FRONT_BUFFER), 0f, Vector2.Zero);
+            RectangleShape = new RectangleOrientedShape(Transform, new Vector2((TANK_HEIGHT - TANK_FRONT_BUFFER) * mResolutionScale, TANK_WIDTH * mResolutionScale), 0f, Vector2.Zero);
         }
 
         public void SetColour(Color pColour)
@@ -417,36 +417,31 @@ namespace Tankontroller.World
             Transform.Position += delta;
         }
 
-        public void CheckBullets(List<Tank> pTanks, List<CollisionShape> pWallColliders)
+        /// <summary>
+        /// Handles collision detection and response for all bullets fired by this tank against a list of tanks and wall colliders.
+        /// </summary>
+        public void HandleBulletCollisions(List<Tank> pTanks, List<CollisionShape> pWallColliders)
         {
-            
             for (int i = 0; i < mBullets.Count; ++i)
             {
                 bool bulletRemoved = false;
 
-                // Check collision with tanks
-                for (int j = 0; j < pTanks.Count; ++j)
+                // Check and resolve bullet-tank collisions
+                foreach (Tank tank in pTanks)
                 {
-                    if (pTanks[j].GetState() == TankStates.DESTROYED) continue; // Skips bullet collision with destroyed tanks
-                    
-                    if (CollisionManager.Collide(mBullets[i], pTanks[j]))
+                    if (tank.GetState() == TankStates.DESTROYED) continue; // Skips bullet collision with destroyed tanks
+
+                    CollisionEvent collisionEvent = mBullets[i].CollisionShape.Intersects(tank.CollisionShape);
+
+                    if(collisionEvent.HasCollided)
                     {
-                        if (mBullets[i] is BouncyEMPBullet)
+                        if (mBullets[i].TankCollisionResponse(tank))
                         {
-                            mBullets[i].DoCollision(pTanks[j]);
-                            mBullets.Add(new Shockwave(mBullets[i].Position, Vector2.Zero, Color.Aqua, 5.0f));
+                            if (mBullets[i] is BouncyEMPBullet)
+                            {
+                                mBullets.Add(new Shockwave(mBullets[i].Position, Vector2.Zero, Color.Aqua, 5.0f));
+                            }
                             mBullets.RemoveAt(i);
-                            bulletRemoved = true;
-                            break;
-                        }
-                        if (mBullets[i] is Shockwave)
-                        {
-                            pTanks[j].mIsInsideShockwave = true;
-                        }
-                        if (mBullets[i].DoCollision(pTanks[j]))
-                        {
-                            mBullets.RemoveAt(i);
-                            pTanks[j].TakeDamage();
                             bulletRemoved = true;
                             break;
                         }
@@ -599,7 +594,7 @@ namespace Tankontroller.World
             // Draw collision shape if enabled in DGS
             if (CollisionManager.DRAW_COLLISION_SHAPES)
             {
-                DrawUtilities.DrawRectangle(pSpriteBatch, ConvertUtilities.ToRectangle(TANK_CORNERS), Color.Magenta, Transform.Rotation, Transform.Position, mResolutionScale);
+                DrawUtilities.DrawRectangle(pSpriteBatch, RectangleShape.ToRectangle(), Color.Magenta, Transform.Rotation, Transform.Position, 1.0f);
             }
         }
 

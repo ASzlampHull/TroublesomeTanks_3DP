@@ -36,7 +36,7 @@ namespace Tankontroller.World.Bullets
             base.Update(pSeconds);
         }
 
-        public override bool DoCollision(Tank pTank)
+        public override bool TankCollisionResponse(Tank pTank)
         {
             EMPBlastInitPolicy explosion = new EMPBlastInitPolicy(Position, 6.5f);
             ParticleManager.Instance().InitialiseParticles(explosion, 200);

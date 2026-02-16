@@ -57,7 +57,11 @@ namespace Tankontroller.World.Bullets
             return collisionNormal;
         }
 
-        public abstract bool DoCollision(Tank pTank);
+        /// <summary>
+        /// Handles the response to a collision with a tank.
+        /// </summary>
+        /// <returns> True if the bullet should be removed, false otherwise.</returns>
+        public abstract bool TankCollisionResponse(Tank pTank);
         public abstract bool DoCollision(Bullet pBullet);
 
         /// <summary>

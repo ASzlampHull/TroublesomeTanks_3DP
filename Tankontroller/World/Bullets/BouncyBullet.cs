@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Tankontroller.Managers;
 using Tankontroller.Utilities;
 using Tankontroller.World.Particles;
@@ -23,8 +24,9 @@ namespace Tankontroller.World.Bullets
             base.Update(pSeconds);
         }
 
-        public override bool DoCollision(Tank pTank)
+        public override bool TankCollisionResponse(Tank pTank)
         {
+            pTank.TakeDamage();
             CreateExplosion(Vector2.Normalize(Position - pTank.Transform.Position));
             return true;
         }

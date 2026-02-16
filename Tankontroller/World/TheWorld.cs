@@ -169,7 +169,7 @@ namespace Tankontroller.World
                     mWalls.ForEach(w => wallColliders.Add(w.CollisionShape));
                     wallColliders.AddRange(mPlayAreaCollisionShapes);
 
-                    mTanks[tankIndex].CheckBullets(mTanks, wallColliders);
+                    mTanks[tankIndex].HandleBulletCollisions(mTanks, wallColliders);
 
                     // Pickup collision
                     foreach (Pickup p in mPickups)
