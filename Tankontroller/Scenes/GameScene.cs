@@ -106,8 +106,24 @@ namespace Tankontroller.Scenes
             // World draws play area, walls, tanks, bullets, and particle effects
             m_World.Draw(spriteBatch);
 
-            // Draw death ring overlay (if active)
-            m_DeathRing?.Draw(spriteBatch);
+            // Draw death ring overlay (if active) - clipped to play area
+            if (m_DeathRing != null)
+            {
+                spriteBatch.End();
+
+                // Set up scissor rectangle to clip to play area
+                Rectangle oldScissor = spriteBatch.GraphicsDevice.ScissorRectangle;
+                RasterizerState rasterizerState = new RasterizerState { ScissorTestEnable = true };
+                spriteBatch.GraphicsDevice.ScissorRectangle = m_World.PlayArea;
+
+                spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, rasterizerState);
+                m_DeathRing.Draw(spriteBatch);
+                spriteBatch.End();
+
+                // Restore previous state
+                spriteBatch.GraphicsDevice.ScissorRectangle = oldScissor;
+                spriteBatch.Begin();
+            }
 
             if (!mControllersConnected)
             {

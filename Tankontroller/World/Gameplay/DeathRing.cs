@@ -53,7 +53,7 @@ namespace Tankontroller.World.Gameplay
             float configuredStart = SafeFloat("DEATH_RING_START_RADIUS", defaultStart);
             m_startRadius = configuredStart > 0 ? configuredStart : defaultStart;
 
-            float defaultEnd = MathF.Max(playArea.Width, playArea.Height) * 0.6f;
+            float defaultEnd = MathF.Max(playArea.Width, playArea.Height) * 0.3f;
             float configuredEnd = SafeFloat("DEATH_RING_END_RADIUS", defaultEnd);
             m_endRadius = configuredStart > 0 ? configuredEnd : defaultEnd;
 
