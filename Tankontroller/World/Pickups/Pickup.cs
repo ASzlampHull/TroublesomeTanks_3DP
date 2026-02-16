@@ -36,18 +36,8 @@ namespace Tankontroller.World.Pickups
             pSpriteBatch.Draw(Texture, drawRectangle, Color.White);
             if (CollisionManager.DRAW_COLLISION_SHAPES)
             {
-                DrawUtilities.DrawRectangleNonOrigin(pSpriteBatch, drawRectangle, Color.RosyBrown, Transform.Rotation, Transform.Position, 1.0f);
+                DrawUtilities.DrawRectangle(pSpriteBatch, drawRectangle, Color.RosyBrown, Transform.Rotation, Transform.Position, 1.0f);
             }
-        }
-
-        public bool PickUpCollision(Tank pTank)
-        {
-            if (CollisionManager.Collide(pTank, RectangleShape.ToRectangle(), false))
-            {
-                TriggerEffect(pTank);
-                return true;
-            }
-            return false;
         }
 
         public abstract void TriggerEffect(Tank pTank);

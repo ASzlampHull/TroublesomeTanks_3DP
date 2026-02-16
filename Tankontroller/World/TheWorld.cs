@@ -164,24 +164,25 @@ namespace Tankontroller.World
                 {
                     mTanks[tankIndex].Update(pSeconds);
 
-                    // Get all wall colliders (including play area) for bullet collision checks
+                    // Bullet collisions
                     List<CollisionShape> wallColliders = new();
                     mWalls.ForEach(w => wallColliders.Add(w.CollisionShape));
                     wallColliders.AddRange(mPlayAreaCollisionShapes);
 
                     mTanks[tankIndex].HandleBulletCollisions(mTanks, wallColliders);
 
-                    // Pickup collision
-                    foreach (Pickup p in mPickups)
+                    // Pickup collisions
+                    foreach (Pickup pickup in mPickups)
                     {
                         // This is to avoid any dead tanks from picking up a pickup
                         if (mTanks[tankIndex].GetState() != TankStates.ALIVE)
                         {
                             continue;
                         }
-                        else if (p.PickUpCollision(mTanks[tankIndex]))
+                        else if (pickup.CollisionShape.Intersects(mTanks[tankIndex].CollisionShape).HasCollided)
                         {
-                            mPickups.Remove(p);
+                            pickup.TriggerEffect(mTanks[tankIndex]);
+                            mPickups.Remove(pickup);
                             break;
                         }
                     }
