@@ -201,9 +201,10 @@ namespace Tankontroller.World
                         {
                             continue;
                         }
-                        // tank against tanks using collision manager
-                        if (CollisionManager.Collide(mTanks[tankIndex], mTanks[i]))
+                        if (mTanks[tankIndex].CollisionShape.Intersects(mTanks[i].CollisionShape).HasCollided)
+                        {
                             mTanks[tankIndex].PutBack();
+                        }
                     }
                 }
             }

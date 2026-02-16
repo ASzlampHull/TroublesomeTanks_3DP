@@ -17,22 +17,6 @@ namespace Tankontroller.Managers
     {
         public static readonly bool DRAW_COLLISION_SHAPES = DGS.Instance.GetBool("DRAW_COLLISION_SHAPES");
 
-        static public bool Collide(Tank pTank, Tank pTank_2) // Tank on Tank Collision
-        {
-            Vector2[] Tank1Corners = new Vector2[4];
-            Vector2[] Tank2Corners = new Vector2[4];
-            pTank.GetCorners(Tank1Corners);
-            pTank_2.GetCorners(Tank2Corners);
-            for (int i = 0; i < 4; i++)
-            {
-                if(pTank.PointIsInTank(Tank2Corners[i]) || pTank_2.PointIsInTank(Tank1Corners[i]))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
         /// <summary>
         /// This is the collision response for moving a tank away from a wall when a tank collides with a wall
         /// </summary>
