@@ -36,27 +36,6 @@ namespace Tankontroller.World.Bullets
             Transform.Position = Position + Velocity * pSeconds * Tankontroller.Instance().ScaleFactor();
         }
 
-        protected Vector2 GetCollisionNormal(Rectangle pRect)
-        {
-            float difference = Math.Abs(Position.X - pRect.Left);
-            Vector2 collisionNormal = new Vector2(-1, 0);
-            if (difference > Math.Abs(Position.X - pRect.Right))
-            {
-                difference = Math.Abs(Position.X - pRect.Right);
-                collisionNormal = new Vector2(1, 0);
-            }
-            if (difference > Math.Abs(Position.Y - pRect.Top))
-            {
-                difference = Math.Abs(Position.Y - pRect.Top);
-                collisionNormal = new Vector2(0, -1);
-            }
-            if (difference > Math.Abs(Position.Y - pRect.Bottom))
-            {
-                collisionNormal = new Vector2(0, 1);
-            }
-            return collisionNormal;
-        }
-
         /// <summary>
         /// Handles the response to a collision with a tank.
         /// </summary>
