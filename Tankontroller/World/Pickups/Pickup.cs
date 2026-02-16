@@ -36,7 +36,7 @@ namespace Tankontroller.World.Pickups
             pSpriteBatch.Draw(Texture, drawRectangle, Color.White);
             if (CollisionManager.DRAW_COLLISION_SHAPES)
             {
-                DrawUtilities.DrawRectangle(pSpriteBatch, drawRectangle, Color.White, Transform.Rotation, Transform.Position, 1.0f);
+                DrawUtilities.DrawRectangleNonOrigin(pSpriteBatch, drawRectangle, Color.RosyBrown, Transform.Rotation, Transform.Position, 1.0f);
             }
         }
 
