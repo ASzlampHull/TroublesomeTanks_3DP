@@ -11,6 +11,118 @@ namespace Tankontroller
 {
     public static class MapManager
     {
+        public static TheWorld LoadMapFromJson(string filePath)
+        {
+            string workingDirectory = Environment.CurrentDirectory;
+            string fullPath = Path.Combine(workingDirectory, "Maps", filePath);
+
+            string jsonString = File.ReadAllText(fullPath);
+            return ParseJson(jsonString);
+        }
+
+        private static TheWorld ParseJson(string jsonString)
+        {
+            var mapData = JsonSerializer.Deserialize<MapData>(jsonString);
+            if (mapData == null)
+            {
+                throw new Exception("Failed to deserialize JSON to MapData.");
+            }
+
+            int screenWidth = Tankontroller.Instance().GDM().GraphicsDevice.Viewport.Width;
+            int screenHeight = Tankontroller.Instance().GDM().GraphicsDevice.Viewport.Height;
+            Rectangle playArea = new Rectangle(screenWidth * 2 / 100, screenHeight * 25 / 100, screenWidth * 96 / 100, screenHeight * 73 / 100);
+            List<RectWall> Walls = new List<RectWall>();
+            List<Tank> Tanks = new List<Tank>();
+            List<Vector2> PickupSpawnPositions = new List<Vector2>();
+            float tankScale = (float)playArea.Width / (50 * 40);
+
+            foreach (var wall in mapData.Walls)
+            {
+                try
+                {
+                    var texture = wall.Texture;
+                    var position = new Vector2(float.Parse(wall.Position[0]), float.Parse(wall.Position[1]));
+                    var size = new Vector2(float.Parse(wall.Size[0]), float.Parse(wall.Size[1]));
+                    position.X = playArea.X + (playArea.Width * (position.X / 100.0f));
+                    position.Y = playArea.Y + (playArea.Height * (position.Y / 100.0f));
+                    size.X = playArea.Width * (size.X / 100.0f);
+                    size.Y = playArea.Height * (size.Y / 100.0f);
+
+                    Texture2D wallTexture = Tankontroller.Instance().CM().Load<Texture2D>(texture);
+                    Transform wallTransform = new(position + size/2f, 0f);
+                    RectWall currentWall = new(wallTransform, new Vector2(size.X, size.Y), wallTexture);
+                    Walls.Add(currentWall);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error parsing wall data: {ex.Message}");
+                }
+            }
+
+            foreach (var tank in mapData.Tanks)
+            {
+                try
+                {
+                    var position = new Vector2(float.Parse(tank.Position[0]), float.Parse(tank.Position[1]));
+                    var rotation = MathHelper.ToRadians(float.Parse(tank.Rotation));
+                    position.X = playArea.X + (playArea.Width * (position.X / 100.0f));
+                    position.Y = playArea.Y + (playArea.Height * (position.Y / 100.0f));
+
+                    Tanks.Add(new Tank(position, rotation, tankScale));
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error parsing tank data: {ex.Message}");
+                }
+            }
+
+            foreach (var pickup in mapData.Pickups)
+            {
+                try
+                {
+                    var position = new Vector2(float.Parse(pickup.Position[0]), float.Parse(pickup.Position[1]));
+                    position.X = playArea.X + (playArea.Width * (position.X / 100.0f));
+                    position.Y = playArea.Y + (playArea.Height * (position.Y / 100.0f));
+
+                    PickupSpawnPositions.Add(position);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error parsing pickup data: {ex.Message}");
+                }
+            }
+
+            return new TheWorld(playArea, Walls, Tanks, PickupSpawnPositions);
+        }
+
+        public class MapData
+        {
+            public List<WallData> Walls { get; set; }
+            public List<TankData> Tanks { get; set; }
+            public List<PickupData> Pickups { get; set; }
+        }
+
+        public class WallData
+        {
+            public string Texture { get; set; }
+            public string[] Position { get; set; }
+            public string[] Size { get; set; }
+        }
+
+        public class TankData
+        {
+            public string[] Position { get; set; }
+            public string Rotation { get; set; }
+        }
+
+        public class PickupData
+        {
+            public string[] Position { get; set; }
+        }
+
+        /// <summary>
+        /// Deprecated method for loading maps from a custom text format. Use LoadMapFromJson instead for better performance and maintainability.
+        /// </summary>
         public static TheWorld LoadMap(string filePath)
         {
             string workingDirectory = Environment.CurrentDirectory;
@@ -21,6 +133,9 @@ namespace Tankontroller
             return ParseLines(lines);
         }
 
+        /// <summary>
+        /// Deprecated method for loading maps from a custom text format. Use LoadMapFromJson instead for better performance and maintainability.
+        /// </summary>
         private static TheWorld ParseLines(string[] lines)
         {
             int screenWidth = Tankontroller.Instance().GDM().GraphicsDevice.Viewport.Width;
@@ -113,114 +228,6 @@ namespace Tankontroller
                 }
             }
             return new TheWorld(playArea, Walls, Tanks, PickupSpawnPositions);
-        }
-
-        public static TheWorld LoadMapFromJson(string filePath)
-        {
-            string workingDirectory = Environment.CurrentDirectory;
-            string fullPath = Path.Combine(workingDirectory, "Maps", filePath);
-
-            string jsonString = File.ReadAllText(fullPath);
-            return ParseJson(jsonString);
-        }
-
-        private static TheWorld ParseJson(string jsonString)
-        {
-            var mapData = JsonSerializer.Deserialize<MapData>(jsonString);
-            if (mapData == null)
-            {
-                throw new Exception("Failed to deserialize JSON to MapData.");
-            }
-
-            int screenWidth = Tankontroller.Instance().GDM().GraphicsDevice.Viewport.Width;
-            int screenHeight = Tankontroller.Instance().GDM().GraphicsDevice.Viewport.Height;
-            Rectangle playArea = new Rectangle(screenWidth * 2 / 100, screenHeight * 25 / 100, screenWidth * 96 / 100, screenHeight * 73 / 100);
-            List<RectWall> Walls = new List<RectWall>();
-            List<Tank> Tanks = new List<Tank>();
-            List<Vector2> PickupSpawnPositions = new List<Vector2>();
-            float tankScale = (float)playArea.Width / (50 * 40);
-
-            foreach (var wall in mapData.Walls)
-            {
-                try
-                {
-                    var texture = wall.Texture;
-                    var position = new Vector2(float.Parse(wall.Position[0]), float.Parse(wall.Position[1]));
-                    var size = new Vector2(float.Parse(wall.Size[0]), float.Parse(wall.Size[1]));
-                    position.X = playArea.X + (playArea.Width * (position.X / 100.0f));
-                    position.Y = playArea.Y + (playArea.Height * (position.Y / 100.0f));
-                    size.X = playArea.Width * (size.X / 100.0f);
-                    size.Y = playArea.Height * (size.Y / 100.0f);
-
-                    Texture2D wallTexture = Tankontroller.Instance().CM().Load<Texture2D>(texture);
-                    Transform wallTransform = new(position + size/2f, 0f);
-                    RectWall currentWall = new(wallTransform, new Vector2(size.X, size.Y), wallTexture);
-                    Walls.Add(currentWall);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error parsing wall data: {ex.Message}");
-                }
-            }
-
-            foreach (var tank in mapData.Tanks)
-            {
-                try
-                {
-                    var position = new Vector2(float.Parse(tank.Position[0]), float.Parse(tank.Position[1]));
-                    var rotation = MathHelper.ToRadians(float.Parse(tank.Rotation));
-                    position.X = playArea.X + (playArea.Width * (position.X / 100.0f));
-                    position.Y = playArea.Y + (playArea.Height * (position.Y / 100.0f));
-
-                    Tanks.Add(new Tank(position, rotation, tankScale));
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error parsing tank data: {ex.Message}");
-                }
-            }
-
-            foreach (var pickup in mapData.Pickups)
-            {
-                try
-                {
-                    var position = new Vector2(float.Parse(pickup.Position[0]), float.Parse(pickup.Position[1]));
-                    position.X = playArea.X + (playArea.Width * (position.X / 100.0f));
-                    position.Y = playArea.Y + (playArea.Height * (position.Y / 100.0f));
-
-                    PickupSpawnPositions.Add(position);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error parsing pickup data: {ex.Message}");
-                }
-            }
-
-            return new TheWorld(playArea, Walls, Tanks, PickupSpawnPositions);
-        }
-        public class MapData
-        {
-            public List<WallData> Walls { get; set; }
-            public List<TankData> Tanks { get; set; }
-            public List<PickupData> Pickups { get; set; }
-        }
-
-        public class WallData
-        {
-            public string Texture { get; set; }
-            public string[] Position { get; set; }
-            public string[] Size { get; set; }
-        }
-
-        public class TankData
-        {
-            public string[] Position { get; set; }
-            public string Rotation { get; set; }
-        }
-
-        public class PickupData
-        {
-            public string[] Position { get; set; }
         }
     }
 }
