@@ -11,7 +11,7 @@ using TTMapEditor.Managers;
 
 namespace TTMapEditor.Scenes
 {
-    internal class MainMenuScene : IScene
+    public class MainMenuScene : IScene
     {
         IGame mGameInstance = TTMapEditor.Instance();
 

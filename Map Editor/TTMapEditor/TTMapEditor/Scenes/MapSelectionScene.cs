@@ -9,7 +9,7 @@ using System.Text.Json;
 
 namespace TTMapEditor.Scenes
 {
-    internal class MapSelectionScene : IScene
+    public class MapSelectionScene : IScene
     {
 
         GraphicsDevice mGraphicsDevice;

@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace TTMapEditor.Objects
 {
-    internal class Tank : SceneObject
+    public class Tank : SceneObject
     {
         private static readonly Color COLOUR = Color.Blue;
 

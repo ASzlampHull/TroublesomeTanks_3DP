@@ -16,7 +16,7 @@ namespace TTMapEditor.Objects
         BOUNCY_BULLET,
     }
 
-    internal class Pickup : SceneObject
+    public class Pickup : SceneObject
     {
         private static readonly Color COLOUR = Color.Red;
         private static readonly Texture2D mEmpIcon = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("EMP");

@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 
 namespace TTMapEditor.Managers
 {
-    internal class InputManager
+    public class InputManager
     {
         static InputManager mInstance = new InputManager();
         private static KeyboardState mCurrentState;

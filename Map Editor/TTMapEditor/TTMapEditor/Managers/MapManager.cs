@@ -10,7 +10,7 @@ using TTMapEditor.Objects;
 
 namespace TTMapEditor.Managers
 {
-    internal static class MapManager
+    public static class MapManager
     {
         public static string createNewMap(string pMapName)
         {

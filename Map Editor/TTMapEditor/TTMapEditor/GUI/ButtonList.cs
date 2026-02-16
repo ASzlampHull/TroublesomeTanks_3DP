@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace TTMapEditor.GUI
 {
-    internal class ButtonList
+    public class ButtonList
     {
         List<Button> mButtons = null;
         int currentSelectedButtonIndex = 0;

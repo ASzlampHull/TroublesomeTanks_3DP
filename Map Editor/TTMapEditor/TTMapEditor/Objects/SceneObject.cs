@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 
 namespace TTMapEditor.Objects
 {
-    internal abstract class SceneObject
+    public abstract class SceneObject
     {
         protected Texture2D mTexture;
         public Rectangle mRectangle { get; protected set; }

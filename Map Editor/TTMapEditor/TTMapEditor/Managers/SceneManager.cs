@@ -8,7 +8,7 @@ using TTMapEditor.Scenes;
 
 namespace TTMapEditor.Managers
 {
-    internal class SceneManager
+    public class SceneManager
     {
         private List<IScene> mScenes = new List<IScene>();
         static SceneManager mInstance = new SceneManager();

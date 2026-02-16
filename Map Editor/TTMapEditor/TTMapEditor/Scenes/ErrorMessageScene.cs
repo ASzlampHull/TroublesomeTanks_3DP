@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TTMapEditor.Scenes
 {
-    internal class ErrorMessageScene : IScene
+    public class ErrorMessageScene : IScene
     {
         
         public ErrorMessageScene(Exception pError)

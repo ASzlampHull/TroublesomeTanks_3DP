@@ -9,7 +9,7 @@ using System.IO.Pipes;
 
 namespace TTMapEditor.Objects
 {
-    internal class RectWall : SceneObject
+    public class RectWall : SceneObject
     {
         private static readonly Color COLOUR = DGS.Instance.GetColour("COLOUR_WALL");
         private static readonly SpriteFont mFont = TTMapEditor.Instance().GetContentManager().Load<SpriteFont>("TitleFont");

@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace TTMapEditor.GUI
 {
-    internal class Button
+    public class Button
     {
         public Texture2D mTexture { get; private set; }
 

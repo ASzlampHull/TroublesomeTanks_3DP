@@ -6,7 +6,7 @@ namespace TTMapEditor.Objects
     /// Lightweight container for template drag state.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    internal struct DraggableTemplate<T> where T : SceneObject
+    public class DraggableTemplate<T> where T : SceneObject
     {
         public T mTemplate { get; }
         public Rectangle mOriginalRect { get; private set; }

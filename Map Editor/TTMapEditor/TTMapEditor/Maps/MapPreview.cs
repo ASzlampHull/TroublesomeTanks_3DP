@@ -23,7 +23,7 @@ namespace TTMapEditor.Maps
     }
 
 
-    internal class MapPreview
+    public class MapPreview
     {
         Rectangle mPlayArea { get; set; }
         List<RectWall> mWalls { get; set; }

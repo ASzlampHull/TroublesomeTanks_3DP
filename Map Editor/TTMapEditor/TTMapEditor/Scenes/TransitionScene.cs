@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace TTMapEditor.Scenes
 {
-    internal class TransitionScene : IScene
+    public class TransitionScene : IScene
     {
         GraphicsDevice mGraphicsDevice;
         RenderTarget2D mPreviousTexture = null;
