@@ -16,7 +16,7 @@ namespace TTMapEditor.Objects
         bool mIsRotating = false;
         bool mIsScaling = true;
 
-        public RectWall(Texture2D pTexture, Rectangle pRectangle) : base(pTexture, pRectangle)
+        public RectWall(Texture2D pTexture, Rectangle pRectangle, float pRotation = 0f) : base(pTexture, pRectangle)
         {
             mRotation = 0f;
         }

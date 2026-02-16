@@ -186,8 +186,23 @@ namespace Tankontroller.Scenes
             {
                 Vector2 pos = new Vector2(float.Parse(wall.Position[0]), float.Parse(wall.Position[1]));
                 Vector2 size = new Vector2(float.Parse(wall.Size[0]), float.Parse(wall.Size[1]));
+                if (string.IsNullOrEmpty(wall.Rotation))
+                {
+                    wall.Rotation = "0";
+                }
+
+                // If your map data stores degrees, convert to radians here:
+                float rotation = float.Parse(wall.Rotation); // degrees
+                float rotationRadians = MathF.PI / 180f * rotation;
+
                 Rectangle wallRect = GetRect(playArea, pos, size);
-                DrawOutline(wallRect, wall.Texture);
+
+                // Center of the rectangle for rotation
+                Vector2 center = new Vector2(
+                    wallRect.X + wallRect.Width / 2f,
+                    wallRect.Y + wallRect.Height / 2f);
+
+                DrawOutline(wallRect, wall.Texture, rotationRadians, center);
             }
 
             // Draw outlines for tanks
@@ -225,8 +240,34 @@ namespace Tankontroller.Scenes
             {
                 Vector2 pos = new Vector2(float.Parse(wall.Position[0]), float.Parse(wall.Position[1]));
                 Vector2 size = new Vector2(float.Parse(wall.Size[0]), float.Parse(wall.Size[1]));
+
+                if (string.IsNullOrEmpty(wall.Rotation))
+                {
+                    wall.Rotation = "0";
+                }
+                float rotation = float.Parse(wall.Rotation); // degrees
+                float rotationRadians = MathF.PI / 180f * rotation;
+
                 Rectangle wallRect = GetRect(playArea, pos, size);
-                spriteBatch.Draw(mGameInstance.CM().Load<Texture2D>(wall.Texture), wallRect, DGS.Instance.GetColour("COLOUR_WALLS"));
+
+                Vector2 center = new Vector2(
+                    wallRect.X + wallRect.Width / 2f,
+                    wallRect.Y + wallRect.Height / 2f);
+
+                Texture2D wallTexture = mGameInstance.CM().Load<Texture2D>(wall.Texture);
+
+                spriteBatch.Draw(
+                    wallTexture,
+                    center,                                          // position (center)
+                    null,                                            // source rectangle
+                    DGS.Instance.GetColour("COLOUR_WALLS"),
+                    rotation,
+                    new Vector2(wallRect.Width / 2f, wallRect.Height / 2f), // origin (center)
+                    new Vector2(
+                        wallRect.Width / (float)wallTexture.Width,
+                        wallRect.Height / (float)wallTexture.Height),
+                    SpriteEffects.None,
+                    0f);
             }
 
             // Draw tanks
@@ -285,6 +326,35 @@ namespace Tankontroller.Scenes
             int offset = 2; // Outline thickness
             Texture2D texture = mGameInstance.CM().Load<Texture2D>(textureName);
             spriteBatch.Draw(texture, new Rectangle(rect.X - offset, rect.Y - offset, rect.Width + (offset * 2), rect.Height + (offset * 2)), Color.Black);
+        }
+
+        void DrawOutline(Rectangle rect, string textureName, float rotation, Vector2 center)
+        {
+            int offset = 2; // Outline thickness
+            Texture2D texture = mGameInstance.CM().Load<Texture2D>(textureName);
+
+            Rectangle outlineRect = new Rectangle(
+                rect.X - offset,
+                rect.Y - offset,
+                rect.Width + (offset * 2),
+                rect.Height + (offset * 2));
+
+            Vector2 outlineOrigin = new Vector2(
+                outlineRect.Width / 2f,
+                outlineRect.Height / 2f);
+
+            spriteBatch.Draw(
+                texture,
+                center,
+                null,
+                Color.Black,
+                rotation,
+                outlineOrigin,
+                new Vector2(
+                    outlineRect.Width / (float)texture.Width,
+                    outlineRect.Height / (float)texture.Height),
+                SpriteEffects.None,
+                0f);
         }
 
         public override void Escape()

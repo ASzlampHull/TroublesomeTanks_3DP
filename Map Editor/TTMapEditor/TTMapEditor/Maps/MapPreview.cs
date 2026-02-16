@@ -234,6 +234,7 @@ namespace TTMapEditor.Maps
                     if (w == null) continue;
                     float posX = 0f, posY = 0f;
                     float sizeX = 0f, sizeY = 0f;
+                    float rotationDeg = 0f;
                     if (w.Position != null && w.Position.Length >= 2)
                     {
                         float.TryParse(w.Position[0], NumberStyles.Float, CultureInfo.InvariantCulture, out posX);
@@ -243,6 +244,10 @@ namespace TTMapEditor.Maps
                     {
                         float.TryParse(w.Size[0], NumberStyles.Float, CultureInfo.InvariantCulture, out sizeX);
                         float.TryParse(w.Size[1], NumberStyles.Float, CultureInfo.InvariantCulture, out sizeY);
+                    }
+                    if(w.Rotation != null)
+                    {
+                        float.TryParse(w.Rotation, NumberStyles.Float, CultureInfo.InvariantCulture, out rotationDeg);
                     }
 
                     Vector2 position = new Vector2(
@@ -264,7 +269,7 @@ namespace TTMapEditor.Maps
                         tex = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("block");
                     }
 
-                    mWalls.Add(new RectWall(tex, new Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y)));
+                    mWalls.Add(new RectWall(tex, new Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y),rotationDeg));
                 }
             }
 
@@ -579,11 +584,14 @@ namespace TTMapEditor.Maps
             //Adding walls to map data
             foreach (RectWall wall in mWalls)
             {
+                float rotationDeg = 0f;
+                rotationDeg = MathHelper.ToDegrees(wall.mRotation);
                 mMapData.Walls.Add(new WallData()
                 {
                     Texture = "block",
                     Position = new string[] { ((wall.mRectangle.X - mPlayArea.X) * 100.0f / mPlayArea.Width).ToString(CultureInfo.InvariantCulture), ((wall.mRectangle.Y - mPlayArea.Y) * 100.0f / mPlayArea.Height).ToString(CultureInfo.InvariantCulture) },
-                    Size = new string[] { (wall.mRectangle.Width * 100.0f / mPlayArea.Width).ToString(CultureInfo.InvariantCulture), (wall.mRectangle.Height * 100.0f / mPlayArea.Height).ToString(CultureInfo.InvariantCulture) }
+                    Size = new string[] { (wall.mRectangle.Width * 100.0f / mPlayArea.Width).ToString(CultureInfo.InvariantCulture), (wall.mRectangle.Height * 100.0f / mPlayArea.Height).ToString(CultureInfo.InvariantCulture) },
+                    Rotation = rotationDeg.ToString(CultureInfo.InvariantCulture)
                 });
             }
             //Adding tanks to map data

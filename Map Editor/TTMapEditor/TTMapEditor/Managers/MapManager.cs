@@ -103,6 +103,7 @@ namespace TTMapEditor.Managers
         public string[] Position { get; set; }
 
         public string[] Size { get; set; }
+        public string Rotation { get; set; }
 
     }
 
