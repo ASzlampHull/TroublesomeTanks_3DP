@@ -2,9 +2,14 @@ name: Map Editor Tests
 
 on:
   push:
-
+    paths:
+      - 'TTMapEditor/**'
+      - 'TTMapEditor.Tests/**'
   pull_request:
-
+    paths:
+      - 'TTMapEditor/**'
+      - 'TTMapEditor.Tests/**'
+  workflow_dispatch: {}
 
 jobs:
   test:

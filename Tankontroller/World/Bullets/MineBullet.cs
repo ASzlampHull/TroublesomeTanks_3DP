@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Tankontroller.Managers;
 using Tankontroller.Utilities;
 using Tankontroller.World.Particles;
+using Tankontroller.World.Shapes;
 
 namespace Tankontroller.World.Bullets
 {
@@ -13,22 +14,12 @@ namespace Tankontroller.World.Bullets
         private readonly Texture2D MineTexture = Tankontroller.Instance().CM().Load<Texture2D>("Mine");
         public MineBullet(Vector2 pPosition, Vector2 pVelocity, Color pColour, float pLifeTime) : base(pPosition, pVelocity, pColour, pLifeTime)
         {
-            Radius *= 3.5f;
+            CircleShape.Radius *= 3.5f;
         }
         public override void Update(float pSeconds)
         {
             LifeTime -= pSeconds;
             base.Update(pSeconds);
-        }
-
-        public override bool DoCollision(Rectangle pRectangle)
-        {
-            return false;
-        }
-
-        public override bool DoCollision(RectWall pWall)
-        {
-            return false;
         }
 
         public override bool DoCollision(Tank pTank)
@@ -38,10 +29,9 @@ namespace Tankontroller.World.Bullets
             return true;
         }
 
-        public override bool DoCollision(Bullet pBullet)
-        {
-            return false;
-        }
+        public override bool DoCollision(Bullet pBullet) => false;
+
+        public override bool WallCollisionResponse(CollisionEvent collisionEvent) => false;
 
         public override bool LifeTimeExpired()
         {

@@ -26,6 +26,7 @@ namespace Tankontroller.GUI
         private bool mColourSet;
 
         private float mSelectionCoolDown;
+        private readonly float SELECTION_COOLDOWN_TIME = 0.2f;
         private float mJoinButtonFlashTimer;
         private bool mShowJoinButton;
 
@@ -303,7 +304,7 @@ namespace Tankontroller.GUI
                     mSelectionIndex = mSelectionIndex % mSelectionRectangles.Count;
                 }
                 UpdateCentreAvatar();
-                mSelectionCoolDown = 0.2f;
+                mSelectionCoolDown = SELECTION_COOLDOWN_TIME;
             }
         }
 

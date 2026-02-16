@@ -62,6 +62,7 @@ namespace Tankontroller.World.Particles
         public void Draw(SpriteBatch pBatch)
         {
             Vector2 origin = new Vector2((m_Texture.Width / 2f), (m_Texture.Height / 2f));
+            float scale = Tankontroller.Instance().ScaleFactor();
 
             for (int i = 0; i < MAX_TRACKS; i++)
             {
@@ -77,12 +78,12 @@ namespace Tankontroller.World.Particles
                         // skip the center pixel where the foreground will be drawn
                         if (ox == 0 && oy == 0) continue;
 
-                        pBatch.Draw(m_Texture, basePos + new Vector2(ox, oy), null, Color.Black, m_Tracks[i].Rotation, origin, 1f, SpriteEffects.None, 0.0f);
+                        pBatch.Draw(m_Texture, basePos + new Vector2(ox, oy), null, Color.Black, m_Tracks[i].Rotation, origin, scale, SpriteEffects.None, 0.0f);
                     }
                 }
 
                 // Draw the foreground (main) track
-                pBatch.Draw(m_Texture, basePos, null, m_Tracks[i].Colour, m_Tracks[i].Rotation, origin, 1f, SpriteEffects.None,0.0f);
+                pBatch.Draw(m_Texture, basePos, null, m_Tracks[i].Colour, m_Tracks[i].Rotation, origin, scale, SpriteEffects.None,0.0f);
             }
         }
     }

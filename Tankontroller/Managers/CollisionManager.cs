@@ -10,21 +10,11 @@ using Tankontroller.World.Particles;
 namespace Tankontroller.Managers
 {
     /// <summary>
-    /// Singleton reponsible for collision detection logic and some collision responses
+    /// Static class that manages logic for all collision detection and response
     /// </summary>
-    internal class CollisionManager
+    internal static class CollisionManager
     {
         public static readonly bool DRAW_COLLISION_SHAPES = DGS.Instance.GetBool("DRAW_COLLISION_SHAPES");
-
-        private static CollisionManager mInstance = new();
-
-        static CollisionManager() { }
-        private CollisionManager() { }
-
-        public static CollisionManager Instance
-        {
-            get { return mInstance; }
-        }
 
         static public bool Collide(Tank pTank, Tank pTank_2) // Tank on Tank Collision
         {
@@ -98,14 +88,14 @@ namespace Tankontroller.Managers
         /// <returns> If the function fails return false, otherwise returns true</returns>
         static public bool ResolveTankWallCollision(Tank tank, RectWall wall)
         {
-            Rectangle r = wall.Rectangle;
+            Rectangle r = wall.RectangleShape.ToRectangle();
 
             // nothing to do if there's no collision
             if (!Collide(tank, r, false))
                 return false;
 
             // tank center in world coords
-            Vector2 center = tank.GetWorldPosition();
+            Vector2 center = tank.Transform.Position;
 
             // closest point on the rect to the tank center
             float cx = Math.Clamp(center.X, r.Left, r.Right);
@@ -225,7 +215,7 @@ namespace Tankontroller.Managers
             }
 
             // Fallback: nudge tank iteratively toward the nearest valid center inside play area
-            Vector2 center = tank.GetWorldPosition();
+            Vector2 center = tank.Transform.Position;
             Vector2 targetCenter = new Vector2(
                 Math.Clamp(center.X, leftBound + 1f, rightBound - 1f),
                 Math.Clamp(center.Y, topBound + 1f, bottomBound - 1f)

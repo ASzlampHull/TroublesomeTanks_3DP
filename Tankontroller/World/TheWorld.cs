@@ -7,8 +7,11 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Tankontroller.Managers;
+using Tankontroller.Utilities;
 using Tankontroller.World.Particles;
 using Tankontroller.World.Pickups;
+using Tankontroller.World.Shapes;
+using Tankontroller.World.WorldObject;
 
 public enum PickupType
 {
@@ -34,6 +37,7 @@ namespace Tankontroller.World
 
         private Rectangle mPlayArea;
         private Rectangle mPlayAreaOutline;
+        private RectangleAxisAlignedShape[] mPlayAreaCollisionShapes = new RectangleAxisAlignedShape[4];
         private List<Tank> mTanks = new List<Tank>();
         private List<RectWall> mWalls;
         private List<PickupSpawnPoint> mPickupSpawnPositions = new List<PickupSpawnPoint>();
@@ -50,7 +54,24 @@ namespace Tankontroller.World
             mPlayArea = pPlayArea;
             mPickupSpawnPositions = pPickupSpawnPositions;
             mPlayAreaOutline = new Rectangle(mPlayArea.X - 5, mPlayArea.Y - 5, mPlayArea.Width + 10, mPlayArea.Height + 10);
+            CreatePlayAreaCollisionShapes();
             CheckActivatedPickups();
+        }
+
+        private void CreatePlayAreaCollisionShapes()
+        {
+            // Top
+            mPlayAreaCollisionShapes[0] = new RectangleAxisAlignedShape(
+                new Transform(new Vector2(mPlayArea.X + mPlayArea.Width / 2f, mPlayArea.Y - 5)), new Vector2(mPlayArea.Width, 10));
+            // Bottom
+            mPlayAreaCollisionShapes[1] = new RectangleAxisAlignedShape(
+                new Transform(new Vector2(mPlayArea.X + mPlayArea.Width / 2f, mPlayArea.Y + mPlayArea.Height + 5)), new Vector2(mPlayArea.Width, 10));
+            // Left
+            mPlayAreaCollisionShapes[2] = new RectangleAxisAlignedShape(
+                new Transform(new Vector2(mPlayArea.X - 5, mPlayArea.Y + mPlayArea.Height / 2f)), new Vector2(10, mPlayArea.Height + 20));
+            // Right
+            mPlayAreaCollisionShapes[3] = new RectangleAxisAlignedShape(
+                new Transform(new Vector2(mPlayArea.X + mPlayArea.Width + 5, mPlayArea.Y + mPlayArea.Height / 2f)), new Vector2(10, mPlayArea.Height + 20));
         }
 
         public List<Tank> GetTanksForPlayers(int pPlayerCount)
@@ -143,7 +164,12 @@ namespace Tankontroller.World
                 {
                     mTanks[tankIndex].Update(pSeconds);
 
-                    mTanks[tankIndex].CheckBullets(mTanks, mPlayArea, mWalls);
+                    // Get all wall colliders (including play area) for bullet collision checks
+                    List<CollisionShape> wallColliders = new();
+                    mWalls.ForEach(w => wallColliders.Add(w.CollisionShape));
+                    wallColliders.AddRange(mPlayAreaCollisionShapes);
+
+                    mTanks[tankIndex].CheckBullets(mTanks, wallColliders);
 
                     // Pickup collision
                     foreach (Pickup p in mPickups)
@@ -163,7 +189,7 @@ namespace Tankontroller.World
                     // Wall collisions
                     foreach (RectWall wall in mWalls)
                     {
-                        Rectangle wallRect = wall.Rectangle;
+                        Rectangle wallRect = wall.RectangleShape.ToRectangle();
 
                         // tank collision using collision manager
                         if (CollisionManager.Collide(mTanks[tankIndex], wallRect, false))
@@ -225,6 +251,14 @@ namespace Tankontroller.World
             foreach (RectWall w in mWalls)
             {
                 w.Draw(pSpriteBatch);
+            }
+
+            if (CollisionManager.DRAW_COLLISION_SHAPES)
+            {
+                foreach (RectangleAxisAlignedShape shape in mPlayAreaCollisionShapes)
+                {
+                    DrawUtilities.DrawRectangle(pSpriteBatch, shape.ToRectangle(), Color.Red, 0, shape.WorldPosition, 1);
+                }
             }
         }
     }

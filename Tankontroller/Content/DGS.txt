@@ -1,7 +1,7 @@
 ﻿// WINDOW
 bool IS_FULL_SCREEN = false;
-int SCREENWIDTH = 1920;
-int SCREENHEIGHT = 1080;
+int SCREENWIDTH = 1280;
+int SCREENHEIGHT = 720;
 
 // MAP
 string DEFAULT_MAP_FILE = Default.json;
@@ -26,9 +26,9 @@ float TRACK_OFFSET = 17;
 // JACK CHARGE
 float MAX_CHARGE = 200;
 float CHARGE_AMOUNT = 7;
-float TRACK_DEPLETION_RATE = 10;
-float TURRET_DEPLETION_RATE = 5;
-float BULLET_CHARGE_DEPLETION = 95;
+float TRACK_DEPLETION_RATE = 0;
+float TURRET_DEPLETION_RATE = 0;
+float BULLET_CHARGE_DEPLETION = 0;
 
 //PICKUPS
 bool PICKUPS_ON = true;
@@ -50,14 +50,14 @@ bool SHOW_LIST_ON_MAIN_MENU = false;
 bool ONLY_KEYBOARD_ON_MAIN_MENU = false;
 bool ONLY_KEYBOARD_ON_MAP_SELECT = false;
 bool ADD_KEYBOARD_CONTROLLER_1 = true;
-bool ADD_KEYBOARD_CONTROLLER_2 = false;
+bool ADD_KEYBOARD_CONTROLLER_2 = true;
 
 // TESTING & DEBUGGING 
 // Warning: Do not enable these options for release builds
-bool ENABLE_TEST_SCENE = false; // Immediately load test game scene. ADD_KEYBOARD_CONTROLLER 1 and 2 must be true
+bool ENABLE_TEST_SCENE = true; // Immediately load test game scene. ADD_KEYBOARD_CONTROLLER 1 and 2 must be true
 string TEST_SCENE_MAP_FILE = Testing.json; // Map file to use for the test scene
 
-bool MUTE_MUSIC = false; // Mute all music
+bool MUTE_MUSIC = true; // Mute all music
 bool MUTE_SFX = false; // Mute all sound effects
 
-bool DRAW_COLLISION_SHAPES = false; // Draw collision shapes (used by CollisionManager)
+bool DRAW_COLLISION_SHAPES = true; // Draw collision shapes (used by CollisionManager)

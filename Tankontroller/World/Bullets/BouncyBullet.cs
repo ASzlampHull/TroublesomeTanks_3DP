@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Tankontroller.Managers;
 using Tankontroller.Utilities;
 using Tankontroller.World.Particles;
+using Tankontroller.World.Shapes;
 
 namespace Tankontroller.World.Bullets
 {
@@ -15,47 +16,31 @@ namespace Tankontroller.World.Bullets
         float numOfBounces;
         public BouncyBullet(Vector2 pPosition, Vector2 pVelocity, Color pColour, float pNumOfBounces) : base(pPosition, pVelocity, pColour, pNumOfBounces) {
             numOfBounces = pNumOfBounces;
-            Radius *= 3.0f;
+            CircleShape.Radius *= 3.0f;
         }
         public override void Update(float pSeconds)
         {
             base.Update(pSeconds);
         }
 
-        public override bool DoCollision(Rectangle pRectangle)
-        {
-            Vector2 collisonNormal = GetCollisionNormal(pRectangle);
-            if (numOfBounces <= 0)
-            {
-                CreateExplosion(-collisonNormal);
-                return true;
-            }
-            Velocity = Vector2.Reflect(Velocity, collisonNormal);
-            numOfBounces--;
-            return false;
-        }
-
-        public override bool DoCollision(RectWall pWall)
-        {
-            Vector2 collisonNormal = GetCollisionNormal(pWall.Rectangle);
-            if (numOfBounces <= 0)
-            {
-                CreateExplosion(collisonNormal);
-                return true;
-            }
-            Velocity = Vector2.Reflect(Velocity, collisonNormal);
-            numOfBounces--;
-            return false;
-        }
-
         public override bool DoCollision(Tank pTank)
         {
-            CreateExplosion(Vector2.Normalize(Position - pTank.GetWorldPosition()));
+            CreateExplosion(Vector2.Normalize(Position - pTank.Transform.Position));
             return true;
         }
 
-        public override bool DoCollision(Bullet pBullet)
+        public override bool DoCollision(Bullet pBullet) => false;
+
+        public override bool WallCollisionResponse(CollisionEvent collisionEvent)
         {
+            Vector2 collisionNormal = collisionEvent.CollisionNormal ?? Vector2.One;
+            if (numOfBounces <= 0)
+            {
+                CreateExplosion(-collisionNormal);
+                return true;
+            }
+            Velocity = Vector2.Reflect(Velocity, collisionNormal);
+            numOfBounces--;
             return false;
         }
 

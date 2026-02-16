@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Tankontroller.Managers;
 using Tankontroller.Utilities;
 using Tankontroller.World.Particles;
+using Tankontroller.World.Shapes;
 
 namespace Tankontroller.World.Bullets
 {
@@ -22,7 +23,7 @@ namespace Tankontroller.World.Bullets
             EMPTextures.Add(EMPTexture2);
             EMPTextures.Add(EMPTexture3);
             EMPTextures.Add(EMPTexture4);
-            Radius *= 3.0f;
+            CircleShape.Radius *= 3.0f;
         }
         private float Rotation = 0.0f;
 
@@ -31,23 +32,8 @@ namespace Tankontroller.World.Bullets
             Random rand = new Random();
             EMPBlastInitPolicy explosion = new EMPBlastInitPolicy(Position, 0.5f);
             ParticleManager.Instance().InitialiseParticles(explosion, 1);
-            //Rotation += 0.01f;
             LifeTime -= pSeconds;
             base.Update(pSeconds);
-        }
-
-        public override bool DoCollision(Rectangle pRectangle)
-        {
-            Vector2 collisonNormal = GetCollisionNormal(pRectangle);
-            Velocity = Vector2.Reflect(Velocity, collisonNormal);
-            return false;
-        }
-
-        public override bool DoCollision(RectWall pWall)
-        {
-            Vector2 collisonNormal = GetCollisionNormal(pWall.Rectangle);
-            Velocity = Vector2.Reflect(Velocity, collisonNormal);
-            return false;
         }
 
         public override bool DoCollision(Tank pTank)
@@ -60,6 +46,13 @@ namespace Tankontroller.World.Bullets
         public override bool DoCollision(Bullet pBullet)
         {
             Vector2 collisionNormal = Vector2.Normalize(Velocity);
+            return false;
+        }
+
+        public override bool WallCollisionResponse(CollisionEvent collisionEvent)
+        {
+            Vector2 collisionNormal = collisionEvent.CollisionNormal ?? Vector2.One;
+            Velocity = Vector2.Reflect(Velocity, collisionNormal);
             return false;
         }
 

@@ -4,66 +4,36 @@ using Microsoft.Xna.Framework.Graphics;
 using Tankontroller.Managers;
 using Tankontroller.Utilities;
 using Tankontroller.World.Particles;
+using Tankontroller.World.Shapes;
+using Tankontroller.World.WorldObject;
 
 namespace Tankontroller.World.Bullets
 {
-    public abstract class Bullet
+    public abstract class Bullet : IWorldObject
     {
-        public float Radius { get; protected set; }
-        public Vector2 Position { get; protected set; }
+        public Transform Transform { get; private set; } = new Transform();
+        public CollisionShape CollisionShape => CircleShape;
+        public CircleShape CircleShape { get; private set; }
+        public float Radius => CircleShape.Radius;
+        public Vector2 Position => Transform.Position;
         public Vector2 Velocity { get; protected set; }
         public Color Colour { get; private set; }
         public float LifeTime { get; protected set; }
 
         public Bullet(Vector2 pPosition, Vector2 pVelocity, Color pColour, float lifeTime)
         {
-            Position = pPosition;
+            Transform.Position = pPosition;
+            CircleShape = new CircleShape(Transform, 5.0f * Tankontroller.Instance().ScaleFactor());
+
             Velocity = pVelocity;
             Colour = pColour;
-            Radius = 5.0f;
             LifeTime = lifeTime;
         }
 
         public virtual void Update(float pSeconds)
         {
-            Position = Position + Velocity * pSeconds;
-        }
-
-        public virtual bool CollideWithPlayArea(Rectangle pRectangle)
-        {
-            if (!pRectangle.Contains(Position))
-            {
-                return true;
-            }
-            return false;
-        }
-
-        public virtual bool Collide(RectWall pWall)
-        {
-            Rectangle rectangle = pWall.Rectangle;
-            if (rectangle.Contains(Position))
-            {
-                return true;
-            }
-            return false;
-        }
-
-        public virtual bool Collide(Tank pTank)
-        {
-            if (pTank.PointIsInTank(Position))
-            {
-                return true;
-            }
-            return false;
-        }
-
-        public virtual bool Collide(Bullet pBullet) // This is unused but I'm keeping it for potential implementation
-        {
-            if (Vector2.Distance(Position, pBullet.Position) < 2 * Radius)
-            {
-                return true;
-            }
-            return false;
+            // Move at the correct speed according to the frame time and resolution scale factor
+            Transform.Position = Position + Velocity * pSeconds * Tankontroller.Instance().ScaleFactor();
         }
 
         protected Vector2 GetCollisionNormal(Rectangle pRect)
@@ -88,9 +58,13 @@ namespace Tankontroller.World.Bullets
         }
 
         public abstract bool DoCollision(Tank pTank);
-        public abstract bool DoCollision(Rectangle pRectangle);
-        public abstract bool DoCollision(RectWall pWall);
         public abstract bool DoCollision(Bullet pBullet);
+
+        /// <summary>
+        /// Handles the response to a collision with a wall.
+        /// </summary>
+        /// <returns> True if the bullet should be removed, false otherwise.</returns>
+        public abstract bool WallCollisionResponse(CollisionEvent collisionEvent);
 
         public abstract bool LifeTimeExpired();
 
