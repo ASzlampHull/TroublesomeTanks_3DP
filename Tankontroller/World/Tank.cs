@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Linq;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Graphics;
+using System.Threading.Tasks;
 using Tankontroller.Managers;
 using Tankontroller.Utilities;
 using Tankontroller.World.Bullets;
@@ -396,6 +397,17 @@ namespace Tankontroller.World
 
                 if (bulletRemoved) continue;
 
+                if (DGS.Instance.GetBool("BULLET_BULLET_COLLISIONS"))
+                {
+                    foreach (Tank tank in pTanks)
+                    {
+                        bulletRemoved = CheckBulletBulletCollisions(tank, i);
+                        if (bulletRemoved) break;
+                    }
+                }
+
+                if (bulletRemoved) continue;
+
                 // Check and resolve bullet-wall collisions (including play area)
                 foreach (CollisionShape shape in pWallColliders)
                 {
@@ -419,6 +431,31 @@ namespace Tankontroller.World
                     mBullets.RemoveAt(i);
                 }
             }
+        }
+
+        private bool CheckBulletBulletCollisions(Tank pOtherTank, int pBulletIndex)
+        {
+            for (int j = 0; j < pOtherTank.mBullets.Count; j++)
+            {
+                Bullet bulletA = mBullets[pBulletIndex];
+                Bullet bulletB = pOtherTank.mBullets[j];
+                // Skip if the bullets are the same instance (can happen when checking a tank's bullets against itself)
+                if (bulletA == bulletB) continue;
+                CollisionEvent bulletCollisionEvent = bulletA.CollisionShape.Intersects(bulletB.CollisionShape);
+                if (bulletCollisionEvent.HasCollided)
+                {
+                    if (bulletA.BulletCollisionResponse(bulletB))
+                    {
+                        if (pOtherTank != this && bulletB.BulletCollisionResponse(bulletA))
+                        {
+                            pOtherTank.mBullets.RemoveAt(j);
+                        }
+                        mBullets.RemoveAt(pBulletIndex);
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         #endregion
