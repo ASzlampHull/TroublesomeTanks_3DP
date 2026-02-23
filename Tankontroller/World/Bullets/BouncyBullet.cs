@@ -41,8 +41,12 @@ namespace Tankontroller.World.Bullets
                 CreateExplosion(collisionNormal);
                 return true;
             }
-            Velocity = Vector2.Reflect(Velocity, collisionNormal);
-            numOfBounces--;
+            // Only reflect if the bullet is moving towards the wall
+            if (Vector2.Dot(Velocity, collisionNormal) < 0)
+            {
+                Velocity = Vector2.Reflect(Velocity, collisionNormal);
+                numOfBounces--;
+            }
             return false;
         }
 
