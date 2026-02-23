@@ -601,5 +601,163 @@ namespace TankontrollerTests
         }
 
         #endregion
+
+        #region Edge Cases
+
+        [Fact]
+        public void CircleToCircle_TouchingExactly_ReportsCollision()
+        {
+            Transform circle1Transform = new(new Vector2(0f, 0f));
+            Transform circle2Transform = new(new Vector2(4f, 0f));
+
+            CircleShape circle1 = new(circle1Transform, 2.0f);
+            CircleShape circle2 = new(circle2Transform, 2.0f);
+
+            CollisionEvent collisionEvent = circle1.Intersects(circle2);
+
+            Assert.True(collisionEvent.HasCollided);
+            Assert.True(collisionEvent.CollisionPosition.HasValue);
+            Assert.Equal(new Vector2(2f, 0f), collisionEvent.CollisionPosition.Value);
+        }
+
+        [Fact]
+        public void AARectangleToAARectangle_TouchingExactly_ReportsNoCollision()
+        {
+            Transform rectangle1Transform = new(new Vector2(0f, 0f));
+            Transform rectangle2Transform = new(new Vector2(4f, 0f));
+
+            RectangleAxisAlignedShape rectangle1 = new(rectangle1Transform, new Vector2(4f, 4f)); // spans [-2,2]
+            RectangleAxisAlignedShape rectangle2 = new(rectangle2Transform, new Vector2(4f, 4f)); // spans [2,6]
+
+            CollisionEvent collisionEvent = rectangle1.Intersects(rectangle2);
+
+            // The implementation uses <= 0 for overlap, so touching is considered non-colliding
+            Assert.False(collisionEvent.HasCollided);
+        }
+
+        [Fact]
+        public void ORectangleToORectangle_TouchingExactly_ReportsNoCollision()
+        {
+            Transform rectangle1Transform = new(new Vector2(0f, 0f));
+            Transform rectangle2Transform = new(new Vector2(4f, 0f));
+
+            RectangleOrientedShape rectangle1 = new(rectangle1Transform, new Vector2(4f, 4f)); // spans [-2,2]
+            RectangleOrientedShape rectangle2 = new(rectangle2Transform, new Vector2(4f, 4f)); // spans [2,6]
+
+            CollisionEvent collisionEvent = rectangle1.Intersects(rectangle2);
+
+            Assert.False(collisionEvent.HasCollided);
+        }
+
+        [Fact]
+        public void CircleToAARectangle_TouchingExactly_ReportsCollision()
+        {
+            Transform rectangleTransform = new(new Vector2(0f, 0f));
+            RectangleAxisAlignedShape alignedRectangle = new(rectangleTransform, new Vector2(4f, 4f)); // spans [-2,2]
+
+            Transform circleTransform = new(new Vector2(3f, 0f));
+            CircleShape circle = new(circleTransform, 1.0f); // spans [2,4]
+
+            CollisionEvent collisionEvent = circle.Intersects(alignedRectangle);
+
+            Assert.True(collisionEvent.HasCollided);
+            Assert.True(collisionEvent.CollisionPosition.HasValue);
+            Assert.Equal(new Vector2(2f, 0f), collisionEvent.CollisionPosition.Value);
+        }
+
+        [Fact]
+        public void CircleToORectangle_TouchingExactly_ReportsCollision()
+        {
+            Transform rectangleTransform = new(new Vector2(0f, 0f), 0f, Vector2.One);
+            RectangleOrientedShape rectangle = new(rectangleTransform, new Vector2(4f, 4f)); // spans [-2,2]
+
+            Transform circleTransform = new(new Vector2(3f, 0f));
+            CircleShape circle = new(circleTransform, 1.0f); // spans [2,4]
+
+            CollisionEvent collisionEvent = circle.Intersects(rectangle);
+
+            Assert.True(collisionEvent.HasCollided);
+            Assert.True(collisionEvent.CollisionPosition.HasValue);
+            Assert.Equal(new Vector2(2f, 0f), collisionEvent.CollisionPosition.Value);
+        }
+
+        [Fact]
+        public void ShapesWithLocalOffset_CalculatesWorldPositionCorrectlyAndCollides()
+        {
+            Transform transform1 = new(new Vector2(10f, 10f));
+            CircleShape circle1 = new(transform1, 2f, new Vector2(5f, 5f)); // World pos = (15, 15)
+
+            Transform transform2 = new(new Vector2(20f, 20f));
+            CircleShape circle2 = new(transform2, 2f, new Vector2(-5f, -5f)); // World pos = (15, 15)
+
+            CollisionEvent collisionEvent = circle1.Intersects(circle2);
+
+            Assert.True(collisionEvent.HasCollided);
+            Assert.True(collisionEvent.CollisionPosition.HasValue);
+            Assert.Equal(new Vector2(15f, 15f), collisionEvent.CollisionPosition.Value);
+        }
+
+        [Fact]
+        public void PointExactlyAtCenterOfCircle_ReportsCollision()
+        {
+            Transform transform = new(new Vector2(5f, 5f));
+            CircleShape circle = new(transform, 2f);
+            PointShape point = new(transform);
+
+            CollisionEvent collisionEvent = circle.Intersects(point);
+
+            Assert.True(collisionEvent.HasCollided);
+            Assert.True(collisionEvent.CollisionPosition.HasValue);
+            Assert.Equal(new Vector2(5f, 5f), collisionEvent.CollisionPosition.Value);
+            Assert.True(collisionEvent.CollisionNormal.HasValue);
+            // NormalizeZeroSafe returns (1,0) for zero vectors
+            Assert.Equal(new Vector2(1f, 0f), collisionEvent.CollisionNormal.Value);
+        }
+
+        [Fact]
+        public void AARectangleCompletelyInsideAnother_ReportsCollision()
+        {
+            Transform transform = new(new Vector2(0f, 0f));
+            RectangleAxisAlignedShape outer = new(transform, new Vector2(10f, 10f));
+            RectangleAxisAlignedShape inner = new(transform, new Vector2(2f, 2f));
+
+            CollisionEvent collisionEvent = inner.Intersects(outer);
+
+            Assert.True(collisionEvent.HasCollided);
+            Assert.True(collisionEvent.CollisionPosition.HasValue);
+            Assert.Equal(new Vector2(0f, 0f), collisionEvent.CollisionPosition.Value);
+        }
+
+        [Fact]
+        public void ORectangleToORectangle_Concentric_ReportsCollision()
+        {
+            Transform transform = new(new Vector2(0f, 0f));
+            RectangleOrientedShape outer = new(transform, new Vector2(10f, 10f));
+            RectangleOrientedShape inner = new(transform, new Vector2(2f, 2f));
+
+            CollisionEvent collisionEvent = inner.Intersects(outer);
+
+            Assert.True(collisionEvent.HasCollided);
+            Assert.True(collisionEvent.CollisionPosition.HasValue);
+            Assert.Equal(new Vector2(0f, 0f), collisionEvent.CollisionPosition.Value);
+        }
+
+        [Fact]
+        public void PointToORectangle_PointExactlyOnEdge_ReportsCollision()
+        {
+            Transform rectangleTransform = new(new Vector2(0f, 0f), 0f, Vector2.One);
+            RectangleOrientedShape rectangle = new(rectangleTransform, new Vector2(4f, 4f)); // spans [-2,2]
+
+            Transform pointTransform = new(new Vector2(2f, 0f));
+            PointShape point = new(pointTransform);
+
+            CollisionEvent collisionEvent = point.Intersects(rectangle);
+
+            Assert.True(collisionEvent.HasCollided);
+            Assert.True(collisionEvent.CollisionPosition.HasValue);
+            Assert.Equal(new Vector2(2f, 0f), collisionEvent.CollisionPosition.Value);
+        }
+
+        #endregion
     }
 }
