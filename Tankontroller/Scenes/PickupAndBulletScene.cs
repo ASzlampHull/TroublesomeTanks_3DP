@@ -94,6 +94,10 @@ namespace Tankontroller.Scenes
                 if (controller.IsPressed(Control.FIRE) && !controller.WasPressed(Control.FIRE) ||
                     controller.IsPressed(Control.RECHARGE) && !controller.WasPressed(Control.RECHARGE))
                 {
+                    //Exception to stop the player from pressing selection button that is already on.
+                    if (mButtonList.GetSelectedButtonIndex() < 4 && mButtonList.IsButtonOn())
+                        return;
+
                     SoundEffectInstance buttonPress = mGameInstance.GetSoundManager().GetSoundEffectInstance("Sounds/Button_Push");
                     buttonPress.Play();
                     mButtonList.PressSelectedButton();
@@ -132,7 +136,8 @@ namespace Tankontroller.Scenes
 
         private void ButtonSelectionNone()
         {
-            TheWorld.PICKUP_SPAWN = !TheWorld.PICKUP_SPAWN;
+            TheWorld.PICKUP_SPAWN = false;
+            TheWorld.PICKUP_SPAWN_TIME = 0;
             TurnOffAllSelectionExcept(0);
         }
 

@@ -82,5 +82,15 @@ namespace Tankontroller.GUI
                     pSpriteBatch.Draw(button.TextureOnState, button.Rect, button.SelectedColour);
             }
         }
+
+        public bool IsButtonOn()
+        {
+            return mButtons[currentSelectedButtonIndex].OnOffState;
+        }
+
+        public int GetSelectedButtonIndex()
+        {
+            return currentSelectedButtonIndex;
+        }
     }
 }
