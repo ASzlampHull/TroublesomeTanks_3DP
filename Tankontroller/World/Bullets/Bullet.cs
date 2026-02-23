@@ -9,7 +9,7 @@ using Tankontroller.World.WorldObject;
 
 namespace Tankontroller.World.Bullets
 {
-    public abstract class Bullet : IWorldObject
+    public abstract class Bullet : ICollidable
     {
         public Transform Transform { get; private set; } = new Transform();
         public CollisionShape CollisionShape => CircleShape;

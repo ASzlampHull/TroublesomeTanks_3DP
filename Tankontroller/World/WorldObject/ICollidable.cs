@@ -7,7 +7,10 @@ using Tankontroller.World.Shapes;
 
 namespace Tankontroller.World.WorldObject
 {
-    public interface IWorldObject
+    /// <summary>
+    /// Interface for objects that can participate in collision detection.
+    /// </summary>
+    public interface ICollidable
     {
         Transform Transform { get; }
         CollisionShape CollisionShape { get; }

@@ -1,8 +1,13 @@
 ﻿using Microsoft.Xna.Framework;
-using Tankontroller.World.WorldObject;
 
 namespace Tankontroller.World.Shapes
 {
+    /// <summary>
+    /// Base class for all collision shapes that defines common properties and methods for collision detection. <br></br>
+    /// Generates collision events with useful information about the collision, such as position and normal. <br></br>
+    /// NOTE: There is some code duplication in the Intersects methods of the various shape classes.
+    ///       This could be refactored to reduce code duplication.
+    /// </summary>
     public abstract class CollisionShape
     {
         private bool mEnabled = true;

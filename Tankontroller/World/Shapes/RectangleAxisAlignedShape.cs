@@ -1,14 +1,13 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Tankontroller.World.WorldObject;
 
 namespace Tankontroller.World.Shapes
 {
+    /// <summary>
+    /// Represents an axis-aligned rectangle collision shape. <br></br>
+    /// NOTE: The reason the MonoGame Rectangle struct is not used directly is because it uses integer values, which can lead to precision issues in collision detection.
+    /// </summary>
     public class RectangleAxisAlignedShape : CollisionShape
     {
         public Vector2 Size { get; set; } = Vector2.One;
@@ -26,9 +25,17 @@ namespace Tankontroller.World.Shapes
             Size = pSize;
         }
 
+        /// <summary>
+        /// Converts the oriented rectangle to a MonoGame rectangle that fully contains it. Useful for drawing.
+        /// NOTE: Could be optimized by caching the rectangle and only recalculating when position, size, or rotation changes.
+        /// </summary>
         public Rectangle ToRectangle() =>
             new((int)MathF.Round(WorldPosition.X - HalfExtents.X), (int)MathF.Round(WorldPosition.Y - HalfExtents.Y), (int)MathF.Round(Size.X), (int)MathF.Round(Size.Y));
 
+        /// <summary>
+        /// Draws the oriented rectangle using a texture.
+        /// The texture will be scaled to fit the rectangle's size.
+        /// </summary>
         public void Draw(SpriteBatch pSpriteBatch, Texture2D pTexture, Color color)
         {
             pSpriteBatch.Draw(pTexture, ToRectangle(), color);

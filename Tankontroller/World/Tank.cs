@@ -30,7 +30,7 @@ public enum TankStates
 
 namespace Tankontroller.World
 {
-    public class Tank : IWorldObject
+    public class Tank : ICollidable
     {
         #region Variables & Constructors
 

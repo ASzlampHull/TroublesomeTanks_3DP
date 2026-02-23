@@ -1,14 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Tankontroller.World.WorldObject;
 
 namespace Tankontroller.World.Shapes
 {
+    /// <summary>
+    /// Represents an oriented rectangle shape for collision detection (rectangle that can be rotated).
+    /// </summary>
     public class RectangleOrientedShape : CollisionShape
     {
         // Full size in local space (width, height)
@@ -34,10 +32,17 @@ namespace Tankontroller.World.Shapes
             LocalRotation = pLocalRotation;
         }
 
-
+        /// <summary>
+        /// Converts the oriented rectangle to a MonoGame rectangle that fully contains it. Useful for drawing.
+        /// NOTE: Could be optimized by caching the rectangle and only recalculating when position, size, or rotation changes.
+        /// </summary>
         public Rectangle ToRectangle() => 
             new((int)MathF.Round(WorldPosition.X - HalfExtents.X), (int)MathF.Round(WorldPosition.Y - HalfExtents.Y), (int)MathF.Round(Size.X), (int)MathF.Round(Size.Y));
 
+        /// <summary>
+        /// Draws the oriented rectangle using a texture. 
+        /// The texture will be scaled to fit the rectangle's size, and rotated to match the rectangle's rotation.
+        /// </summary>
         public void Draw(SpriteBatch pSpriteBatch, Texture2D pTexture, Color pColor)
         {
             Rectangle referenceRectangle = ToRectangle();

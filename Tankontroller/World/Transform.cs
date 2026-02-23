@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 
-namespace Tankontroller.World.WorldObject
+namespace Tankontroller.World
 {
     /// <summary>
     /// Stores position, rotation and scale of an object in the world

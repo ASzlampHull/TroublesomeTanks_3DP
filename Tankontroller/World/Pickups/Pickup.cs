@@ -8,7 +8,7 @@ using Tankontroller.World.WorldObject;
 
 namespace Tankontroller.World.Pickups
 {
-    public abstract class Pickup : IWorldObject
+    public abstract class Pickup : ICollidable
     {
         public Transform Transform { get; protected set; } = new Transform();
         public CollisionShape CollisionShape => RectangleShape;

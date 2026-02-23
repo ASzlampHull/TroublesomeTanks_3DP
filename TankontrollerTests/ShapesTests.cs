@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
+using Tankontroller.World;
 using Tankontroller.World.Shapes;
-using Tankontroller.World.WorldObject;
 
 namespace TankontrollerTests
 {

@@ -5,7 +5,7 @@ using Tankontroller.World.WorldObject;
 
 namespace Tankontroller.World
 {
-    public class RectWall : IWorldObject
+    public class RectWall : ICollidable
     {
         private static readonly Color COLOUR = DGS.Instance.GetColour("COLOUR_WALLS");
 
