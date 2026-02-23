@@ -38,7 +38,7 @@ namespace Tankontroller.World.Bullets
             Vector2 collisionNormal = collisionEvent.CollisionNormal ?? Vector2.One;
             if (numOfBounces <= 0)
             {
-                CreateExplosion(-collisionNormal);
+                CreateExplosion(collisionNormal);
                 return true;
             }
             Velocity = Vector2.Reflect(Velocity, collisionNormal);
