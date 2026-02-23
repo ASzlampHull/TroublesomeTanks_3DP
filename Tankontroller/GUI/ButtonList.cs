@@ -83,7 +83,7 @@ namespace Tankontroller.GUI
             }
         }
 
-        public bool IsButtonOn()
+        public bool IsButtonOnOff()
         {
             return mButtons[currentSelectedButtonIndex].OnOffState;
         }

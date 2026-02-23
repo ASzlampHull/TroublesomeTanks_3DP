@@ -84,7 +84,7 @@ namespace Tankontroller.Scenes
                     controller.IsPressed(Control.RECHARGE) && !controller.WasPressed(Control.RECHARGE))
                 {
                     //Exception to stop the player from pressing selection button that is already on.
-                    if (mButtonList.GetSelectedButtonIndex() < 4 && mButtonList.IsButtonOn())
+                    if (mButtonList.GetSelectedButtonIndex() < 4 && mButtonList.IsButtonOnOff())
                         return;
 
                     SoundEffectInstance buttonPress = mGameInstance.GetSoundManager().GetSoundEffectInstance("Sounds/Button_Push");
@@ -172,7 +172,7 @@ namespace Tankontroller.Scenes
         }
 
         /// <summary>
-        /// Creates the pickup and frequency buttons for the scene and assigns their actions.
+        /// Creates the pickup and pickup spawning frequency buttons for the scene and assigns their actions.
         /// </summary>
         private void GenerateButtons()
         {
@@ -188,11 +188,13 @@ namespace Tankontroller.Scenes
             mButtonList = new ButtonList();
             mTextList = new TextList();
 
+            // Textures for the pickup spawn frequency selection buttons
             Texture2D pickupSelectionOffTexture = mGameInstance.CM().Load<Texture2D>("PickupMenu/pickupinfo_selection_off");
             Texture2D pickupSelectionOffHighlightTexture = mGameInstance.CM().Load<Texture2D>("PickupMenu/pickupinfo_selection_off_highlight");
             Texture2D pickupSelectionOnTexture = mGameInstance.CM().Load<Texture2D>("PickupMenu/pickupinfo_selection_on");
             Texture2D pickupSelectionOnHighlightTexture = mGameInstance.CM().Load<Texture2D>("PickupMenu/pickupinfo_selection_on_highlight");
 
+            // Create button and text univeral positions and dimensions for the pickup spawn frequency selection buttons
             int buttonWidth = (int)(pickupSelectionOffTexture.Width * scaleFactor);
             int buttonHeight = (int)(pickupSelectionOffTexture.Height * scaleFactor);
             int buttonX = Convert.ToInt32((screenWidth - buttonWidth) / 5);
@@ -245,6 +247,7 @@ namespace Tankontroller.Scenes
             Text selectionHighButtonText = new Text(m_SpriteFont, "High", buttonTextPosition, Color.White, scaleFactor);
             mTextList.Add(selectionHighButtonText);
 
+            // Textures for the pickup type selection buttons
             Texture2D pickupHealthOffTexture = mGameInstance.CM().Load<Texture2D>("PickupMenu/pickupinfo_health_off");
             Texture2D pickupHealthOffHighlightTexture = mGameInstance.CM().Load<Texture2D>("PickupMenu/pickupinfo_health_off_highlight");
             Texture2D pickupHealthOnTexture = mGameInstance.CM().Load<Texture2D>("PickupMenu/pickupinfo_health_on");
@@ -262,6 +265,7 @@ namespace Tankontroller.Scenes
             Texture2D pickupMineOnTexture = mGameInstance.CM().Load<Texture2D>("PickupMenu/pickupinfo_mine_on");
             Texture2D pickupMineOnHighlightTexture = mGameInstance.CM().Load<Texture2D>("PickupMenu/pickupinfo_mine_on_highlight");
 
+            // Create button and text univeral positions and dimensions for the pickup type selection buttons
             buttonWidth = (int)(pickupBallOffTexture.Width * scaleFactor);
             buttonHeight = (int)(pickupBallOffTexture.Height * scaleFactor);
             buttonX = Convert.ToInt32((screenWidth-buttonWidth) / 2);

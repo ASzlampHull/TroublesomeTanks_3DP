@@ -11,16 +11,17 @@ namespace Tankontroller.GUI
     // It also contains methods to select and press the button
     // The button can be pressed with or without a touch
     //-------------------------------------------------------------------------------------------------
+
     public class Button
     {
         public Texture2D Texture { get; private set; } 
         public Texture2D TextureHighlighted { get; private set; }
-        public Texture2D TextureOnState { get; private set; } 
-        public Texture2D TextureOnStateHighlighted { get; private set; }
+        public Texture2D TextureOnState { get; private set; } // Exception for buttons that have an on/off state
+        public Texture2D TextureOnStateHighlighted { get; private set; } // Exception for buttons that have an on/off state
         public Color SelectedColour { get; private set; }
         public Rectangle Rect { get; private set; }
         public bool Selected { get; set; } 
-        public bool OnOffState { get; set; } = false;
+        public bool OnOffState { get; set; } = false; // Exception for buttons that have an on/off state
         public delegate void Action(); 
         private Action doButton;
 

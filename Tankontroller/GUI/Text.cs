@@ -11,6 +11,7 @@ namespace Tankontroller.GUI
     // It contains the string, font, colour, position, and size for the text
     // It also contains methods to allow for localization and scaling of the text.
     //-------------------------------------------------------------------------------------------------
+
     public class Text
     {            
         public SpriteFont Font { get; private set; }
