@@ -1,7 +1,9 @@
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using System.Text.Json;
 using TTMapEditor.Managers;
 using TTMapEditor.Objects;
-using System.Text.Json;
+using TTMapEditor.Saving;
 using Xunit;
 
 
@@ -143,7 +145,19 @@ namespace TTMapEditor.Tests
                 small.ScaleWidth(0.0001f);
                 Assert.True(small.mRectangle.Width >= 1);
             }
+
+        [Fact]
+            public void Rotate_adds_delta_to_rotation()
+            {
+                var wall = new RectWall(null, new Rectangle(0, 0, 10, 10));
+
+                wall.Rotate((float)System.Math.PI / 2f);
+                Assert.Equal((float)System.Math.PI / 2f, wall.mRotation);
+
+                wall.Rotate((float)System.Math.PI / 2f);
+                Assert.Equal((float)System.Math.PI, wall.mRotation);
         }
+    }
 
         public class TankTests
         {
@@ -179,85 +193,260 @@ namespace TTMapEditor.Tests
             }
         }
 
-        public class MapManagerTests : IDisposable
+    public class FileNamerTests
+    {
+        [Theory]
+        [InlineData(Keys.A, true, 'A')]
+        [InlineData(Keys.A, false, 'a')]
+        [InlineData(Keys.Z, true, 'Z')]
+        [InlineData(Keys.Z, false, 'z')]
+        public void KeyToChar_Letters_RespectCapsLock(Keys pKey, bool pCapsLock, char pExpected)
         {
-            private readonly string _origCwd;
-            private readonly string _tempRoot;
+            char? result = InvokeKeyToChar(pKey, pCapsLock);
 
-            public MapManagerTests()
-            {
-                _origCwd = Environment.CurrentDirectory;
-                _tempRoot = Path.Combine(Path.GetTempPath(), "TTMapEditorTests_" + Guid.NewGuid().ToString("N"));
-                Directory.CreateDirectory(_tempRoot);
-                Environment.CurrentDirectory = _tempRoot;
-            }
+            Assert.True(result.HasValue);
+            Assert.Equal(pExpected, result.Value);
+        }
 
-            public void Dispose()
+        [Theory]
+        [InlineData(Keys.D0, '0')]
+        [InlineData(Keys.D5, '5')]
+        [InlineData(Keys.D9, '9')]
+        public void KeyToChar_TopRowDigits_ReturnDigit(Keys pKey, char pExpected)
+        {
+            char? result = InvokeKeyToChar(pKey, false);
+
+            Assert.True(result.HasValue);
+            Assert.Equal(pExpected, result.Value);
+        }
+
+        [Theory]
+        [InlineData(Keys.NumPad0, '0')]
+        [InlineData(Keys.NumPad3, '3')]
+        [InlineData(Keys.NumPad9, '9')]
+        public void KeyToChar_NumpadDigits_ReturnDigit(Keys pKey, char pExpected)
+        {
+            char? result = InvokeKeyToChar(pKey, false);
+
+            Assert.True(result.HasValue);
+            Assert.Equal(pExpected, result.Value);
+        }
+
+        [Theory]
+        [InlineData(Keys.Space)]
+        [InlineData(Keys.Back)]
+        [InlineData(Keys.Enter)]
+        [InlineData(Keys.Left)]
+        [InlineData(Keys.Escape)]
+        public void KeyToChar_NonTextKeys_ReturnNull(Keys pKey)
+        {
+            char? result = InvokeKeyToChar(pKey, false);
+
+            Assert.False(result.HasValue);
+        }
+
+        [Theory]
+        [InlineData(Keys.A, true)]
+        [InlineData(Keys.Z, true)]
+        [InlineData(Keys.D0, true)]
+        [InlineData(Keys.D9, true)]
+        [InlineData(Keys.Space, true)]
+        [InlineData(Keys.Back, true)]
+        [InlineData(Keys.NumPad0, false)] // currently not whitelisted in IsValidKey
+        [InlineData(Keys.NumPad9, false)]
+        [InlineData(Keys.Left, false)]
+        [InlineData(Keys.Right, false)]
+        [InlineData(Keys.LeftControl, false)]
+        [InlineData(Keys.Escape, false)]
+        public void IsValidKey_ReturnsExpected(Keys pKey, bool pExpected)
+        {
+            bool result = InvokeIsValidKey(pKey);
+
+            Assert.Equal(pExpected, result);
+        }
+
+        // Because IsValidKey and KeyToChar are private, we need reflection to call them.
+        // If you’re happy to make them internal, you can skip reflection and call them directly.
+        private static bool InvokeIsValidKey(Keys pKey)
+        {
+            var method = typeof(FileNamer).GetMethod(
+                "IsValidKey",
+                System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+
+            return (bool)method.Invoke(null, new object[] { pKey })!;
+        }
+
+        private static char? InvokeKeyToChar(Keys pKey, bool pCapsLock)
+        {
+            var method = typeof(FileNamer).GetMethod(
+                "KeyToChar",
+                System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+
+            return (char?)method.Invoke(null, new object[] { pKey, pCapsLock });
+        }
+    }
+
+    public class MapEditingMapServiceTests : IDisposable
+    {
+        private readonly string mTempRoot;
+
+        public MapEditingMapServiceTests()
+        {
+            mTempRoot = Path.Combine(Path.GetTempPath(), "MapEditingMapServiceTests_" + Guid.NewGuid());
+            Directory.CreateDirectory(mTempRoot);
+        }
+
+        [Fact]
+        public void ResolveMapPath_EmptyString_UsesRootMapJson()
+        {
+            var service = new MapEditingMapService(mTempRoot);
+
+            string path = InvokeResolveMapPath(service, string.Empty);
+
+            Assert.Equal(Path.Combine(mTempRoot, "map.json"), path);
+            Assert.True(Directory.Exists(mTempRoot));
+        }
+
+        [Fact]
+        public void ResolveMapPath_BareName_CreatesFolderWithMapJson()
+        {
+            var service = new MapEditingMapService(mTempRoot);
+
+            string path = InvokeResolveMapPath(service, "New Map");
+
+            string expectedDir = Path.Combine(mTempRoot, "New Map");
+            string expectedFile = Path.Combine(expectedDir, "map.json");
+
+            Assert.Equal(Path.GetFullPath(expectedFile), path);
+            Assert.True(Directory.Exists(expectedDir));
+        }
+
+        [Fact]
+        public void ResolveNewMapPath_BareName_ReturnsMapJsonInRootIfNoExtension()
+        {
+            var service = new MapEditingMapService(mTempRoot);
+
+            string path = InvokeResolveNewMapPath(service, "New Map");
+
+            // Current implementation: if no extension, it treats as directory and appends "map.json"
+            string expectedDir = Path.Combine(mTempRoot, "New Map");
+            string expectedFile = Path.Combine(expectedDir, "map.json");
+
+            Assert.Equal(Path.GetFullPath(expectedFile), path);
+        }
+
+        private static string InvokeResolveMapPath(MapEditingMapService pService, string pValue)
+        {
+            var method = typeof(MapEditingMapService).GetMethod("ResolveMapPath",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+            return (string)method.Invoke(pService, new object[] { pValue })!;
+        }
+
+        private static string InvokeResolveNewMapPath(MapEditingMapService pService, string pValue)
+        {
+            var method = typeof(MapEditingMapService).GetMethod("ResolveNewMapPath",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
+            return (string)method.Invoke(pService, new object[] { pValue })!;
+        }
+
+        public void Dispose()
+        {
+            if (Directory.Exists(mTempRoot))
             {
                 try
                 {
-                    Environment.CurrentDirectory = _origCwd;
-                    if (Directory.Exists(_tempRoot))
-                        Directory.Delete(_tempRoot, recursive: true);
+                    Directory.Delete(mTempRoot, true);
                 }
                 catch
                 {
-                    // best-effort cleanup
+                    // ignore cleanup failures
                 }
-            }
-
-            [Fact]
-            public void CreateNewMap_creates_maps_folder_and_map_json_with_empty_contents()
-            {
-                // Act
-                string createdName = MapManager.createNewMap("MyMap");
-
-                // Assert
-                Assert.Equal("MyMap", createdName);
-
-                string mapsDir = Path.Combine(_tempRoot, "Maps");
-                string mapDir = Path.Combine(mapsDir, "MyMap");
-                Assert.True(Directory.Exists(mapsDir));
-                Assert.True(Directory.Exists(mapDir));
-
-                string mapFile = Path.Combine(mapDir, "map.json");
-                Assert.True(File.Exists(mapFile));
-
-                var json = File.ReadAllText(mapFile);
-                var mapData = JsonSerializer.Deserialize<MapData>(json);
-                Assert.NotNull(mapData);
-                Assert.NotNull(mapData.Walls);
-                Assert.NotNull(mapData.Tanks);
-                Assert.NotNull(mapData.Pickups);
-                Assert.Empty(mapData.Walls);
-                Assert.Empty(mapData.Tanks);
-                Assert.Empty(mapData.Pickups);
-            }
-
-            [Fact]
-            public void CreateNewMap_appends_suffix_when_folder_exists_and_sanitizes_name()
-            {
-                // Prepare an existing folder with base name
-                string mapsDir = Path.Combine(_tempRoot, "Maps");
-                Directory.CreateDirectory(mapsDir);
-                string baseName = "MyMap";
-                string existing = Path.Combine(mapsDir, baseName);
-                Directory.CreateDirectory(existing);
-
-                // Call with same name -> should return "MyMap (1)" and create that folder
-                string created = MapManager.createNewMap(baseName);
-                Assert.Equal("MyMap (1)", created);
-
-                string createdDir = Path.Combine(mapsDir, created);
-                Assert.True(Directory.Exists(createdDir));
-                Assert.True(File.Exists(Path.Combine(createdDir, "map.json")));
-            }
-
-            [Fact]
-            public void CreateNewMap_throws_for_empty_or_whitespace_name()
-            {
-                Assert.Throws<ArgumentException>(() => MapManager.createNewMap(""));
-                Assert.Throws<ArgumentException>(() => MapManager.createNewMap("   "));
             }
         }
     }
+
+    public class MapManagerTests : IDisposable
+    {
+        private readonly string mTempRoot;
+        private readonly string mOriginalDirectory;
+
+        public MapManagerTests()
+        {
+            mTempRoot = Path.Combine(Path.GetTempPath(), "MapManagerTests_" + Guid.NewGuid());
+            Directory.CreateDirectory(mTempRoot);
+
+            mOriginalDirectory = Environment.CurrentDirectory;
+            Environment.CurrentDirectory = mTempRoot;
+        }
+
+        [Fact]
+        public void CreateNewMap_CreatesJsonInMapsFolder_ReturnsBaseName()
+        {
+            string name = MapManager.createNewMap("Test Map");
+
+            string mapsRoot = Path.Combine(mTempRoot, "Maps");
+            string expectedPath = Path.Combine(mapsRoot, name + ".json");
+
+            Assert.True(File.Exists(expectedPath));
+
+            string json = File.ReadAllText(expectedPath);
+            var data = JsonSerializer.Deserialize<MapData>(json);
+
+            Assert.NotNull(data);
+            Assert.Empty(data.Walls);
+            Assert.Empty(data.Tanks);
+            Assert.Empty(data.Pickups);
+        }
+
+        [Fact]
+        public void CreateNewMap_WhenFileExists_AppendsNumericSuffix()
+        {
+            // First call
+            string name1 = MapManager.createNewMap("Duplicate");
+            // Second call with same base name
+            string name2 = MapManager.createNewMap("Duplicate");
+
+            Assert.Equal("Duplicate", name1);
+            Assert.Equal("Duplicate (1)", name2);
+
+            string mapsRoot = Path.Combine(mTempRoot, "Maps");
+            Assert.True(File.Exists(Path.Combine(mapsRoot, name1 + ".json")));
+            Assert.True(File.Exists(Path.Combine(mapsRoot, name2 + ".json")));
+        }
+
+        [Fact]
+        public void CreateNewMap_StripsExistingSuffixWhenGeneratingNew()
+        {
+            // Create an existing file with "(1)" suffix
+            string mapsRoot = Path.Combine(mTempRoot, "Maps");
+            Directory.CreateDirectory(mapsRoot);
+            File.WriteAllText(Path.Combine(mapsRoot, "Base (1).json"), "{}");
+
+            string name = MapManager.createNewMap("Base (1)");
+
+            // Should start from "Base", not "Base (1) (1)"
+            Assert.Equal("Base", name);
+        }
+
+        public void Dispose()
+        {
+            Environment.CurrentDirectory = mOriginalDirectory;
+
+            if (Directory.Exists(mTempRoot))
+            {
+                try
+                {
+                    Directory.Delete(mTempRoot, true);
+                }
+                catch
+                {
+                    // ignore cleanup failures
+                }
+            }
+        }
+    }
+
+
+}

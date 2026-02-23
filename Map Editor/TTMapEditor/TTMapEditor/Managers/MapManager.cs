@@ -12,6 +12,9 @@ namespace TTMapEditor.Managers
 {
     public static class MapManager
     {
+
+        private const string DefaultMapName = "Unnamed";
+
         public static string createNewMap(string pMapName)
         {
             if (string.IsNullOrWhiteSpace(pMapName))
@@ -77,13 +80,18 @@ namespace TTMapEditor.Managers
         // Replace invalid filename chars with underscore
         private static string SanitizeFileName(string name)
         {
+            if (string.IsNullOrWhiteSpace(name))
+                return DefaultMapName;
+
             var invalid = Path.GetInvalidFileNameChars();
             var sb = new StringBuilder(name.Length);
             foreach (char c in name)
             {
                 sb.Append(invalid.Contains(c) ? '_' : c);
             }
-            return sb.ToString().Trim();
+
+            string sanitized = sb.ToString().Trim();
+            return string.IsNullOrWhiteSpace(sanitized) ? DefaultMapName : sanitized;
         }
     }
 
