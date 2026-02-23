@@ -19,13 +19,8 @@ namespace Tankontroller.Scenes
         private static readonly Texture2D mBackgroundTexture = Tankontroller.Instance().CM().Load<Texture2D>("background_01");
         private static readonly SpriteFont m_SpriteFont = Tankontroller.Instance().CM().Load<SpriteFont>("handwritingfont");
         private Rectangle mBackgroundRectangle;
-        private Rectangle mPickupinfoRectangle;
         private Tankontroller mGameInstance;
         private MainMenuScene mStartScene;
-        private Texture2D mContinueButtonTexture;
-        private Rectangle mContinueButtonRectangle;
-        private Texture2D mContinueTextTexture;
-        private Rectangle mContinueTextRectangle;
 
         private ButtonList mButtonList = null;
         private TextList mTextList = null;
@@ -47,11 +42,7 @@ namespace Tankontroller.Scenes
             int screenWidth = mGameInstance.GDM().GraphicsDevice.Viewport.Width;
             int screenHeight = mGameInstance.GDM().GraphicsDevice.Viewport.Height;
             Tankontroller game = (Tankontroller)Tankontroller.Instance();
-            mBackgroundRectangle = new Rectangle(0, 0, screenWidth, screenHeight);
-            mContinueButtonTexture = game.CM().Load<Texture2D>("fire");
-            mContinueButtonRectangle = new Rectangle(10, screenHeight / 2, mContinueButtonTexture.Width / 2, mContinueButtonTexture.Height / 2);
-            mContinueTextTexture = game.CM().Load<Texture2D>("back");
-            mContinueTextRectangle = new Rectangle(20 + mContinueButtonTexture.Width / 2, screenHeight / 2 + mContinueButtonTexture.Height / 4, mContinueTextTexture.Width, mContinueTextTexture.Height);
+            mBackgroundRectangle = new Rectangle(0, 0, screenWidth, screenHeight);            
             mSelectionCooldown = SELECTION_COOLDOWN_TIME;
 
             GenerateButtons();
@@ -64,8 +55,6 @@ namespace Tankontroller.Scenes
             spriteBatch.Draw(mBackgroundTexture, mBackgroundRectangle, Color.White);
             mButtonList.Draw(spriteBatch);
             mTextList.Draw(spriteBatch);
-            spriteBatch.Draw(mContinueButtonTexture, mContinueButtonRectangle, Color.White);
-            spriteBatch.Draw(mContinueTextTexture, mContinueTextRectangle, Color.White);
             spriteBatch.End();
         }
 
@@ -102,13 +91,6 @@ namespace Tankontroller.Scenes
                     buttonPress.Play();
                     mButtonList.PressSelectedButton();
                 }
-
-                //if (controller.IsPressed(Control.FIRE))
-                //{
-                //    IGame game = Tankontroller.Instance();
-                //    game.GetControllerManager().SetAllTheLEDsWhite();
-                //    game.SM().Transition(null);
-                //}
             }
         }
         public override void Escape()
@@ -180,6 +162,13 @@ namespace Tankontroller.Scenes
         private void ButtonPickupMine()
         {
             TheWorld.MINE_PICKUP = !TheWorld.MINE_PICKUP;
+        }
+
+        private void ButtonBack()
+        {
+            IGame game = Tankontroller.Instance();
+            game.GetControllerManager().SetAllTheLEDsWhite();
+            game.SM().Transition(null);
         }
 
         /// <summary>
@@ -326,6 +315,23 @@ namespace Tankontroller.Scenes
             mButtonList.Add(pickupMineButton);
             Text pickupMineButtonText = new Text(m_SpriteFont, "The Mine - Damages the tank who drives over it", buttonTextPosition, Color.White, scaleFactor);
             mTextList.Add(pickupMineButtonText);
+
+            // Back button
+            Texture2D fireBack = mGameInstance.CM().Load<Texture2D>("fire");
+            Texture2D fireBackHighlight = mGameInstance.CM().Load<Texture2D>("PickupMenu/fire_highlight");
+
+            buttonRect.Width = (int)(fireBack.Width * scaleFactor);
+            buttonRect.Height = (int)(fireBack.Height * scaleFactor);
+            buttonRect.X = Convert.ToInt32(0);
+            buttonRect.Y = Convert.ToInt32(screenHeight / 2);
+            buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 1.3);
+            buttonTextY = Convert.ToInt32(buttonRect.Y + buttonRect.Height / 1.5);
+            buttonTextPosition = new Vector2(buttonTextX, buttonTextY);
+            Button backButton = new Button(fireBack, fireBackHighlight, buttonRect, Color.White, ButtonBack);
+            backButton.Selected = false;
+            mButtonList.Add(backButton);
+            Text backButtonText = new Text(m_SpriteFont, "Back", buttonTextPosition, Color.White, scaleFactor);
+            mTextList.Add(backButtonText);
         }
     }
 }

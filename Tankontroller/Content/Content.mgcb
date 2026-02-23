@@ -1406,6 +1406,18 @@
 /processorParam:TextureFormat=Color
 /build:pickupinfoscreen.png
 
+#begin PickupMenu/fire_highlight.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:PickupMenu/fire_highlight.png
+
 #begin PickupMenu/pickupinfo_ball_off_highlight.png
 /importer:TextureImporter
 /processor:TextureProcessor
