@@ -382,7 +382,11 @@ namespace Tankontroller.World
 
                     if(collisionEvent.HasCollided)
                     {
-                        if (mBullets[i].TankCollisionResponse(tank))
+                        if (mBullets[i] is Shockwave)
+                        {
+                            tank.mIsInsideShockwave = true;
+                        }
+                        else if (mBullets[i].TankCollisionResponse(tank))
                         {
                             if (mBullets[i] is BouncyEMPBullet)
                             {
