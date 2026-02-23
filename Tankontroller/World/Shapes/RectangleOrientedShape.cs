@@ -140,6 +140,12 @@ namespace Tankontroller.World.Shapes
         /// 2. The normal of the collision (pointing away from the other rectangle) </returns>
         public CollisionEvent IntersectsOrientedRectangle(RectangleOrientedShape pRectangleOriented)
         {
+            // Check for trivial case of rectangles having the same center position
+            if (WorldPosition == pRectangleOriented.WorldPosition)
+            {
+                return new CollisionEvent(true, WorldPosition);
+            }
+
             // Build local axes for both rectangles in world space
             float cosA = (float)Math.Cos(WorldRotation);
             float sinA = (float)Math.Sin(WorldRotation);
