@@ -17,7 +17,7 @@ namespace TTMapEditor.Scenes
     /// - Handle template dragging(create new objects
     /// - Handle selection, dragging and keyboard actions for exisiting objects
     /// </summary>
-    
+
     public class MapEditingScene : IScene
     {
         GraphicsDevice mGraphicsDevice;
@@ -35,6 +35,10 @@ namespace TTMapEditor.Scenes
         MapPreview mPreview;
         bool mIsNewMap;
         bool mFileNameEntered = false;
+        bool notEnoughTanks = false;
+        float popUpTimer = 0f;
+        float timeToShowPopUp = 2f;
+
 
         SelectionManager mSelectionManager;
         private FileNamer mFileNamer;
@@ -102,6 +106,17 @@ namespace TTMapEditor.Scenes
             mTemplatePalette.Draw(mSpriteBatch);
             DrawSaveButton();
             mFileNamer.Draw(mSpriteBatch);
+            if(notEnoughTanks)
+            {
+                if(popUpTimer < timeToShowPopUp)
+                {
+                    popUpTextBox($"You must have exactly {MaxTanks} tanks to save the map.");
+                }
+                else
+                                    {
+                    notEnoughTanks = false;
+                }
+            }
             mSpriteBatch.End();
         }
 
@@ -132,7 +147,7 @@ namespace TTMapEditor.Scenes
                 }
             }
 
-            mSpriteBatch.DrawString(mTitleFont, displayName, new Vector2(100, 100), Color.Black);
+            mSpriteBatch.DrawString(mTitleFont, mFileNameEntered ? displayName : "UNNAMED", new Vector2(100, 100), Color.Black);
         }
 
         void DrawPlayAreaAndObjects()
@@ -179,6 +194,7 @@ namespace TTMapEditor.Scenes
         {
             InputManager.Update();
             mFileNamer.Update(pSeconds);
+            popUpTimer += pSeconds;
 
             if (InputManager.isKeyPressed(Keys.Escape))
             {
@@ -188,9 +204,19 @@ namespace TTMapEditor.Scenes
 
             if (mFileNamer.IsActive() && InputManager.isKeyPressed(Keys.Enter))
             {
-                mName = mFileNamer.ReturnName();
-                SaveMap();
-                mFileNameEntered = true;
+                if (mPreview.GetTanks().Count != MaxTanks)
+                {
+                    notEnoughTanks = true;
+                    popUpTimer = 0f;
+                    mFileNamer.ReturnName();
+                    return;
+                }
+                else
+                {
+                    mName = mFileNamer.ReturnName();
+                    SaveMap();
+                    mFileNameEntered = true;
+                }
             }
 
             Vector2 mousePos = InputManager.GetMousePosition();
@@ -217,10 +243,37 @@ namespace TTMapEditor.Scenes
             mKeyboardController.Update();
         }
 
+        // Validates the map and saves it if valid. If not valid, shows a pop up message for a few seconds.
         void SaveMap()
         {
-            mMapService.SaveMap(mPreview, mName);
+            if (mPreview.GetTanks().Count != MaxTanks)
+            {
+                notEnoughTanks = true;
+                popUpTimer = 0f;
+                return;
+            }
+            else
+            {
+                string baseName = Path.GetFileNameWithoutExtension(mName);
+                string fileName = baseName + ".json";
+                string fullPath = Path.Combine(MAP_ROOT, fileName);
+                mMapService.SaveMap(mPreview, fullPath);
+            }
         }
+
+        //Draws a text box in the middle of the screen with the given message. Needs to be placed in the draw method and requires a timer to control how long it is shown for.
+        void popUpTextBox(string pMessage)
+        {
+            int height = (int)mTitleFont.MeasureString(pMessage).Y;
+            int width = (int)mTitleFont.MeasureString(pMessage).X;
+            int viewPortWidth = mGraphicsDevice.Viewport.Width;
+            int viewPortHeight = mGraphicsDevice.Viewport.Height;
+            int popupX = (viewPortWidth - width) / 2;
+            int popupY = (viewPortHeight - height) / 2;
+            mSpriteBatch.Draw(mPixelTexture, new Rectangle(popupX, popupY, width, height), Color.White);
+            mSpriteBatch.DrawString(mTitleFont, pMessage, new Vector2(popupX, popupY), Color.Red);
+        }
+
     }
 }
 

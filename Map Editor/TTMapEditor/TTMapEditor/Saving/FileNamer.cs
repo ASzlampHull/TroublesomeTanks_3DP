@@ -25,7 +25,9 @@ namespace TTMapEditor.Saving
 
         public void Update(float pDeltaTime)
         {
-            if(!mIsActive)
+            bool capsLock = Keyboard.GetState().CapsLock;
+
+            if (!mIsActive)
             {
                 return;
             }
@@ -39,27 +41,29 @@ namespace TTMapEditor.Saving
                 return;
             }
 
-            if (pressedKeys[0] == Keys.Enter)
+            Keys key = pressedKeys[0];
+
+            if (!IsValidKey(key))
             {
                 return;
             }
-                
-            if (pressedKeys[0] != mPreviousKey)               
-            {                    
-                mTimeSinceLastKeyPress = mTimeBetweenKeyPresses;               
+
+            if (key != mPreviousKey)
+            {
+                mTimeSinceLastKeyPress = mTimeBetweenKeyPresses;
             }
 
-                
-            else if (mTimeSinceLastKeyPress < mTimeBetweenKeyPresses)               
+
+            else if (mTimeSinceLastKeyPress < mTimeBetweenKeyPresses)
             {
-                return;              
+                return;
             }
-   
-            if (pressedKeys[0] == Keys.Back && mCurrentName.Length > 0)                
-            {                    
-                mCurrentName = mCurrentName.Substring(0, mCurrentName.Length - 1);                    
-                mTimeSinceLastKeyPress = 0f;                   
-                mPreviousKey = pressedKeys[0];
+
+            if (key == Keys.Back && mCurrentName.Length > 0)
+            {
+                mCurrentName = mCurrentName.Substring(0, mCurrentName.Length - 1);
+                mTimeSinceLastKeyPress = 0f;
+                mPreviousKey = key;
                 return;
             }
 
@@ -68,7 +72,7 @@ namespace TTMapEditor.Saving
                 return;
             }
 
-            if (pressedKeys[0] == Keys.Space)
+            if (key == Keys.Space)
             {
                 mCurrentName += " ";
                 mPreviousKey = pressedKeys[0];
@@ -76,8 +80,12 @@ namespace TTMapEditor.Saving
                 return;
             }
 
-            mCurrentName += pressedKeys[0].ToString();                
-            mPreviousKey = pressedKeys[0];   
+            char? ch = KeyToChar(key, capsLock);
+            if (ch.HasValue)
+            {
+                mCurrentName += ch.Value;
+            }
+            mPreviousKey = key;
             mTimeSinceLastKeyPress = 0f;
         }
 
@@ -110,6 +118,34 @@ namespace TTMapEditor.Saving
             return mIsActive;
         }
 
+        static bool IsValidKey(Keys pKey)
+        {
+            return (pKey >= Keys.A && pKey <= Keys.Z) || (pKey >= Keys.D0 && pKey <= Keys.D9) || pKey == Keys.Space || pKey == Keys.Back;
+        }
 
+        static char? KeyToChar(Keys pKey, bool pCapsLock)
+        {
+            // Letters A–Z
+            if (pKey >= Keys.A && pKey <= Keys.Z)
+            {
+                char c = (char)('A' + (pKey - Keys.A));
+                return pCapsLock ? char.ToUpperInvariant(c) : char.ToLowerInvariant(c);
+            }
+
+            // Top-row digits D0–D9 -> '0'–'9'
+            if (pKey >= Keys.D0 && pKey <= Keys.D9)
+            {
+                return (char)('0' + (pKey - Keys.D0));
+            }
+
+            // Numpad digits -> '0'–'9'
+            if (pKey >= Keys.NumPad0 && pKey <= Keys.NumPad9)
+            {
+                return (char)('0' + (pKey - Keys.NumPad0));
+            }
+
+            // Space handled earlier, Backspace returns null (no char)
+            return null;
+        }
     }
 }

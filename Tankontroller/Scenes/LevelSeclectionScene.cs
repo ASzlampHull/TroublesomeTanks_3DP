@@ -186,23 +186,10 @@ namespace Tankontroller.Scenes
             {
                 Vector2 pos = new Vector2(float.Parse(wall.Position[0]), float.Parse(wall.Position[1]));
                 Vector2 size = new Vector2(float.Parse(wall.Size[0]), float.Parse(wall.Size[1]));
-                if (string.IsNullOrEmpty(wall.Rotation))
-                {
-                    wall.Rotation = "0";
-                }
-
-                // If your map data stores degrees, convert to radians here:
-                float rotation = float.Parse(wall.Rotation); // degrees
-                float rotationRadians = MathF.PI / 180f * rotation;
-
+                float rotation = 0f;
+                float.TryParse(wall.Rotation, out rotation);
                 Rectangle wallRect = GetRect(playArea, pos, size);
-
-                // Center of the rectangle for rotation
-                Vector2 center = new Vector2(
-                    wallRect.X + wallRect.Width / 2f,
-                    wallRect.Y + wallRect.Height / 2f);
-
-                DrawOutline(wallRect, wall.Texture, rotationRadians, center);
+                DrawOutline(wallRect, pos, size, rotation, wall.Texture);
             }
 
             // Draw outlines for tanks
@@ -238,34 +225,37 @@ namespace Tankontroller.Scenes
             // Draw walls
             foreach (var wall in mapData.Walls)
             {
-                Vector2 pos = new Vector2(float.Parse(wall.Position[0]), float.Parse(wall.Position[1]));
-                Vector2 size = new Vector2(float.Parse(wall.Size[0]), float.Parse(wall.Size[1]));
+                // Wall position/size in map space (0–100 percent)
+                Vector2 posPercent = new Vector2(float.Parse(wall.Position[0]), float.Parse(wall.Position[1]));
+                Vector2 sizePercent = new Vector2(float.Parse(wall.Size[0]), float.Parse(wall.Size[1]));
+                float rotation = 0f;
+                float.TryParse(wall.Rotation, out rotation);
 
-                if (string.IsNullOrEmpty(wall.Rotation))
-                {
-                    wall.Rotation = "0";
-                }
-                float rotation = float.Parse(wall.Rotation); // degrees
-                float rotationRadians = MathF.PI / 180f * rotation;
+                // Rectangle in thumbnail pixel space
+                Rectangle wallRect = GetRect(playArea, posPercent, sizePercent);
 
-                Rectangle wallRect = GetRect(playArea, pos, size);
-
-                Vector2 center = new Vector2(
+                // Center of the rect is where we draw the sprite
+                Vector2 drawPosition = new Vector2(
                     wallRect.X + wallRect.Width / 2f,
                     wallRect.Y + wallRect.Height / 2f);
 
                 Texture2D wallTexture = mGameInstance.CM().Load<Texture2D>(wall.Texture);
+                Vector2 origin = new Vector2(wallTexture.Width / 2f, wallTexture.Height / 2f);
 
+                // Scale texture to match the rectangle size
+                Vector2 scale = new Vector2(
+                    wallRect.Width / (float)wallTexture.Width,
+                    wallRect.Height / (float)wallTexture.Height);
+
+                // Todo change to use a colour from the DGS
                 spriteBatch.Draw(
                     wallTexture,
-                    center,                                          // position (center)
-                    null,                                            // source rectangle
-                    DGS.Instance.GetColour("COLOUR_WALLS"),
+                    drawPosition,
+                    null,
+                    Color.DarkGray,
                     rotation,
-                    new Vector2(wallRect.Width / 2f, wallRect.Height / 2f), // origin (center)
-                    new Vector2(
-                        wallRect.Width / (float)wallTexture.Width,
-                        wallRect.Height / (float)wallTexture.Height),
+                    origin,
+                    scale,
                     SpriteEffects.None,
                     0f);
             }
@@ -328,31 +318,33 @@ namespace Tankontroller.Scenes
             spriteBatch.Draw(texture, new Rectangle(rect.X - offset, rect.Y - offset, rect.Width + (offset * 2), rect.Height + (offset * 2)), Color.Black);
         }
 
-        void DrawOutline(Rectangle rect, string textureName, float rotation, Vector2 center)
+        void DrawOutline(Rectangle pRectangle, Vector2 pPosition, Vector2 pSize, float pRotation, string pTextureName)
         {
-            int offset = 2; // Outline thickness
-            Texture2D texture = mGameInstance.CM().Load<Texture2D>(textureName);
+            int offset = 2;
+            Texture2D texture = mGameInstance.CM().Load<Texture2D>(pTextureName);
 
-            Rectangle outlineRect = new Rectangle(
-                rect.X - offset,
-                rect.Y - offset,
-                rect.Width + (offset * 2),
-                rect.Height + (offset * 2));
+            // Center of the rectangle in thumbnail/render-target space
+            Vector2 center = new Vector2(
+                pRectangle.X + pRectangle.Width / 2f,
+                pRectangle.Y + pRectangle.Height / 2f);
 
-            Vector2 outlineOrigin = new Vector2(
-                outlineRect.Width / 2f,
-                outlineRect.Height / 2f);
+            // Origin is the texture center
+            Vector2 origin = new Vector2(texture.Width / 2f, texture.Height / 2f);
 
+            // Scale so that the sprite covers the rect plus outline offset
+            Vector2 scale = new Vector2(
+                (pRectangle.Width + offset * 2) / (float)texture.Width,
+                (pRectangle.Height + offset * 2) / (float)texture.Height);
+
+            // Todo change to use a colour from the DGS
             spriteBatch.Draw(
                 texture,
                 center,
                 null,
                 Color.Black,
-                rotation,
-                outlineOrigin,
-                new Vector2(
-                    outlineRect.Width / (float)texture.Width,
-                    outlineRect.Height / (float)texture.Height),
+                pRotation,
+                origin,
+                scale,
                 SpriteEffects.None,
                 0f);
         }

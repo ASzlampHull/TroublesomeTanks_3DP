@@ -59,6 +59,11 @@ namespace TTMapEditor.Maps
             return mPlayArea;
         }
 
+        public string GetFilePath()
+        {
+            return mFilePath;
+        }
+
         public List<RectWall> GetWalls()
         {
             return mWalls;
