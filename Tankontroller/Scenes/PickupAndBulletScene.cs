@@ -30,9 +30,9 @@ namespace Tankontroller.Scenes
         private readonly float SELECTION_COOLDOWN_TIME = 0.2f;
 
         //Selection button frequency values
-        private readonly float mSelectionLowValue = DGS.Instance.GetFloat("PICKUP_SPAWN_RATE") * 1.2f;
-        private readonly float mSelectionMedValue = DGS.Instance.GetFloat("PICKUP_SPAWN_RATE");
-        private readonly float mSelectionHighValue = DGS.Instance.GetFloat("PICKUP_SPAWN_RATE") * 0.2f;
+        private readonly float SELECTION_LOW_VALUE = DGS.Instance.GetFloat("PICKUP_SPAWN_RATE") * 1.2f;
+        private readonly float SELECTION_MED_VALUE = DGS.Instance.GetFloat("PICKUP_SPAWN_RATE");
+        private readonly float SELECTION_HIGH_VALUE = DGS.Instance.GetFloat("PICKUP_SPAWN_RATE") * 0.2f;
 
         public PickupAndBulletScene(MainMenuScene startScene)
         {
@@ -126,21 +126,21 @@ namespace Tankontroller.Scenes
         private void ButtonSelectionLow()
         {
             TheWorld.PICKUP_SPAWN = true;
-            TheWorld.PICKUP_SPAWN_TIME = mSelectionLowValue;
+            TheWorld.PICKUP_SPAWN_TIME = SELECTION_LOW_VALUE;
             TurnOffAllSelectionExcept(1);
         }
 
         private void ButtonSelectionMed()
         {
             TheWorld.PICKUP_SPAWN = true;
-            TheWorld.PICKUP_SPAWN_TIME = mSelectionMedValue;
+            TheWorld.PICKUP_SPAWN_TIME = SELECTION_MED_VALUE;
             TurnOffAllSelectionExcept(2);
         }
 
         private void ButtonSelectionHigh()
         {
             TheWorld.PICKUP_SPAWN = true;
-            TheWorld.PICKUP_SPAWN_TIME = mSelectionHighValue;
+            TheWorld.PICKUP_SPAWN_TIME = SELECTION_HIGH_VALUE;
             TurnOffAllSelectionExcept(3);
         }
 
@@ -215,7 +215,7 @@ namespace Tankontroller.Scenes
             mTextList.Add(selectionNoneButtonText);
 
             // Selection "Low" button
-            buttonState = TheWorld.PICKUP_SPAWN_TIME == mSelectionLowValue;
+            buttonState = TheWorld.PICKUP_SPAWN_TIME == SELECTION_LOW_VALUE;
             buttonRect.X += buttonXPadding;
             buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 2.3);
             buttonTextPosition = new Vector2(buttonTextX, buttonTextY);
@@ -226,7 +226,7 @@ namespace Tankontroller.Scenes
             mTextList.Add(selectionLowButtonText);
 
             // Selection "Med" button
-            buttonState = TheWorld.PICKUP_SPAWN_TIME == mSelectionMedValue;
+            buttonState = TheWorld.PICKUP_SPAWN_TIME == SELECTION_MED_VALUE;
             buttonRect.X += buttonXPadding;
             buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 2.4);
             buttonTextPosition = new Vector2(buttonTextX, buttonTextY);
@@ -237,7 +237,7 @@ namespace Tankontroller.Scenes
             mTextList.Add(selectionMedButtonText);
 
             // Selection "High" button
-            buttonState = TheWorld.PICKUP_SPAWN_TIME == mSelectionHighValue;
+            buttonState = TheWorld.PICKUP_SPAWN_TIME == SELECTION_HIGH_VALUE;
             buttonRect.X += buttonXPadding;
             buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 2.4);
             buttonTextPosition = new Vector2(buttonTextX, buttonTextY);
