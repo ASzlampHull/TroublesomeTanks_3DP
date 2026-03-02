@@ -179,6 +179,7 @@ namespace Tankontroller.Scenes
             float scaleFactor = Tankontroller.Instance().ScaleFactor();
             int screenWidth = mGameInstance.GDM().GraphicsDevice.Viewport.Width;
             int screenHeight = mGameInstance.GDM().GraphicsDevice.Viewport.Height;
+
             //y offset for 32:9 aspect ratio
             if ((float)screenWidth / (float)screenHeight == 32f / 9f)
             {
@@ -225,7 +226,7 @@ namespace Tankontroller.Scenes
             Text selectionLowButtonText = new Text(m_SpriteFont, "Low", buttonTextPosition, Color.White, scaleFactor);
             mTextList.Add(selectionLowButtonText);
 
-            // Selection "Med" button
+            // Selection "Medium" button
             buttonState = TheWorld.PICKUP_SPAWN_TIME == SELECTION_MED_VALUE;
             buttonRect.X += buttonXPadding;
             buttonTextX = Convert.ToInt32(buttonRect.X + buttonRect.Width / 2.4);
@@ -247,7 +248,7 @@ namespace Tankontroller.Scenes
             Text selectionHighButtonText = new Text(m_SpriteFont, "High", buttonTextPosition, Color.White, scaleFactor);
             mTextList.Add(selectionHighButtonText);
 
-            // Textures for the pickup type selection buttons
+            // Textures for the pickup type buttons
             Texture2D pickupHealthOffTexture = mGameInstance.CM().Load<Texture2D>("PickupMenu/pickupinfo_health_off");
             Texture2D pickupHealthOffHighlightTexture = mGameInstance.CM().Load<Texture2D>("PickupMenu/pickupinfo_health_off_highlight");
             Texture2D pickupHealthOnTexture = mGameInstance.CM().Load<Texture2D>("PickupMenu/pickupinfo_health_on");
@@ -265,7 +266,7 @@ namespace Tankontroller.Scenes
             Texture2D pickupMineOnTexture = mGameInstance.CM().Load<Texture2D>("PickupMenu/pickupinfo_mine_on");
             Texture2D pickupMineOnHighlightTexture = mGameInstance.CM().Load<Texture2D>("PickupMenu/pickupinfo_mine_on_highlight");
 
-            // Create button and text univeral positions and dimensions for the pickup type selection buttons
+            // Create button and text univeral positions and dimensions for the pickup type buttons
             buttonWidth = (int)(pickupBallOffTexture.Width * scaleFactor);
             buttonHeight = (int)(pickupBallOffTexture.Height * scaleFactor);
             buttonX = Convert.ToInt32((screenWidth-buttonWidth) / 2);

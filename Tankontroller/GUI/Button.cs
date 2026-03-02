@@ -35,6 +35,9 @@ namespace Tankontroller.GUI
             OnOffState = false;
         }
 
+        /// <summary>
+        /// Exception for buttons that have an on/off state.
+        /// </summary>
         public Button(Texture2D pTexture, Texture2D pTextureHighlighted, Texture2D pTextureOn, Texture2D pTextureOnHighlighted, Rectangle pRect, Color pColour, Action pDoButton, bool pOnOffState)
         {
             Texture = pTexture;
@@ -48,10 +51,9 @@ namespace Tankontroller.GUI
         }
         public bool PressButton() 
         {
-            if (doButton != null && TextureOnState != null) {
+            // Exception for buttons that have an on/off state.
+            if (TextureOnState != null) {
                 OnOffState = !OnOffState;
-                doButton(); 
-                return true;
             }
             if (doButton != null) {
                 doButton(); 
