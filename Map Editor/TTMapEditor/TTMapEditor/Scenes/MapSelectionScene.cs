@@ -10,22 +10,33 @@ using static System.Formats.Asn1.AsnWriter;
 
 namespace TTMapEditor.Scenes
 {
+    /// <summary>
+    /// Scene that allows the user to browse existing map files and select one
+    /// to open in the editor. It renders a carousel-style UI that shows the
+    /// previous, current and next map thumbnails and a title for the
+    /// currently selected map.
+    /// </summary>
     public class MapSelectionScene : IScene
     {
-
+        // Graphics
         GraphicsDevice mGraphicsDevice;
         IGame mGameInstance = TTMapEditor.Instance();
         private MainMenuScene mStartScene;
+
+        // Static content loaded once for all instances of this scene
         private static readonly Texture2D mBackgroundTexture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("background_01");
         private static readonly SpriteFont mSpriteFont = TTMapEditor.Instance().GetContentManager().Load<SpriteFont>("TitleFont");
         private static readonly String MAP_DIRECTORY = DGS.Instance.GetString("MAP_FILE_PATH");
         private static readonly Color BACKGROUND_COLOUR = DGS.Instance.GetColour("COLOUR_BACKGROUND");
+
+        // Layout and state
         private Rectangle mBackgroundRectangle;
         private Vector2 mTitlePosition;
         private List<string> mMapFiles;
         private TTMapEditor mEditorInstance;
         private int mCurrentScrollPosition;
 
+        // Thumbnail textures and layout
         private List<Texture2D> mThumbnailTextures = new List<Texture2D>();
         Rectangle mCurrentRectangle;
         Rectangle mPreviousRectangle;
@@ -33,18 +44,30 @@ namespace TTMapEditor.Scenes
         int mThumbnailWidth;
         int mThumbnailHeight;
 
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MapSelectionScene"/> class.
+        /// Sets up layout based on the current viewport, scans the map directory
+        /// for map files, generates thumbnails for each map and configures the
+        /// rectangles used to render the thumbnail carousel.
+        /// </summary>
+        /// <param name="pStartScene">
+        /// The main menu scene to return to when the user presses Escape.
+        /// </param>
         public MapSelectionScene(MainMenuScene pStartScene)
         {
             mStartScene = pStartScene;
             mGameInstance = (TTMapEditor)TTMapEditor.Instance();
             mSpriteBatch = new SpriteBatch(mGameInstance.GetGraphicsDeviceManager().GraphicsDevice);
             mCurrentScrollPosition = 0;
+
             int screenWidth = mGameInstance.GetGraphicsDeviceManager().GraphicsDevice.Viewport.Width;
             int screenHeight = mGameInstance.GetGraphicsDeviceManager().GraphicsDevice.Viewport.Height;
 
+            // Full-screen background and title position
             mBackgroundRectangle = new Rectangle(0, 0, screenWidth, screenHeight);
             mTitlePosition = new Vector2(screenWidth / 2, screenHeight / 5);
+
+            // Thumbnails are sized as a fraction of the screen
             mThumbnailWidth = screenWidth * 96 / 100 / 4;
             mThumbnailHeight = screenHeight * 73 / 100 / 4;
 
@@ -65,6 +88,7 @@ namespace TTMapEditor.Scenes
             }
             mMapFiles = new List<string>(filePaths);
 
+            // Generate a thumbnail texture for each map file found.
             foreach (string mapFile in mMapFiles)
             {
                 // mapFile is relative path; build full path for file operations
@@ -77,22 +101,32 @@ namespace TTMapEditor.Scenes
                 MakeThumbnailTextureFromMapFile(fullMapPath, thumbnailFile);
             }
 
-            mPreviousRectangle = new Rectangle((screenWidth / 2) - (mThumbnailWidth / 2) - mThumbnailWidth,
+            // Configure the rectangles for previous, current and next thumbnails
+            mPreviousRectangle = new Rectangle(
+                (screenWidth / 2) - (mThumbnailWidth / 2) - mThumbnailWidth,
                 (screenHeight / 2) - (mThumbnailHeight / 2),
                 mThumbnailWidth,
                 mThumbnailHeight);
 
-            mCurrentRectangle = new Rectangle((screenWidth / 2) - (mThumbnailWidth),
+            mCurrentRectangle = new Rectangle(
+                (screenWidth / 2) - (mThumbnailWidth),
                 (screenHeight / 2) - (mThumbnailHeight),
                 mThumbnailWidth * 2,
                 mThumbnailHeight * 2);
 
-            mNextRectangle = new Rectangle((screenWidth / 2) - (mThumbnailWidth / 2) + mThumbnailWidth,
+            mNextRectangle = new Rectangle(
+                (screenWidth / 2) - (mThumbnailWidth / 2) + mThumbnailWidth,
                 (screenHeight / 2) - (mThumbnailHeight / 2),
                 mThumbnailWidth,
                 mThumbnailHeight);
         }
 
+        /// <summary>
+        /// Transitions to the <see cref="MapEditingScene"/> for the specified map.
+        /// The provided map name is a relative path; this method resolves it to
+        /// an absolute path in the configured maps directory.
+        /// </summary>
+        /// <param name="pMapName">Relative path of the selected map file.</param>
         private void selectMap(string pMapName)
         {
             // pMapName is stored as relative path. Pass an absolute path to the editor.
@@ -100,9 +134,17 @@ namespace TTMapEditor.Scenes
             mGameInstance.GetSceneManager().Transition(new MapEditingScene(mStartScene, fullMapPath, false), true);
         }
 
+        /// <summary>
+        /// Renders the map selection UI, including the background, map name and
+        /// the previous/current/next thumbnails. If no maps are available, a
+        /// simple "No maps found" message is shown instead.
+        /// </summary>
+        /// <param name="pSeconds">Elapsed time since last draw (not used).</param>
         public override void Draw(float pSeconds)
         {
             mGameInstance.GetGraphicsDeviceManager().GraphicsDevice.Clear(Color.Black);
+
+            // Display a simple message if there are no maps to choose from
             if (mMapFiles == null || mMapFiles.Count == 0)
             {
                 // Safe fallback while map list is not yet populated
@@ -115,21 +157,33 @@ namespace TTMapEditor.Scenes
             }
 
             mSpriteBatch.Begin();
+
+            // Background
             mSpriteBatch.Draw(mBackgroundTexture, mBackgroundRectangle, Color.White);
+
+            // Map title (file name without extension), centered at title position
             string mapName = mMapFiles[mCurrentScrollPosition].Substring(0, mMapFiles[mCurrentScrollPosition].Length - 5);
             Vector2 titlePos = mTitlePosition - (mSpriteFont.MeasureString(mapName) / 2);
-            //spriteBatch.DrawString(mSpriteFont, mapName, titlePos, Color.White, 0.0f, Vector2.One, 2.0f, SpriteEffects.None, 1.0f);
             mSpriteBatch.DrawString(mSpriteFont, mapName, titlePos, Color.White);
+
             // Calculate the indices of the previous, current, and next thumbnails
             int prevIndex = (mCurrentScrollPosition - 1 + mMapFiles.Count) % mMapFiles.Count;
             int nextIndex = (mCurrentScrollPosition + 1) % mMapFiles.Count;
 
+            // Draw the carousel thumbnails: previous (left), next (right), current (center enlarged)
             mSpriteBatch.Draw(mThumbnailTextures[prevIndex], mPreviousRectangle, Color.White);
             mSpriteBatch.Draw(mThumbnailTextures[nextIndex], mNextRectangle, Color.White);
             mSpriteBatch.Draw(mThumbnailTextures[mCurrentScrollPosition], mCurrentRectangle, Color.White);
+
             mSpriteBatch.End();
         }
 
+        /// <summary>
+        /// Handles input for navigating the map list and selecting a map.
+        /// Left/Right arrows move through maps in a circular list; Enter
+        /// opens the currently highlighted map; Escape returns to the main menu.
+        /// </summary>
+        /// <param name="pSeconds">Elapsed time since last update (not used).</param>
         public override void Update(float pSeconds)
         {
             InputManager.Update();
@@ -137,19 +191,29 @@ namespace TTMapEditor.Scenes
 
             if (InputManager.isKeyPressed(Keys.Left))
             {
+                // Move selection to previous map (wrap at start)
                 mCurrentScrollPosition = (mCurrentScrollPosition - 1 + mMapFiles.Count) % mMapFiles.Count;
             }
             if (InputManager.isKeyPressed(Keys.Right))
             {
+                // Move selection to next map (wrap at end)
                 mCurrentScrollPosition = (mCurrentScrollPosition + 1) % mMapFiles.Count;
             }
             if (InputManager.isKeyPressed(Keys.Enter))
             {
+                // Open the selected map in the editor
                 selectMap(mMapFiles[mCurrentScrollPosition]);
             }
         }
 
-        // Now accepts full absolute path to the .json map and the destination thumbnail path.
+        /// <summary>
+        /// Builds a thumbnail for a single map by rendering a miniature version
+        /// of the map layout (walls, tanks, pickups) to a render target. The
+        /// rendered texture is saved as a PNG to <paramref name="thumbnailPath"/>
+        /// and also stored in <see cref="mThumbnailTextures"/> for in-scene use.
+        /// </summary>
+        /// <param name="fullMapPath">Absolute path to the map JSON file.</param>
+        /// <param name="thumbnailPath">Destination file path for the PNG thumbnail.</param>
         void MakeThumbnailTextureFromMapFile(string fullMapPath, string thumbnailPath)
         {
             string mapContent = File.ReadAllText(fullMapPath);
@@ -159,6 +223,7 @@ namespace TTMapEditor.Scenes
             int thumbnailHeight = mThumbnailHeight * 2;
             RenderTarget2D renderTarget = new RenderTarget2D(mGameInstance.GetGraphicsDeviceManager().GraphicsDevice, thumbnailWidth, thumbnailHeight);
 
+            // Draw into off-screen render target to build the thumbnail
             mGameInstance.GetGraphicsDeviceManager().GraphicsDevice.SetRenderTarget(renderTarget);
             mGameInstance.GetGraphicsDeviceManager().GraphicsDevice.Clear(Color.Transparent);
 
@@ -166,12 +231,13 @@ namespace TTMapEditor.Scenes
             int screenHeight = TTMapEditor.Instance().GetGraphicsDeviceManager().GraphicsDevice.Viewport.Height;
             Rectangle playArea = new Rectangle(0, 0, thumbnailWidth, thumbnailHeight);
 
+            // First pass: draw background and outlines for all objects
             mSpriteBatch.Begin();
 
             Rectangle outlineRect = new Rectangle(0, 0, thumbnailWidth, thumbnailHeight);
             mSpriteBatch.Draw(mGameInstance.GetContentManager().Load<Texture2D>("block"), outlineRect, Color.Black);
 
-            //Todo change to use a colour from the DGS
+            // Todo change to use a colour from the DGS
             Rectangle innerRect = new Rectangle(2, 2, thumbnailWidth - 4, thumbnailHeight - 4);
             mSpriteBatch.Draw(mGameInstance.GetContentManager().Load<Texture2D>("block"), innerRect, BACKGROUND_COLOUR);
 
@@ -183,7 +249,7 @@ namespace TTMapEditor.Scenes
                 float rotation = 0f;
                 float.TryParse(wall.Rotation, out rotation);
                 Rectangle wallRect = GetRect(playArea, pos, size);
-                DrawOutline(wallRect,pos,size,rotation,wall.Texture);
+                DrawOutline(wallRect, pos, size, rotation, wall.Texture);
             }
 
             // Draw outlines for tanks
@@ -214,6 +280,7 @@ namespace TTMapEditor.Scenes
 
             mSpriteBatch.End();
 
+            // Second pass: draw filled objects on top of the outlines
             mSpriteBatch.Begin();
 
             // Draw walls
@@ -282,6 +349,7 @@ namespace TTMapEditor.Scenes
 
             mSpriteBatch.End();
 
+            // Restore default render target (backbuffer)
             mGameInstance.GetGraphicsDeviceManager().GraphicsDevice.SetRenderTarget(null);
 
             Texture2D thumbnailTexture = renderTarget;
@@ -294,18 +362,33 @@ namespace TTMapEditor.Scenes
                 thumbnailTexture.SaveAsPng(stream, thumbnailWidth, thumbnailHeight);
             }
 
+            // Keep the texture in memory for this scene's carousel rendering
             mThumbnailTextures.Add(thumbnailTexture);
-
         }
 
+        /// <summary>
+        /// Converts percentage-based map coordinates into a pixel-space rectangle
+        /// within the supplied play area.
+        /// </summary>
+        /// <param name="pPlayArea">Destination rectangle representing the thumbnail play area.</param>
+        /// <param name="pPos">Object position as a percentage of the map (0–100).</param>
+        /// <param name="pSize">Object size as a percentage of the map (0–100).</param>
+        /// <returns>Rectangle in pixel coordinates suitable for thumbnail rendering.</returns>
         Rectangle GetRect(Rectangle pPlayArea, Vector2 pPos, Vector2 pSize)
         {
-            return new Rectangle((int)(pPlayArea.X + (pPlayArea.Width * (pPos.X / 100.0))),
-                                 (int)(pPlayArea.Y + (pPlayArea.Height * (pPos.Y / 100.0))),
-                                 (int)(pPlayArea.Width * (pSize.X / 100.0)),
-                                 (int)(pPlayArea.Height * (pSize.Y / 100.0)));
+            return new Rectangle(
+                (int)(pPlayArea.X + (pPlayArea.Width * (pPos.X / 100.0))),
+                (int)(pPlayArea.Y + (pPlayArea.Height * (pPos.Y / 100.0))),
+                (int)(pPlayArea.Width * (pSize.X / 100.0)),
+                (int)(pPlayArea.Height * (pSize.Y / 100.0)));
         }
 
+        /// <summary>
+        /// Draws a simple rectangular outline around the target rectangle using
+        /// the specified texture, expanded slightly by a fixed offset.
+        /// </summary>
+        /// <param name="pRect">Rectangle to outline.</param>
+        /// <param name="pTextureName">Name of the texture asset to draw.</param>
         void DrawOutline(Rectangle pRect, string pTextureName)
         {
             int offset = 2;
@@ -313,7 +396,16 @@ namespace TTMapEditor.Scenes
             mSpriteBatch.Draw(texture, new Rectangle(pRect.X - offset, pRect.Y - offset, pRect.Width + (2 * offset), pRect.Height + (offset * 2)), Color.Black);
         }
 
-        void DrawOutline(Rectangle pRectangle,Vector2 pPosition, Vector2 pSize, float pRotation, string pTextureName)
+        /// <summary>
+        /// Draws a scaled and rotated outline for a wall-like object using the
+        /// same texture as the object, enlarged slightly to act as a border.
+        /// </summary>
+        /// <param name="pRectangle">Target rectangle in thumbnail space.</param>
+        /// <param name="pPosition">Wall position in map space (percentage, not used directly here).</param>
+        /// <param name="pSize">Wall size in map space (percentage, not used directly here).</param>
+        /// <param name="pRotation">Rotation of the wall in radians.</param>
+        /// <param name="pTextureName">Name of the wall texture asset.</param>
+        void DrawOutline(Rectangle pRectangle, Vector2 pPosition, Vector2 pSize, float pRotation, string pTextureName)
         {
             int offset = 2;
             Texture2D texture = mGameInstance.GetContentManager().Load<Texture2D>(pTextureName);
@@ -344,6 +436,10 @@ namespace TTMapEditor.Scenes
                 0f);
         }
 
+        /// <summary>
+        /// Handles the Escape key to return from this scene back to the main
+        /// menu scene.
+        /// </summary>
         public override void Escape()
         {
             if (InputManager.isKeyPressed(Keys.Escape))
@@ -351,7 +447,5 @@ namespace TTMapEditor.Scenes
                 mGameInstance.GetSceneManager().Transition(mStartScene);
             }
         }
-
     }
-    
- }
+}

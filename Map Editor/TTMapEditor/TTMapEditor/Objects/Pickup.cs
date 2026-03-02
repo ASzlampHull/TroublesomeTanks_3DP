@@ -90,6 +90,10 @@ namespace TTMapEditor.Objects
 
         public override void DrawOutline(SpriteBatch pSpriteBatch) => pSpriteBatch.Draw(mTexture, mOutlineRectangle, Color.Black);
 
+        /// <summary>
+        /// Activate a pickup type, meaning it will be included in the map when the map is saved. Deactivating a pickup type will exclude it from the map when saved.
+        /// </summary>
+        /// <param name="type"></param>
         public void ActivatePickupType(PickupType type)
         {
             if (mActivatedPickups.ContainsKey(type))
@@ -98,6 +102,10 @@ namespace TTMapEditor.Objects
             }
         }
 
+        /// <summary>
+        /// Toggle a pickup type, meaning if it is currently activated it will be deactivated and vice versa. This will affect whether the pickup type is included in the map when the map is saved.
+        /// </summary>
+        /// <param name="type"></param>
         public void TogglePickupType(PickupType type)
         {
             if (mActivatedPickups.ContainsKey(type))
@@ -106,6 +114,10 @@ namespace TTMapEditor.Objects
             }
         }
 
+        /// <summary>
+        /// Deactivate a pickup type, meaning it will be excluded from the map when the map is saved. Activating a pickup type will include it in the map when saved.
+        /// </summary>
+        /// <param name="type"></param>
         public void DeactivatePickupType(PickupType type)
         {
             if (mActivatedPickups.ContainsKey(type))
@@ -116,6 +128,10 @@ namespace TTMapEditor.Objects
 
         public Dictionary<PickupType, bool> GetActivatedPickups() => mActivatedPickups;
 
+        /// <summary>
+        /// Set the activated pickups for this pickup object. This will affect which pickup types are included in the map when the map is saved. The dictionary should contain all pickup types with a boolean value indicating whether they are activated or not.
+        /// </summary>
+        /// <param name="activatedPickups"></param>
         public void SetActivatedPickups(Dictionary<PickupType, bool> activatedPickups)
         {
             mActivatedPickups = activatedPickups;

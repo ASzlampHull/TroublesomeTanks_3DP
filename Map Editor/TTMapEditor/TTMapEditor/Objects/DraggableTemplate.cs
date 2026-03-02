@@ -3,18 +3,26 @@
 namespace TTMapEditor.Objects
 {
     /// <summary>
-    /// Lightweight container for template drag state.
+    /// Encapsulates drag behavior for a scene-object template.
+    /// Tracks original bounds, drag offset, and updates the template position
+    /// while the user drags with the mouse.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">Concrete <see cref="SceneObject"/> type being dragged.</typeparam>
     public class DraggableTemplate<T> where T : SceneObject
     {
+
         public T mTemplate { get; }
+
         public Rectangle mOriginalRect { get; private set; }
 
         public bool mIsDragging { get; private set; }
 
         public Vector2 mDragOffset { get; private set; }
 
+        /// <summary>
+        /// Initializes a new draggable wrapper around the provided template object.
+        /// </summary>
+        /// <param name="pTemplate">The template instance that will be dragged.</param>
         public DraggableTemplate(T pTemplate)
         {
             mTemplate = pTemplate;
@@ -23,11 +31,13 @@ namespace TTMapEditor.Objects
             mDragOffset = Vector2.Zero;
         }
 
-        
         /// <summary>
-        /// Start Dragging: captire original rect and offset from mouse.
-        /// Caller should check click/conditions before calling.
+        /// Begins a drag operation.
+        /// Captures the template's current rectangle and the offset from the mouse
+        /// position to the template's top-left corner.
+        /// Caller is responsible for hit testing and deciding when to start dragging.
         /// </summary>
+        /// <param name="pMousePosition">Mouse position in screen coordinates when the drag starts.</param>
         public void BeginDrag(Vector2 pMousePosition)
         {
             mOriginalRect = mTemplate.mRectangle;
@@ -35,10 +45,11 @@ namespace TTMapEditor.Objects
             mIsDragging = true;
         }
 
-        
         /// <summary>
-        /// Update template position while dragging.
+        /// Updates the template position while a drag is in progress.
+        /// Does nothing if <see cref="mIsDragging"/> is <c>false</c>.
         /// </summary>
+        /// <param name="pMousePosiition">Current mouse position in screen coordinates.</param>
         public void Update(Vector2 pMousePosiition)
         {
             if (!mIsDragging) return;
@@ -48,13 +59,19 @@ namespace TTMapEditor.Objects
         }
 
         /// <summary>
-        /// End the drag. Returns final rectangle. If pResetToOriginal is true, resets template to original rectangle.
+        /// Ends the drag operation and returns the final template rectangle.
+        /// Optionally resets the template to the original rectangle captured at
+        /// <see cref="BeginDrag(Microsoft.Xna.Framework.Vector2)"/>.
         /// </summary>
+        /// <param name="pResetToOriginal">
+        /// If <c>true</c>, the template rectangle is restored to <see cref="mOriginalRect"/>.
+        /// </param>
+        /// <returns>The final rectangle of the template at drag end.</returns>
         public Rectangle EndDrag(bool pResetToOriginal = true)
         {
-            if(!mIsDragging) return mTemplate.mRectangle;
+            if (!mIsDragging) return mTemplate.mRectangle;
             Rectangle final = mTemplate.mRectangle;
-            if(pResetToOriginal)
+            if (pResetToOriginal)
             {
                 mTemplate.SetRectangle(mOriginalRect);
             }
@@ -63,7 +80,7 @@ namespace TTMapEditor.Objects
         }
 
         /// <summary>
-        /// Reset template to stored original rectangle and clear drag state.
+        /// Restores the template to the original rectangle and clears all drag state.
         /// </summary>
         public void Reset()
         {

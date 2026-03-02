@@ -29,6 +29,10 @@ namespace TTMapEditor.GUI
             doButton = pAction;
         }
 
+        /// <summary>
+        /// This carries out the action of a button,if it has one. Return true if button has an action, false if it doesn't.
+        /// </summary>
+        /// <returns></returns>
         public bool PressButton()
         {
             if(doButton != null)

@@ -15,12 +15,21 @@ namespace TTMapEditor.GUI
         {
             mButtons = new List<Button>();
         }
-        
+
+        /// <summary>
+        /// Adds a button to the list of buttons. The first button added will be selected by default.
+        /// </summary>
+        /// <param name="pButton"></param>
         public void AddButton(Button pButton)
         {
             mButtons.Add(pButton);
         }
 
+        /// <summary>
+        /// Selects the next button in the collection, updating the selection state accordingly.
+        /// </summary>
+        /// <remarks>If the currently selected button is the last in the collection, selection wraps
+        /// around to the first button. Only one button is selected at a time.</remarks>
         public void SelectNextButton()
         {
             Console.WriteLine("NextButton start: " + currentSelectedButtonIndex);
@@ -35,6 +44,10 @@ namespace TTMapEditor.GUI
             Console.WriteLine("NextButton finish: " + currentSelectedButtonIndex);
         }
 
+        /// <summary>
+        /// Selects the previous button in the collection, updating the selection state accordingly.
+        /// </summary>
+        /// <remarks>If the currently selected button is the first in the collection, selection wraps
         public void SelectPreviousButton()
         {
             Console.WriteLine("PreviousButton start: " + currentSelectedButtonIndex);
@@ -49,6 +62,9 @@ namespace TTMapEditor.GUI
             Console.WriteLine("PreviousButton finish: " + currentSelectedButtonIndex);
         }
 
+        /// <summary>
+        /// Carries out the action of the currently selected button.
+        /// </summary>
         public void PressSelectedButton()
         {
             mButtons[currentSelectedButtonIndex].PressButton();

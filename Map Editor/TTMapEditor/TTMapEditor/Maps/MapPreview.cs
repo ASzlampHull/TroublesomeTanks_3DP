@@ -5,27 +5,22 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using TTMapEditor.Managers;
 using TTMapEditor.Objects;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 
 namespace TTMapEditor.Maps
 {
-    enum ObjectType
-    {
-        Wall,
-        Tank,
-        Pickup
-    }
-
-
+    /// <summary>
+    /// Represents a single map instance within the editor.
+    /// Handles loading from JSON or legacy text format, building
+    /// preview objects (walls, tanks, pickups), and saving changes
+    /// back to disk as JSON <see cref="MapData"/>.
+    /// </summary>
     public class MapPreview
     {
         Rectangle mPlayArea { get; set; }
+
         List<RectWall> mWalls { get; set; }
 
         List<Tank> mTanks { get; set; }
@@ -34,10 +29,17 @@ namespace TTMapEditor.Maps
 
         string mFilePath { get; set; }
 
-        // store the raw MapData that came from the JSON (or constructed from the legacy format)
         MapData mMapData { get; set; }
 
-
+        /// <summary>
+        /// Creates a new map preview based on the supplied file path or directory.
+        /// Attempts to load an existing map (JSON or legacy format) and build
+        /// the preview object lists; otherwise initializes an empty map.
+        /// </summary>
+        /// <param name="pFilePath">
+        /// Path or identifier used to resolve the map:
+        /// can be absolute, relative to a <c>Maps</c> folder, or a directory name.
+        /// </param>
         public MapPreview(string pFilePath)
         {
             int screenWidth = TTMapEditor.Instance().GetGraphicsDeviceManager().GraphicsDevice.Viewport.Width;
@@ -54,37 +56,67 @@ namespace TTMapEditor.Maps
             LoadMapPreview();
         }
 
+        /// <summary>
+        /// Gets the screen-space bounds of the playable area.
+        /// </summary>
+        /// <returns>The rectangle representing the play area.</returns>
         public Rectangle GetPlayArea()
         {
             return mPlayArea;
         }
 
+        /// <summary>
+        /// Returns the original path or identifier used to resolve this map.
+        /// </summary>
+        /// <returns>The stored map file path.</returns>
         public string GetFilePath()
         {
             return mFilePath;
         }
 
+        /// <summary>
+        /// Gets the current list of preview walls.
+        /// </summary>
+        /// <returns>A list of <see cref="RectWall"/> objects.</returns>
         public List<RectWall> GetWalls()
         {
             return mWalls;
         }
 
+        /// <summary>
+        /// Gets the current list of preview tanks.
+        /// </summary>
+        /// <returns>A list of <see cref="Tank"/> objects.</returns>
         public List<Tank> GetTanks()
         {
             return mTanks;
         }
 
+        /// <summary>
+        /// Gets the current list of preview pickups.
+        /// </summary>
+        /// <returns>A list of <see cref="Pickup"/> objects.</returns>
         public List<Pickup> GetPickups()
         {
             return mPickups;
         }
 
-        // Expose the MapData that represents the map (use to save / edit)
+        /// <summary>
+        /// Gets the <see cref="MapData"/> backing this preview.
+        /// This object is used when saving and can be edited by tools.
+        /// </summary>
+        /// <returns>The current map data.</returns>
         public MapData GetMapData()
         {
             return mMapData;
         }
 
+        /// <summary>
+        /// Resolves the underlying map path, loads existing content
+        /// (preferring JSON, with a fallback to legacy line format),
+        /// and builds the preview object lists and <see cref="MapData"/>.
+        /// If no file exists, initializes an empty map.
+        /// </summary>
         private void LoadMapPreview()
         {
             // Prefer the bin (runtime) output folder first
@@ -226,6 +258,11 @@ namespace TTMapEditor.Maps
             };
         }
 
+        /// <summary>
+        /// Builds all preview objects (walls, tanks, pickups) from a given <see cref="MapData"/>.
+        /// Converts percentage-based map coordinates into screen-space rectangles and loads textures.
+        /// </summary>
+        /// <param name="map">The map data to render in the preview.</param>
         private void BuildPreviewFromMapData(MapData map)
         {
             mWalls = new List<RectWall>();
@@ -250,7 +287,7 @@ namespace TTMapEditor.Maps
                         float.TryParse(w.Size[0], NumberStyles.Float, CultureInfo.InvariantCulture, out sizeX);
                         float.TryParse(w.Size[1], NumberStyles.Float, CultureInfo.InvariantCulture, out sizeY);
                     }
-                    if(w.Rotation != null)
+                    if (w.Rotation != null)
                     {
                         float.TryParse(w.Rotation, NumberStyles.Float, CultureInfo.InvariantCulture, out rotationDeg);
                     }
@@ -274,7 +311,7 @@ namespace TTMapEditor.Maps
                         tex = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("block");
                     }
 
-                    mWalls.Add(new RectWall(tex, new Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y),rotationDeg));
+                    mWalls.Add(new RectWall(tex, new Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y), rotationDeg));
                 }
             }
 
@@ -370,7 +407,12 @@ namespace TTMapEditor.Maps
             }
         }
 
-        // Backwards-compatible line-parsing (kept for legacy formats)
+        /// <summary>
+        /// Parses a legacy, line-based map format and produces a collection of walls.
+        /// This is kept for backwards compatibility with older map files.
+        /// </summary>
+        /// <param name="pLines">All lines read from the legacy map file.</param>
+        /// <returns>A list of walls reconstructed from the legacy format.</returns>
         public List<RectWall> ParseLines(string[] pLines)
         {
             List<RectWall> Walls = new List<RectWall>();
@@ -428,6 +470,11 @@ namespace TTMapEditor.Maps
             return Walls;
         }
 
+        /// <summary>
+        /// Adds a scene object (wall, tank, or pickup) to the preview.
+        /// The object is routed into the appropriate internal list.
+        /// </summary>
+        /// <param name="pObject">Object instance to add to the map preview.</param>
         public void AddObject(SceneObject pObject)
         {
             switch (pObject)
@@ -444,8 +491,10 @@ namespace TTMapEditor.Maps
             }
         }
 
-
-
+        /// <summary>
+        /// Removes a scene object (wall, tank, or pickup) from the preview.
+        /// </summary>
+        /// <param name="pObject">Object instance to remove from the map preview.</param>
         public void RemoveObject(SceneObject pObject)
         {
             switch (pObject)
@@ -462,6 +511,16 @@ namespace TTMapEditor.Maps
             }
         }
 
+        /// <summary>
+        /// Serializes the current preview state into <see cref="MapData"/> and writes it as JSON.
+        /// Resolves the output path based on the original file path and the provided map name.
+        /// </summary>
+        /// <param name="pMapName">
+        /// Name or path to save as:
+        /// simple name -> <c>&lt;base&gt;\name.json</c>,
+        /// directory or rooted path without extension -> <c>dir\map.json</c>,
+        /// full file path (with extension) -> saved directly.
+        /// </param>
         public void SaveMap(string pMapName)
         {
             // Ensure MapData exists and lists are initialized
@@ -581,25 +640,38 @@ namespace TTMapEditor.Maps
             File.WriteAllText(targetPath, json);
         }
 
+        /// <summary>
+        /// Regenerates <see cref="MapData"/> from the current preview objects.
+        /// Converts screen-space rectangles back to percentage-based coordinates.
+        /// </summary>
         public void MapDataFromPreview()
         {
             mMapData.Tanks.Clear();
             mMapData.Pickups.Clear();
             mMapData.Walls.Clear();
-            //Adding walls to map data
+
+            // Adding walls to map data
             foreach (RectWall wall in mWalls)
             {
-                float rotationDeg = 0f;
-                rotationDeg = MathHelper.ToDegrees(wall.mRotation);
+                float rotationDeg = MathHelper.ToDegrees(wall.mRotation);
                 mMapData.Walls.Add(new WallData()
                 {
                     Texture = "block",
-                    Position = new string[] { ((wall.mRectangle.X - mPlayArea.X) * 100.0f / mPlayArea.Width).ToString(CultureInfo.InvariantCulture), ((wall.mRectangle.Y - mPlayArea.Y) * 100.0f / mPlayArea.Height).ToString(CultureInfo.InvariantCulture) },
-                    Size = new string[] { (wall.mRectangle.Width * 100.0f / mPlayArea.Width).ToString(CultureInfo.InvariantCulture), (wall.mRectangle.Height * 100.0f / mPlayArea.Height).ToString(CultureInfo.InvariantCulture) },
+                    Position = new string[]
+                    {
+                        ((wall.mRectangle.X - mPlayArea.X) * 100.0f / mPlayArea.Width).ToString(CultureInfo.InvariantCulture),
+                        ((wall.mRectangle.Y - mPlayArea.Y) * 100.0f / mPlayArea.Height).ToString(CultureInfo.InvariantCulture)
+                    },
+                    Size = new string[]
+                    {
+                        (wall.mRectangle.Width * 100.0f / mPlayArea.Width).ToString(CultureInfo.InvariantCulture),
+                        (wall.mRectangle.Height * 100.0f / mPlayArea.Height).ToString(CultureInfo.InvariantCulture)
+                    },
                     Rotation = rotationDeg.ToString(CultureInfo.InvariantCulture)
                 });
             }
-            //Adding tanks to map data
+
+            // Adding tanks to map data
             foreach (Tank tank in mTanks)
             {
                 float posX = (tank.mRectangle.X + tank.mRectangle.Width / 2 - mPlayArea.X) * 100.0f / mPlayArea.Width;
@@ -607,23 +679,31 @@ namespace TTMapEditor.Maps
                 float rotationDeg = MathHelper.ToDegrees(tank.Rotation);
                 mMapData.Tanks.Add(new TankData()
                 {
-                    Position = new string[] { posX.ToString(CultureInfo.InvariantCulture), posY.ToString(CultureInfo.InvariantCulture) },
+                    Position = new string[]
+                    {
+                        posX.ToString(CultureInfo.InvariantCulture),
+                        posY.ToString(CultureInfo.InvariantCulture)
+                    },
                     Rotation = rotationDeg.ToString(CultureInfo.InvariantCulture)
                 });
             }
-            //Adding pickups to map data
+
+            // Adding pickups to map data
             foreach (Pickup pickup in mPickups)
             {
                 float posX = (pickup.mRectangle.X + pickup.mRectangle.Width / 2 - mPlayArea.X) * 100.0f / mPlayArea.Width;
                 float posY = (pickup.mRectangle.Y + pickup.mRectangle.Height / 2 - mPlayArea.Y) * 100.0f / mPlayArea.Height;
                 mMapData.Pickups.Add(new PickupData()
                 {
-                    Position = new string[] { posX.ToString(CultureInfo.InvariantCulture), posY.ToString(CultureInfo.InvariantCulture) },
+                    Position = new string[]
+                    {
+                        posX.ToString(CultureInfo.InvariantCulture),
+                        posY.ToString(CultureInfo.InvariantCulture)
+                    },
                     ActivatedPickups = pickup.GetActivatedPickups()
                 });
             }
         }
-
     }
 }
 
