@@ -186,10 +186,11 @@ namespace Tankontroller.Scenes
             {
                 Vector2 pos = new Vector2(float.Parse(wall.Position[0]), float.Parse(wall.Position[1]));
                 Vector2 size = new Vector2(float.Parse(wall.Size[0]), float.Parse(wall.Size[1]));
-                float rotation = 0f;
-                float.TryParse(wall.Rotation, out rotation);
+                float rotationDegrees = 0f;
+                float.TryParse(wall.Rotation, out rotationDegrees);
+                float rotationRadians = MathHelper.ToRadians(rotationDegrees);
                 Rectangle wallRect = GetRect(playArea, pos, size);
-                DrawOutline(wallRect, pos, size, rotation, wall.Texture);
+                DrawOutline(wallRect, pos, size, rotationRadians, wall.Texture);
             }
 
             // Draw outlines for tanks
@@ -228,8 +229,9 @@ namespace Tankontroller.Scenes
                 // Wall position/size in map space (0–100 percent)
                 Vector2 posPercent = new Vector2(float.Parse(wall.Position[0]), float.Parse(wall.Position[1]));
                 Vector2 sizePercent = new Vector2(float.Parse(wall.Size[0]), float.Parse(wall.Size[1]));
-                float rotation = 0f;
-                float.TryParse(wall.Rotation, out rotation);
+                float rotationDegrees = 0f;
+                float.TryParse(wall.Rotation, out rotationDegrees);
+                float rotationRadians = MathHelper.ToRadians(rotationDegrees);
 
                 // Rectangle in thumbnail pixel space
                 Rectangle wallRect = GetRect(playArea, posPercent, sizePercent);
@@ -253,7 +255,7 @@ namespace Tankontroller.Scenes
                     drawPosition,
                     null,
                     Color.DarkGray,
-                    rotation,
+                    rotationRadians,
                     origin,
                     scale,
                     SpriteEffects.None,

@@ -173,14 +173,15 @@ namespace Tankontroller
                 try
                 {
                     var texture = wall.Texture;
-                    var position = new Vector2(float.Parse(wall.Position[0]), float.Parse(wall.Position[1]));
-                    var size = new Vector2(float.Parse(wall.Size[0]), float.Parse(wall.Size[1]));
-                    position.X = playArea.X + (playArea.Width * (position.X / 100.0f));
-                    position.Y = playArea.Y + (playArea.Height * (position.Y / 100.0f));
-                    size.X = playArea.Width * (size.X / 100.0f);
-                    size.Y = playArea.Height * (size.Y / 100.0f);
-                    Transform wallTransform = new(position, MathHelper.ToRadians(float.Parse(wall.Rotation)));
-                    Vector2 wallSize = new Vector2(size.X, size.Y);
+                    var positionPercent = new Vector2(float.Parse(wall.Position[0]), float.Parse(wall.Position[1]));
+                    var sizePercent = new Vector2(float.Parse(wall.Size[0]), float.Parse(wall.Size[1]));
+                    Rectangle wallRect = GetWorldRect(playArea, positionPercent, sizePercent);
+                    Vector2 wallCenter = new Vector2(wallRect.X + wallRect.Width / 2f, wallRect.Y + wallRect.Height / 2f);
+                    Vector2 wallSize = new Vector2(wallRect.Width, wallRect.Height);
+                    float rotationDegrees = 0f;
+                    float.TryParse(wall.Rotation, out rotationDegrees);
+                    float rotationRadians = MathHelper.ToRadians(rotationDegrees);
+                    Transform wallTransform = new(wallCenter, rotationRadians);
 
                     RectWall currentWall = new RectWall(wallTransform,wallSize,Tankontroller.Instance().CM().Load<Texture2D>(texture));
 
@@ -228,6 +229,17 @@ namespace Tankontroller
 
             return new TheWorld(playArea, Walls, Tanks, PickupSpawnPositions);
         }
+
+        private static Rectangle GetWorldRect(Rectangle pPlayArea, Vector2 pPosPercent, Vector2 pSizePercent)
+        {
+            return new Rectangle(
+                (int)(pPlayArea.X + (pPlayArea.Width * (pPosPercent.X / 100.0f))),
+                (int)(pPlayArea.Y + (pPlayArea.Height * (pPosPercent.Y / 100.0f))),
+                (int)(pPlayArea.Width * (pSizePercent.X / 100.0f)),
+                (int)(pPlayArea.Height * (pSizePercent.Y / 100.0f))
+            );
+        }
+
         public class MapData
         {
             public List<WallData> Walls { get; set; }
@@ -254,5 +266,7 @@ namespace Tankontroller
             public string[] Position { get; set; }
             public Dictionary<PickupType, bool> ActivatedPickups { get; set; }
         }
+
+
     }
 }
