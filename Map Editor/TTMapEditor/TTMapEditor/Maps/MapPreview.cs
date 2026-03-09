@@ -8,6 +8,8 @@ using System.Linq;
 using System.Text.Json;
 using TTMapEditor.Managers;
 using TTMapEditor.Objects;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace TTMapEditor.Maps
 {

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 using System.IO;
 using TTMapEditor.Managers;
 using TTMapEditor.Maps;
@@ -41,7 +42,7 @@ namespace TTMapEditor.Scenes
         private FileNamer mFileNamer;
         Rectangle mSaveButtonRect;
         const int MaxTanks = 4;
-        private static readonly string MAP_ROOT = DGS.Instance.GetString("MAP_FILE_PATH");
+        private string mMapRoot;
         private MapBoundaryValidator mBoundaryValidator;
         private EditorKeyboardController mKeyboardController;
         private TemplatePalette mTemplatePalette;
@@ -60,11 +61,13 @@ namespace TTMapEditor.Scenes
             mName = pMapFile;
             mIsNewMap = pIsNewMap;
 
+            mMapRoot = getMapRoot();
+
             int viewPortWidth = mGraphicsDevice.Viewport.Width;
             int viewPortHeight = mGraphicsDevice.Viewport.Height;
 
             mFileNamer = new FileNamer();
-            mMapService = new MapEditingMapService(MAP_ROOT);
+            mMapService = new MapEditingMapService(mMapRoot);
 
             // For new maps, create an empty MapData file so the preview can be initialised.
             // For existing maps, load the current state from disk.
@@ -305,7 +308,7 @@ namespace TTMapEditor.Scenes
                 // Normalise the file name and save as JSON under the map root.
                 string baseName = Path.GetFileNameWithoutExtension(mName);
                 string fileName = baseName + ".json";
-                string fullPath = Path.Combine(MAP_ROOT, fileName);
+                string fullPath = Path.Combine(mMapRoot, fileName);
                 mMapService.SaveMap(mPreview, fullPath);
             }
         }
@@ -329,6 +332,18 @@ namespace TTMapEditor.Scenes
             // Draw white background rectangle then the red message text.
             mSpriteBatch.Draw(mPixelTexture, new Rectangle(popupX, popupY, width, height), Color.White);
             mSpriteBatch.DrawString(mTitleFont, pMessage, new Vector2(popupX, popupY), Color.Red);
+        }
+
+        private string getMapRoot()
+        {
+            string currentDir = Environment.CurrentDirectory;
+            string mapDirectory = Path.GetFullPath(Path.Combine(currentDir, "..", "..", "..", "..", "..", ".."));
+#if DEBUG
+            mapDirectory = Path.Combine(mapDirectory, "Tankontroller", "bin", "Debug", "net6.0", "Maps");
+            return mapDirectory;
+#endif
+            mapDirectory = Path.Combine(mapDirectory, "Tankontroller", "bin", "Release", "net6.0", "Maps");
+            return mapDirectory;
         }
     }
 }

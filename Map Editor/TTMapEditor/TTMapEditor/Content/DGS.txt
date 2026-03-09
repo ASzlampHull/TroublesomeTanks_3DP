@@ -2,6 +2,5 @@
 bool IS_FULL_SCREEN = false;
 int SCREENWIDTH = 1920;
 int SCREENHEIGHT = 1080;
-string MAP_FILE_PATH = C:\Users\712769\Workspace\TroublesomeTanks_3DP\Tankontroller\bin\Debug\net6.0\Maps
 Color COLOUR_BACKGROUND = f0e68c;
 Color COLOUR_WALL = 708090;

@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Text.Json;
 using TTMapEditor.Managers;
 using static System.Formats.Asn1.AsnWriter;
@@ -26,7 +27,6 @@ namespace TTMapEditor.Scenes
         // Static content loaded once for all instances of this scene
         private static readonly Texture2D mBackgroundTexture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("background_01");
         private static readonly SpriteFont mSpriteFont = TTMapEditor.Instance().GetContentManager().Load<SpriteFont>("TitleFont");
-        private static readonly String MAP_DIRECTORY = DGS.Instance.GetString("MAP_FILE_PATH");
         private static readonly Color BACKGROUND_COLOUR = DGS.Instance.GetColour("COLOUR_BACKGROUND");
 
         // Layout and state
@@ -44,6 +44,8 @@ namespace TTMapEditor.Scenes
         int mThumbnailWidth;
         int mThumbnailHeight;
 
+        private string mMapDirectory;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MapSelectionScene"/> class.
         /// Sets up layout based on the current viewport, scans the map directory
@@ -60,6 +62,8 @@ namespace TTMapEditor.Scenes
             mSpriteBatch = new SpriteBatch(mGameInstance.GetGraphicsDeviceManager().GraphicsDevice);
             mCurrentScrollPosition = 0;
 
+            mMapDirectory = getMapDirectory();
+
             int screenWidth = mGameInstance.GetGraphicsDeviceManager().GraphicsDevice.Viewport.Width;
             int screenHeight = mGameInstance.GetGraphicsDeviceManager().GraphicsDevice.Viewport.Height;
 
@@ -72,19 +76,19 @@ namespace TTMapEditor.Scenes
             mThumbnailHeight = screenHeight * 73 / 100 / 4;
 
             // Ensure map directory exists
-            if (!Directory.Exists(MAP_DIRECTORY))
+            if (!Directory.Exists(mMapDirectory))
             {
-                Directory.CreateDirectory(MAP_DIRECTORY);
+                Directory.CreateDirectory(mMapDirectory);
             }
 
             // Find all json map files under configured maps directory
-            string[] filePaths = Directory.GetFiles(MAP_DIRECTORY, "*.json", SearchOption.AllDirectories);
+            string[] filePaths = Directory.GetFiles(mMapDirectory, "*.json", SearchOption.AllDirectories);
 
             // Store relative paths (relative to MAP_DIRECTORY) so UI shows short names,
             // but always combine with MAP_DIRECTORY when reading/writing files.
             for (int i = 0; i < filePaths.Length; i++)
             {
-                filePaths[i] = Path.GetRelativePath(MAP_DIRECTORY, filePaths[i]);
+                filePaths[i] = Path.GetRelativePath(mMapDirectory, filePaths[i]);
             }
             mMapFiles = new List<string>(filePaths);
 
@@ -92,10 +96,10 @@ namespace TTMapEditor.Scenes
             foreach (string mapFile in mMapFiles)
             {
                 // mapFile is relative path; build full path for file operations
-                string fullMapPath = Path.Combine(MAP_DIRECTORY, mapFile);
+                string fullMapPath = Path.Combine(mMapDirectory, mapFile);
 
                 string thumbnailFileName = Path.GetFileNameWithoutExtension(fullMapPath) + "_thumbnail.png";
-                string thumbnailFile = Path.Combine(Path.GetDirectoryName(fullMapPath) ?? MAP_DIRECTORY, thumbnailFileName);
+                string thumbnailFile = Path.Combine(Path.GetDirectoryName(fullMapPath) ?? mMapDirectory, thumbnailFileName);
 
                 // Always regenerate the thumbnail when the scene is created
                 MakeThumbnailTextureFromMapFile(fullMapPath, thumbnailFile);
@@ -130,7 +134,7 @@ namespace TTMapEditor.Scenes
         private void selectMap(string pMapName)
         {
             // pMapName is stored as relative path. Pass an absolute path to the editor.
-            string fullMapPath = Path.Combine(MAP_DIRECTORY, pMapName);
+            string fullMapPath = Path.Combine(mMapDirectory, pMapName);
             mGameInstance.GetSceneManager().Transition(new MapEditingScene(mStartScene, fullMapPath, false), true);
         }
 
@@ -355,7 +359,7 @@ namespace TTMapEditor.Scenes
             Texture2D thumbnailTexture = renderTarget;
 
             // Ensure directory exists for thumbnail, then save
-            string thumbnailDir = Path.GetDirectoryName(thumbnailPath) ?? MAP_DIRECTORY;
+            string thumbnailDir = Path.GetDirectoryName(thumbnailPath) ?? mMapDirectory;
             Directory.CreateDirectory(thumbnailDir);
             using (FileStream stream = new FileStream(thumbnailPath, FileMode.Create))
             {
@@ -446,6 +450,18 @@ namespace TTMapEditor.Scenes
             {
                 mGameInstance.GetSceneManager().Transition(mStartScene);
             }
+        }
+
+        public string getMapDirectory()
+        {
+            string currentDir = Environment.CurrentDirectory;
+            string mapDirectory = Path.GetFullPath(Path.Combine(currentDir, "..", "..", "..","..","..",".."));
+#if DEBUG
+            mapDirectory = Path.Combine(mapDirectory, "Tankontroller", "bin", "Debug", "net6.0", "Maps");
+            return mapDirectory;
+#endif
+            mapDirectory = Path.Combine(mapDirectory, "Tankontroller", "bin", "Release", "net6.0", "Maps");
+            return mapDirectory;
         }
     }
 }
