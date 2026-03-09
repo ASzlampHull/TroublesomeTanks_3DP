@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Tankontroller.Managers;
 using Tankontroller.Utilities;
 using Tankontroller.World.Particles;
@@ -23,24 +24,29 @@ namespace Tankontroller.World.Bullets
             base.Update(pSeconds);
         }
 
-        public override bool DoCollision(Tank pTank)
+        public override bool TankCollisionResponse(Tank pTank)
         {
+            pTank.TakeDamage();
             CreateExplosion(Vector2.Normalize(Position - pTank.Transform.Position));
             return true;
         }
 
-        public override bool DoCollision(Bullet pBullet) => false;
+        public override bool BulletCollisionResponse(Bullet pBullet) => false;
 
         public override bool WallCollisionResponse(CollisionEvent collisionEvent)
         {
             Vector2 collisionNormal = collisionEvent.CollisionNormal ?? Vector2.One;
             if (numOfBounces <= 0)
             {
-                CreateExplosion(-collisionNormal);
+                CreateExplosion(collisionNormal);
                 return true;
             }
-            Velocity = Vector2.Reflect(Velocity, collisionNormal);
-            numOfBounces--;
+            // Only reflect if the bullet is moving towards the wall
+            if (Vector2.Dot(Velocity, collisionNormal) < 0)
+            {
+                Velocity = Vector2.Reflect(Velocity, collisionNormal);
+                numOfBounces--;
+            }
             return false;
         }
 

@@ -18,8 +18,8 @@ namespace Tankontroller.World.Bullets
             base.Update(pSeconds);
         }
 
-        public override bool DoCollision(Tank pTank) => false;
-        public override bool DoCollision(Bullet pBullet) => false;
+        public override bool TankCollisionResponse(Tank pTank) => false;
+        public override bool BulletCollisionResponse(Bullet pBullet) => false;
         public override bool WallCollisionResponse(CollisionEvent collisionEvent) => false;
 
         public override bool LifeTimeExpired()

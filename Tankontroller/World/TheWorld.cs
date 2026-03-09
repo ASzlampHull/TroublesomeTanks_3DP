@@ -164,38 +164,34 @@ namespace Tankontroller.World
                 {
                     mTanks[tankIndex].Update(pSeconds);
 
-                    // Get all wall colliders (including play area) for bullet collision checks
+                    // Create a combined list of wall colliders and play area colliders
                     List<CollisionShape> wallColliders = new();
-                    mWalls.ForEach(w => wallColliders.Add(w.CollisionShape));
+                    mWalls.ForEach(wall => wallColliders.Add(wall.CollisionShape));
                     wallColliders.AddRange(mPlayAreaCollisionShapes);
 
-                    mTanks[tankIndex].CheckBullets(mTanks, wallColliders);
+                    // Bullet collisions
+                    mTanks[tankIndex].HandleBulletCollisions(mTanks, wallColliders);
 
-                    // Pickup collision
-                    foreach (Pickup p in mPickups)
+                    // Pickup collisions
+                    foreach (Pickup pickup in mPickups)
                     {
                         // This is to avoid any dead tanks from picking up a pickup
                         if (mTanks[tankIndex].GetState() != TankStates.ALIVE)
                         {
                             continue;
                         }
-                        else if (p.PickUpCollision(mTanks[tankIndex]))
+                        else if (pickup.CollisionShape.Intersects(mTanks[tankIndex].CollisionShape).HasCollided)
                         {
-                            mPickups.Remove(p);
+                            pickup.TriggerEffect(mTanks[tankIndex]);
+                            mPickups.Remove(pickup);
                             break;
                         }
                     }
 
                     // Wall collisions
-                    foreach (RectWall wall in mWalls)
+                    foreach (CollisionShape wall in wallColliders)
                     {
-                        Rectangle wallRect = wall.RectangleShape.ToRectangle();
-
-                        // tank collision using collision manager
-                        if (CollisionManager.Collide(mTanks[tankIndex], wallRect, false))
-                        {
-                            CollisionManager.ResolveTankWallCollision(mTanks[tankIndex], wall);
-                        }
+                        CollisionManager.ResolveTankWallCollision(mTanks[tankIndex], wall);
                     }
 
                     // Collisions with other tanks
@@ -205,14 +201,11 @@ namespace Tankontroller.World
                         {
                             continue;
                         }
-                        // tank against tanks using collision manager
-                        if (CollisionManager.Collide(mTanks[tankIndex], mTanks[i]))
+                        if (mTanks[tankIndex].CollisionShape.Intersects(mTanks[i].CollisionShape).HasCollided)
+                        {
                             mTanks[tankIndex].PutBack();
+                        }
                     }
-
-                    // Collisions with the play area
-                    if (CollisionManager.Collide(mTanks[tankIndex], mPlayArea, true)) // True tp check inside the play area
-                        CollisionManager.ResolveTankPlayAreaCollision(mTanks[tankIndex], mPlayArea);
                 }
             }
         }

@@ -22,14 +22,15 @@ namespace Tankontroller.World.Bullets
             base.Update(pSeconds);
         }
 
-        public override bool DoCollision(Tank pTank)
+        public override bool TankCollisionResponse(Tank pTank)
         {
+            pTank.TakeDamage();
             MineBlastInitPolicy explosion = new MineBlastInitPolicy(Position, 1.0f);
             ParticleManager.Instance().InitialiseParticles(explosion, 200);
             return true;
         }
 
-        public override bool DoCollision(Bullet pBullet) => false;
+        public override bool BulletCollisionResponse(Bullet pBullet) => false;
 
         public override bool WallCollisionResponse(CollisionEvent collisionEvent) => false;
 

@@ -1,9 +1,13 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
-using Tankontroller.World.WorldObject;
 
 namespace Tankontroller.World.Shapes
 {
+    /// <summary>
+    /// Represents a point shape for collision detection. <br></br>
+    /// NOTE: Currently the PointShape is a little redundant, as it can be represented with a Vector2.
+    ///       However, I left the implementation of the class in place for potential future use.
+    /// </summary>
     public class PointShape : CollisionShape
     {
         public PointShape(Transform pOwner, bool pEnabled = true) : base(pOwner, pEnabled) { }

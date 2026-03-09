@@ -36,14 +36,14 @@ namespace Tankontroller.World.Bullets
             base.Update(pSeconds);
         }
 
-        public override bool DoCollision(Tank pTank)
+        public override bool TankCollisionResponse(Tank pTank)
         {
             EMPBlastInitPolicy explosion = new EMPBlastInitPolicy(Position, 6.5f);
             ParticleManager.Instance().InitialiseParticles(explosion, 200);
             return true;
         }
 
-        public override bool DoCollision(Bullet pBullet)
+        public override bool BulletCollisionResponse(Bullet pBullet)
         {
             Vector2 collisionNormal = Vector2.Normalize(Velocity);
             return false;
@@ -52,7 +52,11 @@ namespace Tankontroller.World.Bullets
         public override bool WallCollisionResponse(CollisionEvent collisionEvent)
         {
             Vector2 collisionNormal = collisionEvent.CollisionNormal ?? Vector2.One;
-            Velocity = Vector2.Reflect(Velocity, collisionNormal);
+            // Only reflect if the bullet is moving towards the wall
+            if (Vector2.Dot(Velocity, collisionNormal) < 0)
+            {
+                Velocity = Vector2.Reflect(Velocity, collisionNormal);
+            }
             return false;
         }
 

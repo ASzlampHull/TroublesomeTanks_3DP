@@ -1,9 +1,11 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
-using Tankontroller.World.WorldObject;
 
 namespace Tankontroller.World.Shapes
 {
+    /// <summary>
+    /// Represents a circle collision shape defined by a radius and a center position
+    /// </summary>
     public class CircleShape : CollisionShape
     {
         public float Radius { get; set; } = 1.0f;

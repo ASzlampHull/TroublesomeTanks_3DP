@@ -4,7 +4,8 @@ namespace Tankontroller.World.Shapes
 {
     /// <summary>
     /// Represents the result of a collision detection operation.
-    /// Stores useful collision information.
+    /// Stores useful collision information. <br></br>
+    /// TODO: Add penetration depth to the collision event. This would make Tank/Wall collision resolution more robust.
     /// </summary>
     public class CollisionEvent
     {

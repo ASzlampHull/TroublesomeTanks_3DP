@@ -20,13 +20,14 @@ namespace Tankontroller.World.Bullets
             base.Update(pSeconds);
         }
 
-        public override bool DoCollision(Tank pTank)
+        public override bool TankCollisionResponse(Tank pTank)
         {
+            pTank.TakeDamage();
             CreateExplosion(Vector2.Normalize(Position - pTank.Transform.Position));
             return true;
         }
 
-        public override bool DoCollision(Bullet pBullet)
+        public override bool BulletCollisionResponse(Bullet pBullet)
         {
             Vector2 collisionNormal = Vector2.Normalize(Velocity);
             CreateExplosion(collisionNormal);
