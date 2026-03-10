@@ -9,7 +9,7 @@ namespace Tankontroller.World.Pickups
     {
         private static readonly Texture2D mMineTexture = Tankontroller.Instance().CM().Load<Texture2D>("MinePickup");
 
-        public MinePickup(Vector2 pPosition) : base(mMineTexture, new Rectangle(400, 500, 40, 40), pPosition) { }
+        public MinePickup(Vector2 pPosition) : base(mMineTexture, new Rectangle(400, 500, 45, 45), pPosition) { }
 
         public override void TriggerEffect(Tank pTank)
         {

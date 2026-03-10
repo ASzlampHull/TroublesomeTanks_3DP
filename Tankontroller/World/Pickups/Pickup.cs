@@ -26,7 +26,7 @@ namespace Tankontroller.World.Pickups
             mScalerX = ((float)screenWidth / 200f);
             mScalerY = ((float)screenHeight / 200f);
             Transform.Position = pPosition;
-            RectangleShape = new RectangleAxisAlignedShape(Transform, new Vector2(4f * mScalerX, 4f * mScalerY));
+            RectangleShape = new RectangleAxisAlignedShape(Transform, pRectangle.Size.ToVector2() * Tankontroller.Instance().ScaleFactor());
             Texture = pTexture;
         }
 

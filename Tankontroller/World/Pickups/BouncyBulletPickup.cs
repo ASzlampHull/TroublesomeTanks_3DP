@@ -9,7 +9,7 @@ namespace Tankontroller.World.Pickups
     {
         private static readonly Texture2D mBouncyBulletTexture = Tankontroller.Instance().CM().Load<Texture2D>("BouncyBulletPickup");
 
-        public BouncyBulletPickup(Vector2 pPosition) : base(mBouncyBulletTexture, new Rectangle(400, 500, 40, 40), pPosition) { }
+        public BouncyBulletPickup(Vector2 pPosition) : base(mBouncyBulletTexture, new Rectangle(400, 500, 45, 45), pPosition) { }
 
         public override void TriggerEffect(Tank pTank)
         {
