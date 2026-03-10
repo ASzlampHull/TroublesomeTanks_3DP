@@ -270,7 +270,7 @@ namespace Tankontroller.World
             {
                 float backwardRotation = Transform.Rotation + MathHelper.ToRadians(180);
                 Vector2 backwardDirection = new Vector2((float)Math.Cos(backwardRotation), (float)Math.Sin(backwardRotation));
-                float behindOffset = 50.0f * mResolutionScale;
+                float behindOffset = 65.0f * mResolutionScale;
                 Vector2 behindTheTank = Transform.Position + backwardDirection * behindOffset;
                 mBullets.Add(new MineBullet(behindTheTank, Vector2.Zero, mColour, 600.0f));
                 BulletType = BulletType.DEFAULT;
