@@ -1,7 +1,7 @@
 ﻿// WINDOW
-bool IS_FULL_SCREEN = false;
-int SCREENWIDTH = 1280;
-int SCREENHEIGHT = 720;
+bool IS_FULL_SCREEN = true;
+int SCREENWIDTH = 1920;
+int SCREENHEIGHT = 1080;
 
 // MAP
 string DEFAULT_MAP_FILE = Default.json;
@@ -11,7 +11,7 @@ float SECONDS_TO_DISPLAY_FLASH_SCREEN = 1.5;
 float SECONDS_TO_DISPLAY_GAMEOVER_SCREEN = 30;
 
 // TANK
-int MAX_TANK_HEALTH = 99;
+int MAX_TANK_HEALTH = 3;
 int MAX_TANK_DESTRUCTION_HEALTH = 3;
 int TANK_WIDTH = 44;
 int TANK_HEIGHT = 59;
@@ -19,23 +19,20 @@ int TANK_FRONT_BUFFER = 5;
 float TANK_SPEED = 120;
 float BASE_TANK_ROTATION_ANGLE = 1.2;
 float BASE_TURRET_ROTATION_ANGLE = 1.2;
+float BULLET_SPEED = 130;
 int BLAST_DELAY = 15;
 float TRACK_OFFSET = 17;
-
-// BULLET
-float BULLET_SPEED = 130;
-bool BULLET_BULLET_COLLISIONS = true;
 
 // JACK CHARGE
 float MAX_CHARGE = 200;
 float CHARGE_AMOUNT = 7;
-float TRACK_DEPLETION_RATE = 0;
-float TURRET_DEPLETION_RATE = 0;
-float BULLET_CHARGE_DEPLETION = 0;
+float TRACK_DEPLETION_RATE = 10;
+float TURRET_DEPLETION_RATE = 5;
+float BULLET_CHARGE_DEPLETION = 95;
 
 //PICKUPS
 bool PICKUPS_ON = true;
-float PICKUP_SPAWN_RATE = 1;
+float PICKUP_SPAWN_RATE = 20;
 bool ADD_PICKUP_HEALTH = true;
 bool ADD_PICKUP_EMP = true;
 bool ADD_PICKUP_MINE = true;
@@ -52,15 +49,15 @@ float LED_BRIGHTNESS = 0.6;
 bool SHOW_LIST_ON_MAIN_MENU = false;
 bool ONLY_KEYBOARD_ON_MAIN_MENU = false;
 bool ONLY_KEYBOARD_ON_MAP_SELECT = false;
-bool ADD_KEYBOARD_CONTROLLER_1 = true;
-bool ADD_KEYBOARD_CONTROLLER_2 = true;
+bool ADD_KEYBOARD_CONTROLLER_1 = false;
+bool ADD_KEYBOARD_CONTROLLER_2 = false;
 
 // TESTING & DEBUGGING 
 // Warning: Do not enable these options for release builds
-bool ENABLE_TEST_SCENE = true; // Immediately load test game scene. ADD_KEYBOARD_CONTROLLER 1 and 2 must be true
+bool ENABLE_TEST_SCENE = false; // Immediately load test game scene. ADD_KEYBOARD_CONTROLLER 1 and 2 must be true
 string TEST_SCENE_MAP_FILE = Testing.json; // Map file to use for the test scene
 
-bool MUTE_MUSIC = true; // Mute all music
+bool MUTE_MUSIC = false; // Mute all music
 bool MUTE_SFX = false; // Mute all sound effects
 
-bool DRAW_COLLISION_SHAPES = true; // Draw collision shapes (used by CollisionManager)
+bool DRAW_COLLISION_SHAPES = false; // Draw collision shapes (used by CollisionManager)
