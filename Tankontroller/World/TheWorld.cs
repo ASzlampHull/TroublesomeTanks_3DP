@@ -28,12 +28,12 @@ namespace Tankontroller.World
         private static readonly Texture2D mPixelTexture = Tankontroller.Instance().CM().Load<Texture2D>("block");
         private static readonly Texture2D m_BulletTexture = Tankontroller.Instance().CM().Load<Texture2D>("circle");
         private static readonly Color GROUND_COLOUR = DGS.Instance.GetColour("COLOUR_GROUND");
-        private static readonly bool PICKUP_SPAWN = DGS.Instance.GetBool("PICKUPS_ON");
-        private static readonly float PICKUP_SPAWN_TIME = DGS.Instance.GetFloat("PICKUP_SPAWN_RATE");
-        private static readonly bool HEALTH_PICKUP = DGS.Instance.GetBool("ADD_PICKUP_HEALTH");
-        private static readonly bool EMP_PICKUP = DGS.Instance.GetBool("ADD_PICKUP_EMP");
-        private static readonly bool MINE_PICKUP = DGS.Instance.GetBool("ADD_PICKUP_MINE");
-        private static readonly bool BOUNCY_BULLET_PICKUP = DGS.Instance.GetBool("ADD_PICKUP_BOUNCYBULLET");
+        public static bool PICKUP_SPAWN = DGS.Instance.GetBool("PICKUPS_ON");
+        public static float PICKUP_SPAWN_TIME = DGS.Instance.GetFloat("PICKUP_SPAWN_RATE");
+        public static bool HEALTH_PICKUP = DGS.Instance.GetBool("ADD_PICKUP_HEALTH");
+        public static bool EMP_PICKUP = DGS.Instance.GetBool("ADD_PICKUP_EMP");
+        public static bool MINE_PICKUP = DGS.Instance.GetBool("ADD_PICKUP_MINE");
+        public static bool BOUNCY_BULLET_PICKUP = DGS.Instance.GetBool("ADD_PICKUP_BOUNCYBULLET");
 
         private Rectangle mPlayArea;
         private Rectangle mPlayAreaOutline;
