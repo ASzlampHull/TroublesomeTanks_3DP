@@ -336,24 +336,6 @@ namespace Tankontroller.World
 
         #region Collisions
 
-        public bool PointIsInTank(Vector2 pPoint)
-        {
-            Vector2[] corners = new Vector2[4];
-            GetCorners(corners);
-            int i;
-            int j;
-            bool result = false;
-            for (i = 0, j = corners.Length - 1; i < corners.Length; j = i++)
-            {
-                if ((corners[i].Y > pPoint.Y) != (corners[j].Y > pPoint.Y) &&
-                    (pPoint.X < (corners[j].X - corners[i].X) * (pPoint.Y - corners[i].Y) / (corners[j].Y - corners[i].Y) + corners[i].X))
-                {
-                    result = !result;
-                }
-            }
-            return result;
-        }
-
         public bool IsInsideShockwave()
         {
             if (mIsInsideShockwave)
