@@ -32,7 +32,7 @@ namespace TTMapEditor.Objects
         /// Current rotation of the tank in radians.
         /// Rotation is applied around the center of the tank sprite.
         /// </summary>
-        public float Rotation { get; set; }
+        public float mRotation { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Tank"/> class.
@@ -44,7 +44,7 @@ namespace TTMapEditor.Objects
         public Tank(Texture2D pTexture, Rectangle pRectangle)
             : base(pTexture, pRectangle)
         {
-            Rotation = 0f;
+
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace TTMapEditor.Objects
         /// Positive values rotate counter-clockwise in screen space.
         /// </summary>
         /// <param name="delta">Rotation increment in radians.</param>
-        public void Rotate(float delta) => Rotation += delta;
+        public void Rotate(float delta) => mRotation += delta;
 
         /// <summary>
         /// Draws the tank sprite and its front-facing indicator.
@@ -78,7 +78,7 @@ namespace TTMapEditor.Objects
                 position,
                 null,
                 tint,
-                Rotation,
+                mRotation,
                 origin,
                 scale,
                 SpriteEffects.None,
@@ -96,8 +96,8 @@ namespace TTMapEditor.Objects
 
             // Direction vector derived from current rotation (unit-length).
             Vector2 dir = new Vector2(
-                (float)Math.Cos(Rotation),
-                (float)Math.Sin(Rotation));
+                (float)Math.Cos(mRotation),
+                (float)Math.Sin(mRotation));
 
             // Center of the indicator line, slightly offset in front of the tank.
             Vector2 indicatorCenter =
@@ -113,7 +113,7 @@ namespace TTMapEditor.Objects
                 indicatorCenter,
                 null,
                 Color.Red,
-                Rotation,
+                mRotation,
                 pixelOrigin,
                 pixelScale,
                 SpriteEffects.None,
@@ -129,7 +129,7 @@ namespace TTMapEditor.Objects
                 tipPos,
                 null,
                 Color.OrangeRed,
-                Rotation,
+                mRotation,
                 pixelOrigin,
                 tipScale,
                 SpriteEffects.None,

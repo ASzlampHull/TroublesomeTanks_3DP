@@ -347,7 +347,7 @@ namespace TTMapEditor.Maps
                     catch { tex = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("block"); }
 
                     var previewTank = new Tank(tex, rect);
-                    previewTank.Rotation = rotationRad;
+                    previewTank.mRotation = rotationRad;
                     mTanks.Add(previewTank);
                 }
             }
@@ -678,7 +678,7 @@ namespace TTMapEditor.Maps
             {
                 float posX = (tank.mRectangle.X + tank.mRectangle.Width / 2 - mPlayArea.X) * 100.0f / mPlayArea.Width;
                 float posY = (tank.mRectangle.Y + tank.mRectangle.Height / 2 - mPlayArea.Y) * 100.0f / mPlayArea.Height;
-                float rotationDeg = MathHelper.ToRadians(tank.Rotation);
+                float rotationDeg = MathHelper.ToDegrees(tank.mRotation);
                 mMapData.Tanks.Add(new TankData()
                 {
                     Position = new string[]

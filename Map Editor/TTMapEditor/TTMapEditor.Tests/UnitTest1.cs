@@ -167,7 +167,7 @@ namespace TTMapEditor.Tests
                 var rect = new Rectangle(5, 6, 12, 14);
                 var tank = new Tank(null, rect);
 
-                Assert.Equal(0f, tank.Rotation);
+                Assert.Equal(0f, tank.mRotation);
                 Assert.Equal(rect, tank.mRectangle);
             }
 
@@ -176,9 +176,9 @@ namespace TTMapEditor.Tests
             {
                 var tank = new Tank(null, new Rectangle(0, 0, 10, 10));
                 tank.Rotate((float)System.Math.PI / 2f);
-                Assert.Equal((float)System.Math.PI / 2f, tank.Rotation);
+                Assert.Equal((float)System.Math.PI / 2f, tank.mRotation);
                 tank.Rotate((float)System.Math.PI / 2f);
-                Assert.Equal((float)System.Math.PI, tank.Rotation);
+                Assert.Equal((float)System.Math.PI, tank.mRotation);
             }
         }
 
