@@ -6,6 +6,7 @@ on:
       - master     # Every push to master triggers a new release
       - working/resolution
       - working/game-elements-scaling
+      - playtesting
 
 jobs:
   build:
