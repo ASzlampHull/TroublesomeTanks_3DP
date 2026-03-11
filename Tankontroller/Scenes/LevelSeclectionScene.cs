@@ -188,7 +188,7 @@ namespace Tankontroller.Scenes
                 Vector2 size = new Vector2(float.Parse(wall.Size[0]), float.Parse(wall.Size[1]));
                 float rotationDegrees = 0f;
                 float.TryParse(wall.Rotation, out rotationDegrees);
-                float rotationRadians = MathHelper.ToRadians(rotationDegrees);
+                float rotationRadians = rotationDegrees;
                 Rectangle wallRect = GetRect(playArea, pos, size);
                 DrawOutline(wallRect, pos, size, rotationRadians, wall.Texture);
             }
@@ -231,7 +231,7 @@ namespace Tankontroller.Scenes
                 Vector2 sizePercent = new Vector2(float.Parse(wall.Size[0]), float.Parse(wall.Size[1]));
                 float rotationDegrees = 0f;
                 float.TryParse(wall.Rotation, out rotationDegrees);
-                float rotationRadians = MathHelper.ToRadians(rotationDegrees);
+                float rotationRadians = rotationDegrees;
 
                 // Rectangle in thumbnail pixel space
                 Rectangle wallRect = GetRect(playArea, posPercent, sizePercent);

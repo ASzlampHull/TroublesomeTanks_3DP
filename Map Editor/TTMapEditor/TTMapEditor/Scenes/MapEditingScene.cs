@@ -334,6 +334,7 @@ namespace TTMapEditor.Scenes
             mSpriteBatch.DrawString(mTitleFont, pMessage, new Vector2(popupX, popupY), Color.Red);
         }
 
+        //Gets a relative root of the maps folder that works in both debug and release builds
         private string getMapRoot()
         {
             string currentDir = Environment.CurrentDirectory;

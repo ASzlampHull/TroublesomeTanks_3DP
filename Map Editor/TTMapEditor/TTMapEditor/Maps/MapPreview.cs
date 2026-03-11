@@ -655,7 +655,7 @@ namespace TTMapEditor.Maps
             // Adding walls to map data
             foreach (RectWall wall in mWalls)
             {
-                float rotationDeg = MathHelper.ToDegrees(wall.mRotation);
+                float rotationDeg = wall.mRotation;
                 mMapData.Walls.Add(new WallData()
                 {
                     Texture = "block",
@@ -678,7 +678,7 @@ namespace TTMapEditor.Maps
             {
                 float posX = (tank.mRectangle.X + tank.mRectangle.Width / 2 - mPlayArea.X) * 100.0f / mPlayArea.Width;
                 float posY = (tank.mRectangle.Y + tank.mRectangle.Height / 2 - mPlayArea.Y) * 100.0f / mPlayArea.Height;
-                float rotationDeg = MathHelper.ToDegrees(tank.Rotation);
+                float rotationDeg = MathHelper.ToRadians(tank.Rotation);
                 mMapData.Tanks.Add(new TankData()
                 {
                     Position = new string[]

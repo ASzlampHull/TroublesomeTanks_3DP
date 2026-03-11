@@ -35,8 +35,7 @@ namespace TTMapEditor.Objects
         /// <param name="pRotation">Initial rotation in radians (currently ignored and set to 0).</param>
         public RectWall(Texture2D pTexture, Rectangle pRectangle, float pRotation = 0f) : base(pTexture, pRectangle)
         {
-            // Rotation is always initialized to 0; the incoming pRotation is not used.
-            mRotation = 0f;
+            mRotation = pRotation;
         }
 
 
@@ -52,16 +51,31 @@ namespace TTMapEditor.Objects
         {
             Color tint = GetIsSelected() ? Color.Yellow : COLOUR;
 
-            // Draw at the center of the rectangle so rotation behaves as expected.
-            Vector2 position = new Vector2(mRectangle.Center.X, mRectangle.Center.Y);
+            float rotationRadians = mRotation;
+
+            // Center of the rect is where we draw the sprite
+            Vector2 drawPosition = new Vector2(
+                mRectangle.X + mRectangle.Width / 2f,
+                mRectangle.Y + mRectangle.Height / 2f);
+
             Vector2 origin = new Vector2(mTexture.Width / 2f, mTexture.Height / 2f);
 
-            // Scale the texture to exactly fill the rectangle.
+            // Scale texture to match the rectangle size
             Vector2 scale = new Vector2(
                 mRectangle.Width / (float)mTexture.Width,
                 mRectangle.Height / (float)mTexture.Height);
 
-            pSpriteBatch.Draw(mTexture, position, null, tint, mRotation, origin, scale, SpriteEffects.None, 0f);
+            // Todo change to use a colour from the DGS
+            pSpriteBatch.Draw(
+                mTexture,
+                drawPosition,
+                null,
+                tint,
+                rotationRadians,
+                origin,
+                scale,
+                SpriteEffects.None,
+                0f);
 
             // When selected, display the current edit mode ("Rotating" or "Scaling").
             if (GetIsSelected())
@@ -81,13 +95,34 @@ namespace TTMapEditor.Objects
         /// <param name="pSpriteBatch">Sprite batch used for drawing the outline.</param>
         public override void DrawOutline(SpriteBatch pSpriteBatch)
         {
-            Vector2 position = new Vector2(mOutlineRectangle.Center.X, mOutlineRectangle.Center.Y);
-            Vector2 origin = new Vector2(mTexture.Width / 2f, mTexture.Height / 2f);
-            Vector2 scale = new Vector2(
-                mOutlineRectangle.Width / (float)mTexture.Width,
-                mOutlineRectangle.Height / (float)mTexture.Height);
+            int offset = 2;
 
-            pSpriteBatch.Draw(mTexture, position, null, Color.Black, mRotation, origin, scale, SpriteEffects.None, 0f);
+            float rotationRadians = mRotation;
+
+            // Center of the rectangle in thumbnail/render-target space
+            Vector2 center = new Vector2(
+                mRectangle.X + mRectangle.Width / 2f,
+                mRectangle.Y + mRectangle.Height / 2f);
+
+            // Origin is the texture center
+            Vector2 origin = new Vector2(mTexture.Width / 2f, mTexture.Height / 2f);
+
+            // Scale so that the sprite covers the rect plus outline offset
+            Vector2 scale = new Vector2(
+                (mRectangle.Width + offset * 2) / (float)mTexture.Width,
+                (mRectangle.Height + offset * 2) / (float)mTexture.Height);
+
+            // Todo change to use a colour from the DGS
+            pSpriteBatch.Draw(
+                mTexture,
+                center,
+                null,
+                Color.Black,
+                rotationRadians,
+                origin,
+                scale,
+                SpriteEffects.None,
+                0f);
         }
 
         /// <summary>
@@ -168,16 +203,14 @@ namespace TTMapEditor.Objects
         /// <returns><c>true</c> if the point is inside the rotated rectangle; otherwise <c>false</c>.</returns>
         public override bool IsPointWithin(Vector2 point)
         {
-            // Center of the rectangle in world space.
             Vector2 center = new Vector2(mRectangle.Center.X, mRectangle.Center.Y);
-
-            // Translate the point so that the rectangle center becomes the origin.
             Vector2 local = point - center;
 
-            // Rotate the point by the inverse of mRotation so that we can
-            // test it against the unrotated axis-aligned rectangle.
-            float cos = (float)Math.Cos(-mRotation);
-            float sin = (float)Math.Sin(-mRotation);
+            float rotationRadians = mRotation;
+
+            // Inverse-rotate point into unrotated local space.
+            float cos = (float)Math.Cos(-rotationRadians);
+            float sin = (float)Math.Sin(-rotationRadians);
 
             Vector2 rotated = new Vector2(
                 local.X * cos - local.Y * sin,
@@ -186,9 +219,9 @@ namespace TTMapEditor.Objects
             float halfW = mRectangle.Width / 2f;
             float halfH = mRectangle.Height / 2f;
 
-            // Standard AABB check in the wall's local space.
             return rotated.X >= -halfW && rotated.X <= halfW &&
                    rotated.Y >= -halfH && rotated.Y <= halfH;
+
         }
     }
 }

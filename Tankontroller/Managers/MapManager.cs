@@ -96,7 +96,6 @@ namespace Tankontroller
                 else if (line.Contains("rotation"))
                 {
                     rotation = float.Parse(line.Split('=')[1].Trim());
-                    rotation = MathHelper.ToRadians(rotation);
                     continue;
                 }
                 else if(line.Contains("health"))
@@ -180,7 +179,7 @@ namespace Tankontroller
                     Vector2 wallSize = new Vector2(wallRect.Width, wallRect.Height);
                     float rotationDegrees = 0f;
                     float.TryParse(wall.Rotation, out rotationDegrees);
-                    float rotationRadians = MathHelper.ToRadians(rotationDegrees);
+                    float rotationRadians = rotationDegrees;
                     Transform wallTransform = new(wallCenter, rotationRadians);
 
                     RectWall currentWall = new RectWall(wallTransform,wallSize,Tankontroller.Instance().CM().Load<Texture2D>(texture));
