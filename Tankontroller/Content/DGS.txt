@@ -61,7 +61,7 @@ bool SHOW_LIST_ON_MAIN_MENU = false;
 bool ONLY_KEYBOARD_ON_MAIN_MENU = false;
 bool ONLY_KEYBOARD_ON_MAP_SELECT = false;
 bool ADD_KEYBOARD_CONTROLLER_1 = true;
-bool ADD_KEYBOARD_CONTROLLER_2 = false;
+bool ADD_KEYBOARD_CONTROLLER_2 = true;
 
 // TESTING & DEBUGGING 
 // Warning: Do not enable these options for release builds

@@ -136,6 +136,8 @@ namespace Tankontroller.World
 
         public float GetCannonWorldRotation() => mCannonRotation;
 
+        public Vector2 GetWorldPosition() => Transform.Position;
+
         public void GetCorners(Vector2[] pCorners)
         {
             if (pCorners.Length == 4)
