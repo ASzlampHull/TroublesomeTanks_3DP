@@ -24,63 +24,63 @@ namespace Tankontroller.Scenes
     //-------------------------------------------------------------------------------------------------
     public class GameScene : IScene
     {
-        private static readonly SpriteFont m_SpriteFont = Tankontroller.Instance().CM().Load<SpriteFont>("handwritingfont");
-        private static readonly Texture2D mBackgroundTexture = Tankontroller.Instance().CM().Load<Texture2D>("background_01");
-        private static readonly Texture2D m_ErrorBGTexture = Tankontroller.Instance().CM().Load<Texture2D>("background_err");
-        private SoundEffectInstance introMusicInstance = null;
-        private SoundEffectInstance tankMoveSound = null;
+        private static readonly SpriteFont SPRITE_FONT = Tankontroller.Instance().CM().Load<SpriteFont>("handwritingfont");
+        private static readonly Texture2D BACKGROUND_TEXTURE = Tankontroller.Instance().CM().Load<Texture2D>("background_01");
+        private static readonly Texture2D ERROR_BG_TEXTURE = Tankontroller.Instance().CM().Load<Texture2D>("background_err");
+        private SoundEffectInstance mIntroMusicInstance = null;
+        private SoundEffectInstance mTankMoveSound = null;
 
         IGame mGameInstance = Tankontroller.Instance();
 
         private const float SECONDS_BETWEEN_TRACKS_ADDED = 0.2f;
-        private float m_SecondsTillTracksAdded = SECONDS_BETWEEN_TRACKS_ADDED;
+        private float mSecondsTillTracksAdded = SECONDS_BETWEEN_TRACKS_ADDED;
 
-        private TheWorld m_World;
-        private List<Player> m_Teams;
+        private TheWorld mWorld;
+        private List<Player> mTeams;
 
         Rectangle mBackgroundRectangle;
 
         private bool mControllersConnected = true;
 
         // Timer GUI
-        private GameTimer m_GameTimer;
+        private GameTimer mGameTimer;
         // configured match length in seconds (from DGS). If <= 0 timer is disabled.
-        private double m_GameLengthSeconds = 0.0;
+        private double mGameLengthSeconds = 0.0;
 
         // Gameplay: Death Ring (shrinking safe zone)
-        private DeathRing m_DeathRing;
+        private DeathRing mDeathRing;
 
         public GameScene(List<Player> pPlayers, string mapFile)
         {
             spriteBatch = new SpriteBatch(mGameInstance.GDM().GraphicsDevice);
 
-            introMusicInstance = mGameInstance.GetSoundManager().ReplaceCurrentMusicInstance("Music/Music_intro", false);
-            tankMoveSound = mGameInstance.GetSoundManager().GetLoopableSoundEffectInstance("Sounds/Tank_Tracks");
+            mIntroMusicInstance = mGameInstance.GetSoundManager().ReplaceCurrentMusicInstance("Music/Music_intro", false);
+            mTankMoveSound = mGameInstance.GetSoundManager().GetLoopableSoundEffectInstance("Sounds/Tank_Tracks");
 
             mBackgroundRectangle = new Rectangle(0, 0, mGameInstance.GDM().GraphicsDevice.Viewport.Width, mGameInstance.GDM().GraphicsDevice.Viewport.Height);
 
-            m_Teams = pPlayers;
+            mTeams = pPlayers;
 
-            m_World = MapManager.LoadMapFromJson(mapFile);
-            if (m_World == null)
+            mWorld = MapManager.LoadMapFromJson(mapFile);
+            if (mWorld == null)
             {
                 throw new Exception("Couldn't load map file: " + mapFile); //TODO Handle map load error
             }
 
-            List<Tank> tanks = m_World.GetTanksForPlayers(m_Teams.Count);
-            if (tanks == null || m_World == null)
+            List<Tank> tanks = mWorld.GetTanksForPlayers(mTeams.Count);
+            if (tanks == null || mWorld == null)
             {
                 throw new Exception("Invalid number of players for map"); //TODO Handle map load error
             }
 
             // Calculate rectangle for the GUI of each player
             int textureWidth = mBackgroundRectangle.Width / 4;
-            int spacePerPlayer = mBackgroundRectangle.Width / m_Teams.Count;
+            int spacePerPlayer = mBackgroundRectangle.Width / mTeams.Count;
             int textureHeight = mBackgroundRectangle.Height * 24 / 100;
-            for (int i = 0; i < m_Teams.Count; i++) // initialise players
+            for (int i = 0; i < mTeams.Count; i++) // initialise players
             {
-                m_Teams[i].Controller.ResetJacks();
-                m_Teams[i].GamePreparation(tanks[i], new Rectangle((int)(i * spacePerPlayer + (spacePerPlayer - textureWidth) * 0.5f), 0, textureWidth, textureHeight));
+                mTeams[i].Controller.ResetJacks();
+                mTeams[i].GamePreparation(tanks[i], new Rectangle((int)(i * spacePerPlayer + (spacePerPlayer - textureWidth) * 0.5f), 0, textureWidth, textureHeight));
             }
 
             Reset();
@@ -92,10 +92,10 @@ namespace Tankontroller.Scenes
 
             spriteBatch.Begin();
 
-            spriteBatch.Draw(mBackgroundTexture, mBackgroundRectangle, Color.White);
+            spriteBatch.Draw(BACKGROUND_TEXTURE, mBackgroundRectangle, Color.White);
 
             //Draws the GUI for each player
-            foreach (Player player in m_Teams)
+            foreach (Player player in mTeams)
             {
                 if (player.GUI != null)
                 {
@@ -104,20 +104,20 @@ namespace Tankontroller.Scenes
             }
 
             // World draws play area, walls, tanks, bullets, and particle effects
-            m_World.Draw(spriteBatch);
+            mWorld.Draw(spriteBatch);
 
             // Draw death ring overlay (if active) - clipped to play area
-            if (m_DeathRing != null)
+            if (mDeathRing != null)
             {
                 spriteBatch.End();
 
                 // Set up scissor rectangle to clip to play area
                 Rectangle oldScissor = spriteBatch.GraphicsDevice.ScissorRectangle;
                 RasterizerState rasterizerState = new RasterizerState { ScissorTestEnable = true };
-                spriteBatch.GraphicsDevice.ScissorRectangle = m_World.PlayArea;
+                spriteBatch.GraphicsDevice.ScissorRectangle = mWorld.PlayArea;
 
                 spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, rasterizerState);
-                m_DeathRing.Draw(spriteBatch);
+                mDeathRing.Draw(spriteBatch);
                 spriteBatch.End();
 
                 // Restore previous state
@@ -127,27 +127,27 @@ namespace Tankontroller.Scenes
 
             if (!mControllersConnected)
             {
-                Rectangle playArea = m_World.PlayArea;
+                Rectangle playArea = mWorld.PlayArea;
                 string message = "A controller has been disconnected.\r\nPlease reconnect it to continue.\r\nSearching for controller...";
                 Vector2 centre = new Vector2(playArea.X + playArea.Width / 2, playArea.Y + playArea.Height / 2);
-                Vector2 fontSize = m_SpriteFont.MeasureString(message);
-                spriteBatch.Draw(m_ErrorBGTexture, playArea, Color.White);
-                spriteBatch.DrawString(m_SpriteFont, message, new Vector2(centre.X - (fontSize.X / 2), centre.Y - (fontSize.Y / 2)), Color.Black);
+                Vector2 fontSize = SPRITE_FONT.MeasureString(message);
+                spriteBatch.Draw(ERROR_BG_TEXTURE, playArea, Color.White);
+                spriteBatch.DrawString(SPRITE_FONT, message, new Vector2(centre.X - (fontSize.X / 2), centre.Y - (fontSize.Y / 2)), Color.Black);
             }
 
             // Draw timer (top center). We compute remaining time from the configured match length and
             // the timer's total elapsed time (your GameTimer is a count-up).
-            if (m_GameTimer != null && m_GameLengthSeconds > 0.0)
+            if (mGameTimer != null && mGameLengthSeconds > 0.0)
             {
-                TimeSpan elapsed = m_GameTimer.GetTotalTime();
-                double remainingSeconds = m_GameLengthSeconds - elapsed.TotalSeconds;
+                TimeSpan elapsed = mGameTimer.GetTotalTime();
+                double remainingSeconds = mGameLengthSeconds - elapsed.TotalSeconds;
                 if (remainingSeconds < 0) remainingSeconds = 0;
                 TimeSpan remaining = TimeSpan.FromSeconds(remainingSeconds);
                 string timeText = string.Format("{0:00}:{1:00}", remaining.Minutes, remaining.Seconds);
-                Vector2 size = m_SpriteFont.MeasureString(timeText);
+                Vector2 size = SPRITE_FONT.MeasureString(timeText);
                 float x = mBackgroundRectangle.Width / 2f - size.X / 2f;
                 float y = 10f;
-                spriteBatch.DrawString(m_SpriteFont, timeText, new Vector2(x, y), Color.White);
+                spriteBatch.DrawString(SPRITE_FONT, timeText, new Vector2(x, y), Color.White);
             }
 
             spriteBatch.End();
@@ -156,7 +156,7 @@ namespace Tankontroller.Scenes
         public override void Update(float pSeconds)
         {
             Escape();
-            if (introMusicInstance.State == SoundState.Stopped)
+            if (mIntroMusicInstance.State == SoundState.Stopped)
             {
                 mGameInstance.GetSoundManager().ReplaceCurrentMusicInstance("Music/Music_loopable", true);
             }
@@ -164,7 +164,7 @@ namespace Tankontroller.Scenes
             if (mControllersConnected) // Game should pause in the event of controller disconnect
             {
                 //Updates each controller to check for inputs
-                foreach (Player p in m_Teams)
+                foreach (Player p in mTeams)
                 {
                     p.Controller.UpdateController();
                     // Check if controller is disconnected
@@ -172,22 +172,22 @@ namespace Tankontroller.Scenes
                 }
 
                 bool tankMoved = false;
-                foreach (Player p in m_Teams)
+                foreach (Player p in mTeams)
                 {
                     bool result = p.DoTankControls(pSeconds);
                     tankMoved = tankMoved | result;
                 }
 
                 //Checks for tank collisons between the play area and the walls
-                m_World.Update(pSeconds);
+                mWorld.Update(pSeconds);
 
                 if (tankMoved)
                 {
-                    tankMoveSound.Play();
+                    mTankMoveSound.Play();
                 }
                 else
                 {
-                    tankMoveSound.Pause();
+                    mTankMoveSound.Pause();
                 }
 
                 //If there is only on player remaining, the GameOverScene is transitioned to
@@ -199,16 +199,16 @@ namespace Tankontroller.Scenes
                     {
                         winner = remainingTeamsList[0];
                     }
-                    Tankontroller.Instance().SM().Transition(new GameOverScene(mBackgroundTexture, m_Teams, winner));
+                    Tankontroller.Instance().SM().Transition(new GameOverScene(BACKGROUND_TEXTURE, mTeams, winner));
                 }
 
                 //Updates the track particles for each tank
-                m_SecondsTillTracksAdded -= pSeconds;
-                if (m_SecondsTillTracksAdded <= 0)
+                mSecondsTillTracksAdded -= pSeconds;
+                if (mSecondsTillTracksAdded <= 0)
                 {
-                    m_SecondsTillTracksAdded += SECONDS_BETWEEN_TRACKS_ADDED;
+                    mSecondsTillTracksAdded += SECONDS_BETWEEN_TRACKS_ADDED;
                     TrackSystem trackSystem = TrackSystem.GetInstance();
-                    foreach (Player p in m_Teams)
+                    foreach (Player p in mTeams)
                     {
                         if(p.Tank.GetState() == TankStates.DESTROYED)
                         {
@@ -219,24 +219,24 @@ namespace Tankontroller.Scenes
                 }
 
                 // Update timer: GameTimer uses Update(GameTime) and counts up.
-                if (m_GameTimer != null && m_GameLengthSeconds > 0.0)
+                if (mGameTimer != null && mGameLengthSeconds > 0.0)
                 {
                     // Use a small GameTime wrapper to call the existing Update(GameTime) API
                     var gt = new GameTime(TimeSpan.Zero, TimeSpan.FromSeconds(pSeconds));
-                    m_GameTimer.Update(gt);
+                    mGameTimer.Update(gt);
 
                     // DeathRing: compute remaining seconds and pass tank list
-                    float remainingSecondsForRing = (float)Math.Max(0.0, m_GameLengthSeconds - m_GameTimer.GetTotalTime().TotalSeconds);
-                    List<Tank> tanksList = m_Teams.Select(p => p.Tank).ToList();
-                    m_DeathRing?.Update(pSeconds, remainingSecondsForRing, tanksList);
+                    float remainingSecondsForRing = (float)Math.Max(0.0, mGameLengthSeconds - mGameTimer.GetTotalTime().TotalSeconds);
+                    List<Tank> tanksList = mTeams.Select(p => p.Tank).ToList();
+                    mDeathRing?.Update(pSeconds, remainingSecondsForRing, tanksList);
 
                     // If elapsed >= configured length, end match
-                    if (m_GameTimer.GetTotalTime().TotalSeconds >= m_GameLengthSeconds)
+                    if (mGameTimer.GetTotalTime().TotalSeconds >= mGameLengthSeconds)
                     {
                         int winner = DetermineWinnerByHealth();
                         IGame game = Tankontroller.Instance();
                         game.GetControllerManager().SetAllTheLEDsWhite();
-                        game.SM().Transition(new GameOverScene(mBackgroundTexture, m_Teams, winner));
+                        game.SM().Transition(new GameOverScene(BACKGROUND_TEXTURE, mTeams, winner));
                         return;
                     }
                 }
@@ -244,8 +244,8 @@ namespace Tankontroller.Scenes
                 {
                     // If there's no configured timer the ring won't activate, but still keep updating if desired:
                     // build tanks list and update with 'infinite' remaining time so it stays inactive.
-                    List<Tank> tanksListNoTimer = m_Teams.Select(p => p.Tank).ToList();
-                    m_DeathRing?.Update(pSeconds, float.MaxValue, tanksListNoTimer);
+                    List<Tank> tanksListNoTimer = mTeams.Select(p => p.Tank).ToList();
+                    mDeathRing?.Update(pSeconds, float.MaxValue, tanksListNoTimer);
                 }
             }
             else // At least one controller is disconnected
@@ -253,13 +253,13 @@ namespace Tankontroller.Scenes
                 mGameInstance.GetControllerManager().DetectControllers();
 
                 mControllersConnected = true;
-                foreach (Player p in m_Teams) // Wait until all controllers are reconnected
+                foreach (Player p in mTeams) // Wait until all controllers are reconnected
                 {
                     mControllersConnected = mControllersConnected && p.Controller.IsConnected();
                 }
                 if (mControllersConnected)
                 {
-                    foreach (Player p in m_Teams)
+                    foreach (Player p in mTeams)
                     {
                         p.Controller.SetColour(p.Tank.Colour());
                     }
@@ -277,7 +277,7 @@ namespace Tankontroller.Scenes
 
         private void Reset()
         {
-            foreach (Player p in m_Teams)
+            foreach (Player p in mTeams)
             {
                 p.Reset();
             }
@@ -286,26 +286,26 @@ namespace Tankontroller.Scenes
 
             // Initialize your existing GameTimer and start it if GAME_LENGTH is configured.
             float configuredLength = DGS.Instance.GetFloat("GAME_LENGTH");
-            m_GameLengthSeconds = configuredLength;
+            mGameLengthSeconds = configuredLength;
             if (configuredLength > 0f)
             {
-                m_GameTimer = new GameTimer();
-                m_GameTimer.Reset();
-                m_GameTimer.Start();
+                mGameTimer = new GameTimer();
+                mGameTimer.Reset();
+                mGameTimer.Start();
             }
             else
             {
-                m_GameTimer = null; // timer disabled
+                mGameTimer = null; // timer disabled
             }
 
             // Create DeathRing instance (uses world play area to compute center/start radius)
-            if (m_World != null)
+            if (mWorld != null)
             {
-                m_DeathRing = new DeathRing(m_World.PlayArea);
+                mDeathRing = new DeathRing(mWorld.PlayArea);
             }
             else
             {
-                m_DeathRing = null;
+                mDeathRing = null;
             }
         }
 
@@ -314,7 +314,7 @@ namespace Tankontroller.Scenes
         {
             List<int> remaining = new List<int>();
             int index = 0;
-            foreach (Player player in m_Teams)
+            foreach (Player player in mTeams)
             {
                 if (player.Tank.Health() > 0)
                 {
@@ -333,9 +333,9 @@ namespace Tankontroller.Scenes
             int bestIndex = -1;
             int bestHealth = -1;
             bool tie = false;
-            for (int i = 0; i < m_Teams.Count; i++)
+            for (int i = 0; i < mTeams.Count; i++)
             {
-                int health = m_Teams[i].Tank.Health();
+                int health = mTeams[i].Tank.Health();
                 if (health > bestHealth)
                 {
                     bestHealth = health;

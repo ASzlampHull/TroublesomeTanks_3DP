@@ -9,16 +9,16 @@ namespace Tankontroller.GUI
     /// </summary>
     internal class GameTimer
     {
-        private double m_durationSeconds;    // configured duration for countdown; 0 => count-up mode
-        private double m_elapsedSeconds;     // elapsed time since Start
-        private double m_secondsLeft;        // remaining seconds for countdown (kept in sync)
-        private bool m_isCountdown;
-        private bool m_isRunning;
+        private double mDurationSeconds;    // configured duration for countdown; 0 => count-up mode
+        private double mElapsedSeconds;     // elapsed time since Start
+        private double mSecondsLeft;        // remaining seconds for countdown (kept in sync)
+        private bool mIsCountdown;
+        private bool mIsRunning;
 
         
-        private SpriteFont m_font;
-        private Color m_colour = Color.White;
-        private float m_topOffset = 10f;
+        private SpriteFont mFont;
+        private Color mColour = Color.White;
+        private float mTopOffset = 10f;
 
 
         /// Constructor for count-up timer with default draw style.
@@ -29,27 +29,27 @@ namespace Tankontroller.GUI
         /// </summary>
         public GameTimer(double durationSeconds, SpriteFont font = null, Color? colour = null, float topOffset = 10f)
         {
-            m_durationSeconds = Math.Max(0.0, durationSeconds);
-            m_isCountdown = m_durationSeconds > 0.0;
-            m_font = font;
-            if (colour.HasValue) m_colour = colour.Value;
-            m_topOffset = topOffset;
+            mDurationSeconds = Math.Max(0.0, durationSeconds);
+            mIsCountdown = mDurationSeconds > 0.0;
+            mFont = font;
+            if (colour.HasValue) mColour = colour.Value;
+            mTopOffset = topOffset;
             Reset();
         }
 
         // Start / Stop
-        public void Start() => m_isRunning = true;
-        public void Stop() => m_isRunning = false;
+        public void Start() => mIsRunning = true;
+        public void Stop() => mIsRunning = false;
 
         /// <summary>
         // Reset (preserves configured duration)
         /// </summary>
         public void Reset()
         {
-            m_elapsedSeconds = 0.0;
-            m_secondsLeft = m_isCountdown ? m_durationSeconds : 0.0;
-            m_isRunning = false;
-            IsFinished = m_isCountdown ? m_secondsLeft <= 0.0 : false;
+            mElapsedSeconds = 0.0;
+            mSecondsLeft = mIsCountdown ? mDurationSeconds : 0.0;
+            mIsRunning = false;
+            IsFinished = mIsCountdown ? mSecondsLeft <= 0.0 : false;
         }
 
         /// <summary>
@@ -57,8 +57,8 @@ namespace Tankontroller.GUI
         /// </summary>
         public void Reset(double durationSeconds)
         {
-            m_durationSeconds = Math.Max(0.0, durationSeconds);
-            m_isCountdown = m_durationSeconds > 0.0;
+            mDurationSeconds = Math.Max(0.0, durationSeconds);
+            mIsCountdown = mDurationSeconds > 0.0;
             Reset();
         }
 
@@ -91,18 +91,18 @@ namespace Tankontroller.GUI
         /// </summary>
         private void Update(double deltaSeconds)
         {
-            if (!m_isRunning || IsFinished) return;
+            if (!mIsRunning || IsFinished) return;
 
-            m_elapsedSeconds += deltaSeconds;
+            mElapsedSeconds += deltaSeconds;
 
-            if (m_isCountdown)
+            if (mIsCountdown)
             {
-                m_secondsLeft -= deltaSeconds;
-                if (m_secondsLeft <= 0.0)
+                mSecondsLeft -= deltaSeconds;
+                if (mSecondsLeft <= 0.0)
                 {
-                    m_secondsLeft = 0.0;
+                    mSecondsLeft = 0.0;
                     IsFinished = true;
-                    m_isRunning = false;
+                    mIsRunning = false;
                 }
             }
         }
@@ -111,11 +111,11 @@ namespace Tankontroller.GUI
         public bool IsFinished { get; private set; } = false;
 
         // For compatibility with existing code expecting TimeSpan total time (count-up elapsed)
-        public TimeSpan GetTotalTime() => TimeSpan.FromSeconds(Math.Max(0.0, m_elapsedSeconds));
+        public TimeSpan GetTotalTime() => TimeSpan.FromSeconds(Math.Max(0.0, mElapsedSeconds));
         public TimeSpan GetElapsedTime() => GetTotalTime();
 
         // Remaining seconds (countdown) or elapsed (count-up)
-        public double SecondsLeft => m_isCountdown ? m_secondsLeft : m_elapsedSeconds;
+        public double SecondsLeft => mIsCountdown ? mSecondsLeft : mElapsedSeconds;
 
         /// <summary>
         // Formatted MM:SS for display. For countdown shows remaining, otherwise elapsed.
@@ -139,15 +139,15 @@ namespace Tankontroller.GUI
             if (spriteBatch == null) return;
 
             // choose font
-            var font = m_font ?? Tankontroller.Instance().CM().Load<SpriteFont>("handwritingfont");
+            var font = mFont ?? Tankontroller.Instance().CM().Load<SpriteFont>("handwritingfont");
 
             string timeText = GetTimeString();
             Vector2 size = font.MeasureString(timeText);
             int width = spriteBatch.GraphicsDevice.Viewport.Width;
             float x = (width - size.X) / 2f;
-            float y = m_topOffset;
+            float y = mTopOffset;
 
-            spriteBatch.DrawString(font, timeText, new Vector2(x, y), m_colour);
+            spriteBatch.DrawString(font, timeText, new Vector2(x, y), mColour);
         }
 
         /// <summary>
@@ -155,9 +155,9 @@ namespace Tankontroller.GUI
         /// </summary>
         public void SetDrawStyle(SpriteFont font, Color colour, float topOffset = 10f)
         {
-            m_font = font;
-            m_colour = colour;
-            m_topOffset = topOffset;
+            mFont = font;
+            mColour = colour;
+            mTopOffset = topOffset;
         }
     }
 }
