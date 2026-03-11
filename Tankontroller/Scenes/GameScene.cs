@@ -9,6 +9,7 @@ using Tankontroller.Controller;
 using Tankontroller.GUI;
 using Tankontroller.World;
 using Tankontroller.World.Particles;
+using Tankontroller.World.Gameplay;
 using static Tankontroller.MapManager;
 
 namespace Tankontroller.Scenes
@@ -40,6 +41,15 @@ namespace Tankontroller.Scenes
         Rectangle mBackgroundRectangle;
 
         private bool mControllersConnected = true;
+
+        // Timer GUI
+        private GameTimer m_GameTimer;
+        // configured match length in seconds (from DGS). If <= 0 timer is disabled.
+        private double m_GameLengthSeconds = 0.0;
+
+        // Gameplay: Death Ring (shrinking safe zone)
+        private DeathRing m_DeathRing;
+
         public GameScene(List<Player> pPlayers, string mapFile)
         {
             spriteBatch = new SpriteBatch(mGameInstance.GDM().GraphicsDevice);
@@ -96,6 +106,25 @@ namespace Tankontroller.Scenes
             // World draws play area, walls, tanks, bullets, and particle effects
             m_World.Draw(spriteBatch);
 
+            // Draw death ring overlay (if active) - clipped to play area
+            if (m_DeathRing != null)
+            {
+                spriteBatch.End();
+
+                // Set up scissor rectangle to clip to play area
+                Rectangle oldScissor = spriteBatch.GraphicsDevice.ScissorRectangle;
+                RasterizerState rasterizerState = new RasterizerState { ScissorTestEnable = true };
+                spriteBatch.GraphicsDevice.ScissorRectangle = m_World.PlayArea;
+
+                spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, rasterizerState);
+                m_DeathRing.Draw(spriteBatch);
+                spriteBatch.End();
+
+                // Restore previous state
+                spriteBatch.GraphicsDevice.ScissorRectangle = oldScissor;
+                spriteBatch.Begin();
+            }
+
             if (!mControllersConnected)
             {
                 Rectangle playArea = m_World.PlayArea;
@@ -104,6 +133,21 @@ namespace Tankontroller.Scenes
                 Vector2 fontSize = m_SpriteFont.MeasureString(message);
                 spriteBatch.Draw(m_ErrorBGTexture, playArea, Color.White);
                 spriteBatch.DrawString(m_SpriteFont, message, new Vector2(centre.X - (fontSize.X / 2), centre.Y - (fontSize.Y / 2)), Color.Black);
+            }
+
+            // Draw timer (top center). We compute remaining time from the configured match length and
+            // the timer's total elapsed time (your GameTimer is a count-up).
+            if (m_GameTimer != null && m_GameLengthSeconds > 0.0)
+            {
+                TimeSpan elapsed = m_GameTimer.GetTotalTime();
+                double remainingSeconds = m_GameLengthSeconds - elapsed.TotalSeconds;
+                if (remainingSeconds < 0) remainingSeconds = 0;
+                TimeSpan remaining = TimeSpan.FromSeconds(remainingSeconds);
+                string timeText = string.Format("{0:00}:{1:00}", remaining.Minutes, remaining.Seconds);
+                Vector2 size = m_SpriteFont.MeasureString(timeText);
+                float x = mBackgroundRectangle.Width / 2f - size.X / 2f;
+                float y = 10f;
+                spriteBatch.DrawString(m_SpriteFont, timeText, new Vector2(x, y), Color.White);
             }
 
             spriteBatch.End();
@@ -173,6 +217,36 @@ namespace Tankontroller.Scenes
                         trackSystem.AddTrack(p.Tank.Transform.Position, p.Tank.Transform.Rotation, p.Tank.Colour());
                     }
                 }
+
+                // Update timer: GameTimer uses Update(GameTime) and counts up.
+                if (m_GameTimer != null && m_GameLengthSeconds > 0.0)
+                {
+                    // Use a small GameTime wrapper to call the existing Update(GameTime) API
+                    var gt = new GameTime(TimeSpan.Zero, TimeSpan.FromSeconds(pSeconds));
+                    m_GameTimer.Update(gt);
+
+                    // DeathRing: compute remaining seconds and pass tank list
+                    float remainingSecondsForRing = (float)Math.Max(0.0, m_GameLengthSeconds - m_GameTimer.GetTotalTime().TotalSeconds);
+                    List<Tank> tanksList = m_Teams.Select(p => p.Tank).ToList();
+                    m_DeathRing?.Update(pSeconds, remainingSecondsForRing, tanksList);
+
+                    // If elapsed >= configured length, end match
+                    if (m_GameTimer.GetTotalTime().TotalSeconds >= m_GameLengthSeconds)
+                    {
+                        int winner = DetermineWinnerByHealth();
+                        IGame game = Tankontroller.Instance();
+                        game.GetControllerManager().SetAllTheLEDsWhite();
+                        game.SM().Transition(new GameOverScene(mBackgroundTexture, m_Teams, winner));
+                        return;
+                    }
+                }
+                else
+                {
+                    // If there's no configured timer the ring won't activate, but still keep updating if desired:
+                    // build tanks list and update with 'infinite' remaining time so it stays inactive.
+                    List<Tank> tanksListNoTimer = m_Teams.Select(p => p.Tank).ToList();
+                    m_DeathRing?.Update(pSeconds, float.MaxValue, tanksListNoTimer);
+                }
             }
             else // At least one controller is disconnected
             {
@@ -209,6 +283,30 @@ namespace Tankontroller.Scenes
             }
             ParticleManager.Instance().Reset();
             TrackSystem.GetInstance().Reset();
+
+            // Initialize your existing GameTimer and start it if GAME_LENGTH is configured.
+            float configuredLength = DGS.Instance.GetFloat("GAME_LENGTH");
+            m_GameLengthSeconds = configuredLength;
+            if (configuredLength > 0f)
+            {
+                m_GameTimer = new GameTimer();
+                m_GameTimer.Reset();
+                m_GameTimer.Start();
+            }
+            else
+            {
+                m_GameTimer = null; // timer disabled
+            }
+
+            // Create DeathRing instance (uses world play area to compute center/start radius)
+            if (m_World != null)
+            {
+                m_DeathRing = new DeathRing(m_World.PlayArea);
+            }
+            else
+            {
+                m_DeathRing = null;
+            }
         }
 
         //Checks the health of all players and returns a list of tanks with more that 0 health
@@ -225,6 +323,31 @@ namespace Tankontroller.Scenes
                 index++;
             }
             return remaining;
+        }
+
+        // <summary>
+        // Determine winner by highest health. Returns -1 for tie or no winner.
+        // </summary>
+        private int DetermineWinnerByHealth()
+        {
+            int bestIndex = -1;
+            int bestHealth = -1;
+            bool tie = false;
+            for (int i = 0; i < m_Teams.Count; i++)
+            {
+                int health = m_Teams[i].Tank.Health();
+                if (health > bestHealth)
+                {
+                    bestHealth = health;
+                    bestIndex = i;
+                    tie = false;
+                }
+                else if (health == bestHealth)
+                {
+                    tie = true;
+                }
+            }
+            return (bestIndex == -1 || tie) ? -1 : bestIndex;
         }
     }
 }
