@@ -7,8 +7,11 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Tankontroller.Managers;
+using Tankontroller.Utilities;
 using Tankontroller.World.Particles;
 using Tankontroller.World.Pickups;
+using Tankontroller.World.Shapes;
+using Tankontroller.World.WorldObject;
 
 public enum PickupType
 {
@@ -34,6 +37,7 @@ namespace Tankontroller.World
 
         private Rectangle mPlayArea;
         private Rectangle mPlayAreaOutline;
+        private RectangleAxisAlignedShape[] mPlayAreaCollisionShapes = new RectangleAxisAlignedShape[4];
         private List<Tank> mTanks = new List<Tank>();
         private List<RectWall> mWalls;
         private List<Vector2> mPickupSpawnPositions = new List<Vector2>();
@@ -50,7 +54,24 @@ namespace Tankontroller.World
             mPlayArea = pPlayArea;
             mPickupSpawnPositions = pPickupSpawnPositions;
             mPlayAreaOutline = new Rectangle(mPlayArea.X - 5, mPlayArea.Y - 5, mPlayArea.Width + 10, mPlayArea.Height + 10);
+            CreatePlayAreaCollisionShapes();
             CheckActivatedPickups();
+        }
+
+        private void CreatePlayAreaCollisionShapes()
+        {
+            // Top
+            mPlayAreaCollisionShapes[0] = new RectangleAxisAlignedShape(
+                new Transform(new Vector2(mPlayArea.X + mPlayArea.Width / 2f, mPlayArea.Y - 5)), new Vector2(mPlayArea.Width, 10));
+            // Bottom
+            mPlayAreaCollisionShapes[1] = new RectangleAxisAlignedShape(
+                new Transform(new Vector2(mPlayArea.X + mPlayArea.Width / 2f, mPlayArea.Y + mPlayArea.Height + 5)), new Vector2(mPlayArea.Width, 10));
+            // Left
+            mPlayAreaCollisionShapes[2] = new RectangleAxisAlignedShape(
+                new Transform(new Vector2(mPlayArea.X - 5, mPlayArea.Y + mPlayArea.Height / 2f)), new Vector2(10, mPlayArea.Height + 20));
+            // Right
+            mPlayAreaCollisionShapes[3] = new RectangleAxisAlignedShape(
+                new Transform(new Vector2(mPlayArea.X + mPlayArea.Width + 5, mPlayArea.Y + mPlayArea.Height / 2f)), new Vector2(10, mPlayArea.Height + 20));
         }
 
         public List<Tank> GetTanksForPlayers(int pPlayerCount)
@@ -72,7 +93,7 @@ namespace Tankontroller.World
                 //Checks for any pickups at this position to prevent spawn overlap
                 foreach (Pickup p in mPickups)
                 {
-                    if (p.m_Position == mPickupSpawnPositions[randPos])
+                    if (p.Transform.Position == mPickupSpawnPositions[randPos])
                     {
                         return;
                     }
@@ -143,33 +164,34 @@ namespace Tankontroller.World
                 {
                     mTanks[tankIndex].Update(pSeconds);
 
-                    mTanks[tankIndex].CheckBullets(mTanks, mPlayArea, mWalls);
+                    // Create a combined list of wall colliders and play area colliders
+                    List<CollisionShape> wallColliders = new();
+                    mWalls.ForEach(wall => wallColliders.Add(wall.CollisionShape));
+                    wallColliders.AddRange(mPlayAreaCollisionShapes);
 
-                    // Pickup collision
-                    foreach (Pickup p in mPickups)
+                    // Bullet collisions
+                    mTanks[tankIndex].HandleBulletCollisions(mTanks, wallColliders);
+
+                    // Pickup collisions
+                    foreach (Pickup pickup in mPickups)
                     {
                         // This is to avoid any dead tanks from picking up a pickup
                         if (mTanks[tankIndex].GetState() != TankStates.ALIVE)
                         {
                             continue;
                         }
-                        else if (p.PickUpCollision(mTanks[tankIndex]))
+                        else if (pickup.CollisionShape.Intersects(mTanks[tankIndex].CollisionShape).HasCollided)
                         {
-                            mPickups.Remove(p);
+                            pickup.TriggerEffect(mTanks[tankIndex]);
+                            mPickups.Remove(pickup);
                             break;
                         }
                     }
 
                     // Wall collisions
-                    foreach (RectWall wall in mWalls)
+                    foreach (CollisionShape wall in wallColliders)
                     {
-                        Rectangle wallRect = wall.Rectangle;
-
-                        // tank collision using collision manager
-                        if (CollisionManager.Collide(mTanks[tankIndex], wallRect, false))
-                        {
-                            CollisionManager.ResolveTankWallCollision(mTanks[tankIndex], wall);
-                        }
+                        CollisionManager.ResolveTankWallCollision(mTanks[tankIndex], wall);
                     }
 
                     // Collisions with other tanks
@@ -179,14 +201,11 @@ namespace Tankontroller.World
                         {
                             continue;
                         }
-                        // tank against tanks using collision manager
-                        if (CollisionManager.Collide(mTanks[tankIndex], mTanks[i]))
+                        if (mTanks[tankIndex].CollisionShape.Intersects(mTanks[i].CollisionShape).HasCollided)
+                        {
                             mTanks[tankIndex].PutBack();
+                        }
                     }
-
-                    // Collisions with the play area
-                    if (CollisionManager.Collide(mTanks[tankIndex], mPlayArea, true)) // True tp check inside the play area
-                        CollisionManager.ResolveTankPlayAreaCollision(mTanks[tankIndex], mPlayArea);
                 }
             }
         }
@@ -225,6 +244,14 @@ namespace Tankontroller.World
             foreach (RectWall w in mWalls)
             {
                 w.Draw(pSpriteBatch);
+            }
+
+            if (CollisionManager.DRAW_COLLISION_SHAPES)
+            {
+                foreach (RectangleAxisAlignedShape shape in mPlayAreaCollisionShapes)
+                {
+                    DrawUtilities.DrawRectangle(pSpriteBatch, shape.ToRectangle(), Color.Red, 0, shape.WorldPosition, 1);
+                }
             }
         }
     }

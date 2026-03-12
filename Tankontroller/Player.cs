@@ -140,12 +140,12 @@ namespace Tankontroller
 
                 if (Controller.IsPressedWithCharge(Control.TURRET_LEFT))
                 {
-                    Tank.CannonLeft(pSeconds);
+                    Tank.RotateCannonLeft(pSeconds);
                     Controller.DepleteCharge(Control.TURRET_LEFT, TRACK_DEPLETION_RATE * pSeconds);
                 }
                 else if (Controller.IsPressedWithCharge(Control.TURRET_RIGHT))
                 {
-                    Tank.CannonRight(pSeconds);
+                    Tank.RotateCannonRight(pSeconds);
                     Controller.DepleteCharge(Control.TURRET_RIGHT, TRACK_DEPLETION_RATE * pSeconds);
                 }
 
@@ -154,7 +154,7 @@ namespace Tankontroller
                 {
                     if (Controller.DepleteCharge(Control.FIRE, BULLET_CHARGE_DEPLETION))
                     {
-                        Tank.Fire(Tank.mbulletType);
+                        Tank.Fire(Tank.BulletType);
                         SoundEffectInstance bulletShot = Tankontroller.Instance().GetSoundManager().GetSoundEffectInstance("Sounds/Tank_Gun");
                         bulletShot.Play();
                     }
