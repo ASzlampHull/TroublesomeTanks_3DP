@@ -30,6 +30,7 @@ namespace Tankontroller.World.Gameplay
         private float mCurrentRadius;              // Inner edge (safe zone boundary)
         private float mCurrentThickness;           // NEW: Current ring thickness
         private bool mActive = false;
+        private const float DEATH_ZONE_MASK_SIZE = 30f;     // Adjust this to increase the size of the ring mask and it's surrounding rectangle
 
         // Per-tank state
         private readonly Dictionary<Tank, float> OUTSIDE_TIME = new();
@@ -216,11 +217,16 @@ namespace Tankontroller.World.Gameplay
             // color for ring (RGBA). adjust alpha to taste.
             Color ringColor = new Color(200, 30, 30, 200);
 
-            // Calculate outer radius for visual display
-            float visualRadius = mCurrentRadius + mCurrentThickness;
+            DrawUtilities.DrawDeathZone(
+                spriteBatch,
+                CENTER,
+                mCurrentRadius,
+                ringColor,
+                DEATH_ZONE_MASK_SIZE
+            );
 
-            // Draw a ring outline using DrawUtilities. This draws a pregenerated ring texture with transparent centre.
-            DrawUtilities.DrawRing(spriteBatch, CENTER, visualRadius, ringColor);
+            //DEBUG Circle to show inner edge (safe zone boundary)
+            DrawUtilities.DrawCircle(spriteBatch, CENTER, mCurrentRadius, Color.Blue * 0.5f);
         }
 
         public bool IsActive() => mActive;
