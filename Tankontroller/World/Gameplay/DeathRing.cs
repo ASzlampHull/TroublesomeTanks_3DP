@@ -212,7 +212,7 @@ namespace Tankontroller.World.Gameplay
             );
 
             //DEBUG Circle to show inner edge (safe zone boundary)
-            DrawUtilities.DrawCircle(spriteBatch, CENTER, mCurrentRadius, Color.Blue * 0.5f);
+            //DrawUtilities.DrawCircle(spriteBatch, CENTER, mCurrentRadius, Color.Blue * 0.5f);
         }
 
         public bool IsActive() => mActive;
