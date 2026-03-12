@@ -21,14 +21,11 @@ namespace Tankontroller.World.Gameplay
         private readonly float END_RADIUS;         // final safe radius
         private readonly float DAMAGE_PER_SECOND;   // DPS applied outside safe zone
         private readonly float GRACE_SECONDS;      // Seconds a tank can survive outside the ring before the first "tick" of damage.
-        private readonly float START_THICKNESS;    // NEW: Initial ring thickness
-        private readonly float END_THICKNESS;      // NEW: Final ring thickness
 
         // State
         private readonly Vector2 CENTER;
         private float mElapsedSinceStart = 0f;
         private float mCurrentRadius;              // Inner edge (safe zone boundary)
-        private float mCurrentThickness;           // NEW: Current ring thickness
         private bool mActive = false;
         private const float DEATH_ZONE_MASK_SIZE = 30f;     // Adjust this to increase the size of the ring mask and it's surrounding rectangle
 
@@ -55,10 +52,6 @@ namespace Tankontroller.World.Gameplay
             DAMAGE_PER_SECOND = SafeFloat("DEATH_RING_DPS", 10f);
             GRACE_SECONDS = SafeFloat("DEATH_RING_GRACE", 1f);
             
-            // NEW: Load thickness configuration
-            START_THICKNESS = SafeFloat("DEATH_RING_START_THICKNESS", 50f);
-            END_THICKNESS = SafeFloat("DEATH_RING_END_THICKNESS", 300f);
-
             CENTER = new Vector2(playArea.X + playArea.Width / 2f, playArea.Y + playArea.Height / 2f);
 
             float defaultStart = MathF.Max(playArea.Width, playArea.Height) * 1.2f;
@@ -70,7 +63,6 @@ namespace Tankontroller.World.Gameplay
             END_RADIUS = configuredEnd > 0 ? configuredEnd : defaultEnd;  
 
             mCurrentRadius = START_RADIUS;
-            mCurrentThickness = START_THICKNESS;  
         }
 
         /// <summary>
@@ -99,12 +91,9 @@ namespace Tankontroller.World.Gameplay
             mElapsedSinceStart += deltaSeconds;
             float t = (DURATION <= 0f) ? 1f : MathF.Min(1f, mElapsedSinceStart / DURATION);
 
-            // NEW: Update thickness first , visually doesn't work rn haha
-            mCurrentThickness = MathHelper.Lerp(START_THICKNESS, END_THICKNESS, t);
-
-            // Calculate base radius, then subtract thickness to get inner edge (safe zone boundary)
+            // Calculates the current radius
             float baseRadius = MathHelper.Lerp(START_RADIUS, END_RADIUS, t);
-            mCurrentRadius = MathHelper.Clamp(baseRadius - mCurrentThickness, END_RADIUS - END_THICKNESS, START_RADIUS);
+            mCurrentRadius = MathHelper.Clamp(baseRadius, END_RADIUS, START_RADIUS);
 
             // DEBUG: Periodic logging
             mDebugLogTimer += deltaSeconds;
@@ -166,12 +155,9 @@ namespace Tankontroller.World.Gameplay
         /// </summary>
         private void LogDebugInfo(List<Tank> tanks)
         {
-            // Calculate visual (outer) radius
-            float visualRadius = mCurrentRadius + mCurrentThickness;
-
             // Log death ring state
             System.Diagnostics.Debug.WriteLine("=== DEATH RING DEBUG ===");
-            System.Diagnostics.Debug.WriteLine($"Ring State -> CurrentRadius (Inner): {mCurrentRadius:F2}, Thickness: {mCurrentThickness:F2}, VisualRadius (Outer): {visualRadius:F2}");
+            System.Diagnostics.Debug.WriteLine($"Ring State -> CurrentRadius (Inner): {mCurrentRadius:F2}");
             System.Diagnostics.Debug.WriteLine($"Ring Center: ({CENTER.X:F1}, {CENTER.Y:F1})");
             System.Diagnostics.Debug.WriteLine("");
 
