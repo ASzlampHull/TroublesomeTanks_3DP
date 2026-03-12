@@ -8,8 +8,6 @@ using System.Linq;
 using System.Text.Json;
 using TTMapEditor.Managers;
 using TTMapEditor.Objects;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TTMapEditor.Maps
 {
@@ -19,19 +17,19 @@ namespace TTMapEditor.Maps
     /// preview objects (walls, tanks, pickups), and saving changes
     /// back to disk as JSON <see cref="MapData"/>.
     /// </summary>
-    public class MapPreview
+    internal class MapPreview
     {
-        Rectangle mPlayArea { get; set; }
+        private Rectangle mPlayArea;
 
-        List<RectWall> mWalls { get; set; }
+        private List<RectWall> mWalls;
 
-        List<Tank> mTanks { get; set; }
+        private List<Tank> mTanks;
 
-        List<Pickup> mPickups { get; set; }
+        private List<Pickup> mPickups;
 
-        string mFilePath { get; set; }
+        private string mFilePath;
 
-        MapData mMapData { get; set; }
+        private MapData mMapData;
 
         /// <summary>
         /// Creates a new map preview based on the supplied file path or directory.
@@ -128,16 +126,16 @@ namespace TTMapEditor.Maps
             // If there's no Maps folder in the bin, try to find one upward (useful when running from IDE)
             if (!Directory.Exists(mapsDir))
             {
-                DirectoryInfo? dir = new DirectoryInfo(baseDir);
-                for (int i = 0; i < 6 && dir != null; i++)
+                DirectoryInfo? currentDirectory = new DirectoryInfo(baseDir);
+                for (int i = 0; i < 6 && currentDirectory != null; i++)
                 {
-                    string candidate = Path.Combine(dir.FullName, "Maps");
-                    if (Directory.Exists(candidate))
+                    string candidateMapsDirectory = Path.Combine(currentDirectory.FullName, "Maps");
+                    if (Directory.Exists(candidateMapsDirectory))
                     {
-                        mapsDir = candidate;
+                        mapsDir = candidateMapsDirectory;
                         break;
                     }
-                    dir = dir.Parent;
+                    currentDirectory = currentDirectory.Parent;
                 }
             }
 
@@ -181,15 +179,15 @@ namespace TTMapEditor.Maps
             // As a final attempt, if the path doesn't point to an existing file, try appending "map.json"
             if (!File.Exists(fullPath))
             {
-                string alt = fullPath;
+                string alternativePath = fullPath;
                 if (!fullPath.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
                 {
-                    alt = Path.Combine(fullPath, "map.json");
+                    alternativePath = Path.Combine(fullPath, "map.json");
                 }
 
-                if (File.Exists(alt))
+                if (File.Exists(alternativePath))
                 {
-                    fullPath = alt;
+                    fullPath = alternativePath;
                 }
                 else
                 {
@@ -264,34 +262,34 @@ namespace TTMapEditor.Maps
         /// Builds all preview objects (walls, tanks, pickups) from a given <see cref="MapData"/>.
         /// Converts percentage-based map coordinates into screen-space rectangles and loads textures.
         /// </summary>
-        /// <param name="map">The map data to render in the preview.</param>
-        private void BuildPreviewFromMapData(MapData map)
+        /// <param name="pMapData">The map data to render in the preview.</param>
+        private void BuildPreviewFromMapData(MapData pMapData)
         {
             mWalls = new List<RectWall>();
             mTanks = new List<Tank>();
             mPickups = new List<Pickup>();
 
-            if (map.Walls != null)
+            if (pMapData.Walls != null)
             {
-                foreach (var w in map.Walls)
+                foreach (WallData wallData in pMapData.Walls)
                 {
-                    if (w == null) continue;
+                    if (wallData == null) continue;
                     float posX = 0f, posY = 0f;
                     float sizeX = 0f, sizeY = 0f;
                     float rotationDeg = 0f;
-                    if (w.Position != null && w.Position.Length >= 2)
+                    if (wallData.Position != null && wallData.Position.Length >= 2)
                     {
-                        float.TryParse(w.Position[0], NumberStyles.Float, CultureInfo.InvariantCulture, out posX);
-                        float.TryParse(w.Position[1], NumberStyles.Float, CultureInfo.InvariantCulture, out posY);
+                        float.TryParse(wallData.Position[0], NumberStyles.Float, CultureInfo.InvariantCulture, out posX);
+                        float.TryParse(wallData.Position[1], NumberStyles.Float, CultureInfo.InvariantCulture, out posY);
                     }
-                    if (w.Size != null && w.Size.Length >= 2)
+                    if (wallData.Size != null && wallData.Size.Length >= 2)
                     {
-                        float.TryParse(w.Size[0], NumberStyles.Float, CultureInfo.InvariantCulture, out sizeX);
-                        float.TryParse(w.Size[1], NumberStyles.Float, CultureInfo.InvariantCulture, out sizeY);
+                        float.TryParse(wallData.Size[0], NumberStyles.Float, CultureInfo.InvariantCulture, out sizeX);
+                        float.TryParse(wallData.Size[1], NumberStyles.Float, CultureInfo.InvariantCulture, out sizeY);
                     }
-                    if (w.Rotation != null)
+                    if (wallData.Rotation != null)
                     {
-                        float.TryParse(w.Rotation, NumberStyles.Float, CultureInfo.InvariantCulture, out rotationDeg);
+                        float.TryParse(wallData.Rotation, NumberStyles.Float, CultureInfo.InvariantCulture, out rotationDeg);
                     }
 
                     Vector2 position = new Vector2(
@@ -303,28 +301,28 @@ namespace TTMapEditor.Maps
                         mPlayArea.Height * (sizeY / 100.0f)
                     );
 
-                    Texture2D tex;
+                    Texture2D texture;
                     try
                     {
-                        tex = TTMapEditor.Instance().GetContentManager().Load<Texture2D>(w.Texture);
+                        texture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>(wallData.Texture);
                     }
                     catch
                     {
-                        tex = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("block");
+                        texture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("block");
                     }
 
-                    mWalls.Add(new RectWall(tex, new Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y), rotationDeg));
+                    mWalls.Add(new RectWall(texture, new Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y), rotationDeg));
                 }
             }
 
-            if (map.Tanks != null)
+            if (pMapData.Tanks != null)
             {
-                foreach (var t in map.Tanks)
+                foreach (TankData tankData in pMapData.Tanks)
                 {
-                    if (t?.Position == null || t.Position.Length < 2) continue;
+                    if (tankData?.Position == null || tankData.Position.Length < 2) continue;
                     float posX = 0f, posY = 0f;
-                    float.TryParse(t.Position[0], NumberStyles.Float, CultureInfo.InvariantCulture, out posX);
-                    float.TryParse(t.Position[1], NumberStyles.Float, CultureInfo.InvariantCulture, out posY);
+                    float.TryParse(tankData.Position[0], NumberStyles.Float, CultureInfo.InvariantCulture, out posX);
+                    float.TryParse(tankData.Position[1], NumberStyles.Float, CultureInfo.InvariantCulture, out posY);
 
                     Vector2 position = new Vector2(
                         mPlayArea.X + ((float)mPlayArea.Width * (posX / 100.0f)),
@@ -333,33 +331,33 @@ namespace TTMapEditor.Maps
 
                     // parse rotation if present (map stores degrees); default 0
                     float rotationDeg = 0f;
-                    if (!string.IsNullOrEmpty(t.Rotation))
+                    if (!string.IsNullOrEmpty(tankData.Rotation))
                     {
-                        float.TryParse(t.Rotation, NumberStyles.Float, CultureInfo.InvariantCulture, out rotationDeg);
+                        float.TryParse(tankData.Rotation, NumberStyles.Float, CultureInfo.InvariantCulture, out rotationDeg);
                     }
                     float rotationRad = MathHelper.ToRadians(rotationDeg);
 
                     // preview size and creation — your Tank preview constructor may differ; adapt as needed
                     int previewSize = 10;
                     Rectangle rect = new Rectangle((int)position.X - previewSize / 2, (int)position.Y - previewSize / 2, previewSize, previewSize);
-                    Texture2D tex;
-                    try { tex = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("block"); }
-                    catch { tex = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("block"); }
+                    Texture2D texture;
+                    try { texture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("block"); }
+                    catch { texture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("block"); }
 
-                    var previewTank = new Tank(tex, rect);
+                    var previewTank = new Tank(texture, rect);
                     previewTank.mRotation = rotationRad;
                     mTanks.Add(previewTank);
                 }
             }
 
-            if (map.Pickups != null)
+            if (pMapData.Pickups != null)
             {
-                foreach (var p in map.Pickups)
+                foreach (PickupData pickupData in pMapData.Pickups)
                 {
-                    if (p?.Position == null || p.Position.Length < 2) continue;
+                    if (pickupData?.Position == null || pickupData.Position.Length < 2) continue;
                     float posX = 0f, posY = 0f;
-                    float.TryParse(p.Position[0], NumberStyles.Float, CultureInfo.InvariantCulture, out posX);
-                    float.TryParse(p.Position[1], NumberStyles.Float, CultureInfo.InvariantCulture, out posY);
+                    float.TryParse(pickupData.Position[0], NumberStyles.Float, CultureInfo.InvariantCulture, out posX);
+                    float.TryParse(pickupData.Position[1], NumberStyles.Float, CultureInfo.InvariantCulture, out posY);
 
                     Vector2 position = new Vector2(
                         mPlayArea.X + ((float)mPlayArea.Width * (posX / 100.0f)),
@@ -368,18 +366,18 @@ namespace TTMapEditor.Maps
 
                     int previewSize = 9;
                     Rectangle rect = new Rectangle((int)position.X - previewSize / 2, (int)position.Y - previewSize / 2, previewSize, previewSize);
-                    Texture2D tex;
-                    try { tex = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("circle"); }
-                    catch { tex = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("circle"); }
+                    Texture2D texture;
+                    try { texture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("circle"); }
+                    catch { texture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("circle"); }
 
                     // Create preview pickup and apply activation map if present in the MapData
-                    var previewPickup = new Pickup(tex, rect);
+                    var previewPickup = new Pickup(texture, rect);
                     try
                     {
                         // if the deserialized PickupData contains ActivatedPickups (Dictionary<PickupType,bool>), apply it
-                        if (p.GetType().GetProperty("ActivatedPickups") != null)
+                        if (pickupData.GetType().GetProperty("ActivatedPickups") != null)
                         {
-                            var activatedProp = p.GetType().GetProperty("ActivatedPickups")!.GetValue(p);
+                            var activatedProp = pickupData.GetType().GetProperty("ActivatedPickups")!.GetValue(pickupData);
                             if (activatedProp is Dictionary<PickupType, bool> enumMap)
                             {
                                 previewPickup.SetActivatedPickups(enumMap);
@@ -415,9 +413,9 @@ namespace TTMapEditor.Maps
         /// </summary>
         /// <param name="pLines">All lines read from the legacy map file.</param>
         /// <returns>A list of walls reconstructed from the legacy format.</returns>
-        public List<RectWall> ParseLines(string[] pLines)
+        private List<RectWall> ParseLines(string[] pLines)
         {
-            List<RectWall> Walls = new List<RectWall>();
+            List<RectWall> walls = new List<RectWall>();
 
             string texture = null;
             Vector2 positionFallback = Vector2.Zero;
@@ -465,11 +463,11 @@ namespace TTMapEditor.Maps
                     RectWall currentWall = new RectWall(
                         TTMapEditor.Instance().GetContentManager().Load<Texture2D>(texture),
                         new Rectangle((int)positionFallback.X, (int)positionFallback.Y, (int)sizeFallback.X, (int)sizeFallback.Y));
-                    Walls.Add(currentWall);
+                    walls.Add(currentWall);
                     isWall = false;
                 }
             }
-            return Walls;
+            return walls;
         }
 
         /// <summary>
@@ -545,16 +543,16 @@ namespace TTMapEditor.Maps
 
             if (!Directory.Exists(mapsDir))
             {
-                DirectoryInfo? dir = new DirectoryInfo(baseDir);
-                for (int i = 0; i < 6 && dir != null; i++)
+                DirectoryInfo? currentDirectory = new DirectoryInfo(baseDir);
+                for (int i = 0; i < 6 && currentDirectory != null; i++)
                 {
-                    string candidate = Path.Combine(dir.FullName, "Maps");
-                    if (Directory.Exists(candidate))
+                    string candidateMapsDirectory = Path.Combine(currentDirectory.FullName, "Maps");
+                    if (Directory.Exists(candidateMapsDirectory))
                     {
-                        mapsDir = candidate;
+                        mapsDir = candidateMapsDirectory;
                         break;
                     }
-                    dir = dir.Parent;
+                    currentDirectory = currentDirectory.Parent;
                 }
             }
 

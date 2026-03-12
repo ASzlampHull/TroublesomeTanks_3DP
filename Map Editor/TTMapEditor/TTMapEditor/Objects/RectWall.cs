@@ -16,7 +16,7 @@ namespace TTMapEditor.Objects
     /// rotated around its center. It supports switching between rotation and
     /// scaling modes, and provides hit-testing that respects the current rotation.
     /// </summary>
-    public class RectWall : SceneObject
+    internal class RectWall : SceneObject
     {
 
         private static readonly Color COLOUR = DGS.Instance.GetColour("COLOUR_WALL");

@@ -17,7 +17,7 @@ namespace TTMapEditor.Saving
     /// - Creating <see cref="MapPreview"/> instances for existing and new maps.
     /// - Delegating map saving operations to <see cref="MapPreview"/>.
     /// </summary>
-    public class MapEditingMapService
+    internal class MapEditingMapService
     {
 
         readonly string mMapsRoot;

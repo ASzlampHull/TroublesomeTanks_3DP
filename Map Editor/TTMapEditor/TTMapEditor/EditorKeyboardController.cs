@@ -1,10 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TTMapEditor.Managers;
 using TTMapEditor.Maps;
 using TTMapEditor.Objects;
@@ -40,7 +35,7 @@ namespace TTMapEditor
     /// and <see cref="MapBoundaryValidator"/> to ensure wall edits remain inside
     /// the valid play area.
     /// </remarks>
-    public class EditorKeyboardController
+    internal class EditorKeyboardController
     {
         /// <summary>
         /// Reference to the map preview currently being edited.
@@ -117,8 +112,8 @@ namespace TTMapEditor
         /// </remarks>
         public void Update()
         {
-            SceneObject selected = mSelectionManager.GetSelectedObject();
-            if (selected == null || !selected.GetIsSelected())
+            SceneObject selectedObject = mSelectionManager.GetSelectedObject();
+            if (selectedObject == null || !selectedObject.GetIsSelected())
             {
                 return;
             }
@@ -126,39 +121,39 @@ namespace TTMapEditor
             // Delete
             if (InputManager.isKeyPressed(Keys.Delete))
             {
-                mMapPreview.RemoveObject(selected);
+                mMapPreview.RemoveObject(selectedObject);
                 mSelectionManager.SetSelectedObject(null);
                 return;
             }
 
             // Cache last valid rect for walls
-            if (selected is RectWall)
+            if (selectedObject is RectWall)
             {
-                mLastValidRect = selected.mRectangle;
+                mLastValidRect = selectedObject.mRectangle;
             }
 
-            if (selected is Pickup)
+            if (selectedObject is Pickup selectedPickup)
             {
                 if (InputManager.isKeyPressed(Keys.D1))
                 {
-                    ((Pickup)selected).TogglePickupType(PickupType.HEALTH);
+                    selectedPickup.TogglePickupType(PickupType.HEALTH);
                 }
                 if (InputManager.isKeyPressed(Keys.D2))
                 {
-                    ((Pickup)selected).TogglePickupType(PickupType.EMP);
+                    selectedPickup.TogglePickupType(PickupType.EMP);
                 }
                 if (InputManager.isKeyPressed(Keys.D3))
                 {
-                    ((Pickup)selected).TogglePickupType(PickupType.MINE);
+                    selectedPickup.TogglePickupType(PickupType.MINE);
                 }
                 if (InputManager.isKeyPressed(Keys.D4))
                 {
-                    ((Pickup)selected).TogglePickupType(PickupType.BOUNCY_BULLET);
+                    selectedPickup.TogglePickupType(PickupType.BOUNCY_BULLET);
                 }
             }
 
-            HandleTankRotation(selected as Tank);
-            HandleWallTransform(selected as RectWall);
+            HandleTankRotation(selectedObject as Tank);
+            HandleWallTransform(selectedObject as RectWall);
         }
 
         /// <summary>

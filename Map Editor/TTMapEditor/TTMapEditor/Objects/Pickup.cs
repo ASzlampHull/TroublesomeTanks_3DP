@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace TTMapEditor.Objects
 {
-    public enum PickupType
+internal enum PickupType
     {
         HEALTH,
         EMP,
@@ -16,7 +16,7 @@ namespace TTMapEditor.Objects
         BOUNCY_BULLET,
     }
 
-    public class Pickup : SceneObject
+    internal class Pickup : SceneObject
     {
         private static readonly Color COLOUR = Color.Red;
         private static readonly Texture2D mEmpIcon = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("EMP");

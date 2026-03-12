@@ -4,10 +4,8 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Text.Json;
 using TTMapEditor.Managers;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace TTMapEditor.Scenes
 {
@@ -17,12 +15,10 @@ namespace TTMapEditor.Scenes
     /// previous, current and next map thumbnails and a title for the
     /// currently selected map.
     /// </summary>
-    public class MapSelectionScene : IScene
+    internal class MapSelectionScene : IScene
     {
-        // Graphics
-        GraphicsDevice mGraphicsDevice;
-        IGame mGameInstance = TTMapEditor.Instance();
-        private MainMenuScene mStartScene;
+        private readonly IGame mGameInstance;
+        private readonly MainMenuScene mStartScene;
 
         // Static content loaded once for all instances of this scene
         private static readonly Texture2D mBackgroundTexture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("background_01");
@@ -33,16 +29,15 @@ namespace TTMapEditor.Scenes
         private Rectangle mBackgroundRectangle;
         private Vector2 mTitlePosition;
         private List<string> mMapFiles;
-        private TTMapEditor mEditorInstance;
         private int mCurrentScrollPosition;
 
         // Thumbnail textures and layout
         private List<Texture2D> mThumbnailTextures = new List<Texture2D>();
-        Rectangle mCurrentRectangle;
-        Rectangle mPreviousRectangle;
-        Rectangle mNextRectangle;
-        int mThumbnailWidth;
-        int mThumbnailHeight;
+        private Rectangle mCurrentRectangle;
+        private Rectangle mPreviousRectangle;
+        private Rectangle mNextRectangle;
+        private int mThumbnailWidth;
+        private int mThumbnailHeight;
 
         private string mMapDirectory;
 
@@ -62,7 +57,7 @@ namespace TTMapEditor.Scenes
             mSpriteBatch = new SpriteBatch(mGameInstance.GetGraphicsDeviceManager().GraphicsDevice);
             mCurrentScrollPosition = 0;
 
-            mMapDirectory = getMapDirectory();
+            mMapDirectory = GetMapDirectory();
 
             int screenWidth = mGameInstance.GetGraphicsDeviceManager().GraphicsDevice.Viewport.Width;
             int screenHeight = mGameInstance.GetGraphicsDeviceManager().GraphicsDevice.Viewport.Height;
@@ -131,7 +126,7 @@ namespace TTMapEditor.Scenes
         /// an absolute path in the configured maps directory.
         /// </summary>
         /// <param name="pMapName">Relative path of the selected map file.</param>
-        private void selectMap(string pMapName)
+        private void SelectMap(string pMapName)
         {
             // pMapName is stored as relative path. Pass an absolute path to the editor.
             string fullMapPath = Path.Combine(mMapDirectory, pMapName);
@@ -206,7 +201,7 @@ namespace TTMapEditor.Scenes
             if (InputManager.isKeyPressed(Keys.Enter))
             {
                 // Open the selected map in the editor
-                selectMap(mMapFiles[mCurrentScrollPosition]);
+                SelectMap(mMapFiles[mCurrentScrollPosition]);
             }
         }
 
@@ -218,7 +213,7 @@ namespace TTMapEditor.Scenes
         /// </summary>
         /// <param name="fullMapPath">Absolute path to the map JSON file.</param>
         /// <param name="thumbnailPath">Destination file path for the PNG thumbnail.</param>
-        void MakeThumbnailTextureFromMapFile(string fullMapPath, string thumbnailPath)
+        private void MakeThumbnailTextureFromMapFile(string fullMapPath, string thumbnailPath)
         {
             string mapContent = File.ReadAllText(fullMapPath);
             MapData mapData = JsonSerializer.Deserialize<MapData>(mapContent);
@@ -231,8 +226,6 @@ namespace TTMapEditor.Scenes
             mGameInstance.GetGraphicsDeviceManager().GraphicsDevice.SetRenderTarget(renderTarget);
             mGameInstance.GetGraphicsDeviceManager().GraphicsDevice.Clear(Color.Transparent);
 
-            int screenWidth = TTMapEditor.Instance().GetGraphicsDeviceManager().GraphicsDevice.Viewport.Width;
-            int screenHeight = TTMapEditor.Instance().GetGraphicsDeviceManager().GraphicsDevice.Viewport.Height;
             Rectangle playArea = new Rectangle(0, 0, thumbnailWidth, thumbnailHeight);
 
             // First pass: draw background and outlines for all objects
@@ -380,7 +373,7 @@ namespace TTMapEditor.Scenes
         /// <param name="pPos">Object position as a percentage of the map (0–100).</param>
         /// <param name="pSize">Object size as a percentage of the map (0–100).</param>
         /// <returns>Rectangle in pixel coordinates suitable for thumbnail rendering.</returns>
-        Rectangle GetRect(Rectangle pPlayArea, Vector2 pPos, Vector2 pSize)
+        private Rectangle GetRect(Rectangle pPlayArea, Vector2 pPos, Vector2 pSize)
         {
             return new Rectangle(
                 (int)(pPlayArea.X + (pPlayArea.Width * (pPos.X / 100.0))),
@@ -395,7 +388,7 @@ namespace TTMapEditor.Scenes
         /// </summary>
         /// <param name="pRect">Rectangle to outline.</param>
         /// <param name="pTextureName">Name of the texture asset to draw.</param>
-        void DrawOutline(Rectangle pRect, string pTextureName)
+        private void DrawOutline(Rectangle pRect, string pTextureName)
         {
             int offset = 2;
             Texture2D texture = mGameInstance.GetContentManager().Load<Texture2D>(pTextureName);
@@ -411,7 +404,7 @@ namespace TTMapEditor.Scenes
         /// <param name="pSize">Wall size in map space (percentage, not used directly here).</param>
         /// <param name="pRotation">Rotation of the wall in radians.</param>
         /// <param name="pTextureName">Name of the wall texture asset.</param>
-        void DrawOutline(Rectangle pRectangle, Vector2 pPosition, Vector2 pSize, float pRotation, string pTextureName)
+        private void DrawOutline(Rectangle pRectangle, Vector2 pPosition, Vector2 pSize, float pRotation, string pTextureName)
         {
             int offset = 2;
             Texture2D texture = mGameInstance.GetContentManager().Load<Texture2D>(pTextureName);
@@ -455,7 +448,7 @@ namespace TTMapEditor.Scenes
         }
 
         //Gets a relative root of the maps folder that works in both debug and release builds
-        public string getMapDirectory()
+        private string GetMapDirectory()
         {
             string currentDir = Environment.CurrentDirectory;
             string mapDirectory = Path.GetFullPath(Path.Combine(currentDir, "..", "..", "..","..","..",".."));

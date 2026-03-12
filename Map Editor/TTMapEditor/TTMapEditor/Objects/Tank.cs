@@ -14,7 +14,7 @@ namespace TTMapEditor.Objects
     /// Responsible for rendering a rotatable tank sprite with a visual
     /// front/heading indicator to show its facing direction.
     /// </summary>
-    public class Tank : SceneObject
+    internal class Tank : SceneObject
     {
         /// <summary>
         /// Default tint color used when the tank is not selected.

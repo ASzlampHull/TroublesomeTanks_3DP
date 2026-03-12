@@ -14,7 +14,7 @@ namespace TTMapEditor.Managers
     /// Serializable container for all map content (walls, tanks, and pickups).
     /// This is the format persisted to and loaded from map JSON files.
     /// </summary>
-    public class MapData
+    internal class MapData
     {
         public List<WallData> Walls { get; set; }
 
@@ -27,7 +27,7 @@ namespace TTMapEditor.Managers
     /// Describes a single wall segment in the map, including its texture,
     /// position, size, and rotation.
     /// </summary>
-    public class WallData
+    internal class WallData
     {
 
         public string Texture { get; set; }
@@ -43,7 +43,7 @@ namespace TTMapEditor.Managers
     /// Represents a tank spawn point in the map, including its position
     /// and facing rotation.
     /// </summary>
-    public class TankData
+    internal class TankData
     {
         public string[] Position { get; set; }
 
@@ -54,7 +54,7 @@ namespace TTMapEditor.Managers
     /// Represents a pickup instance in the map, including where it is placed
     /// and which pickup types are active at this location.
     /// </summary>
-    public class PickupData
+    internal class PickupData
     {
         public string[] Position { get; set; }
 

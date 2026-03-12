@@ -8,7 +8,7 @@ namespace TTMapEditor.Objects
     /// while the user drags with the mouse.
     /// </summary>
     /// <typeparam name="T">Concrete <see cref="SceneObject"/> type being dragged.</typeparam>
-    public class DraggableTemplate<T> where T : SceneObject
+    internal class DraggableTemplate<T> where T : SceneObject
     {
 
         public T mTemplate { get; }

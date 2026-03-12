@@ -8,7 +8,7 @@ namespace TTMapEditor.Maps
     /// Provides helper methods to validate whether map elements
     /// lie completely within the configured playable area.
     /// </summary>
-    public class MapBoundaryValidator
+    internal class MapBoundaryValidator
     {
 
         private readonly Rectangle mPlayArea;

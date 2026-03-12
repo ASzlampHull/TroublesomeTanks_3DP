@@ -23,7 +23,7 @@ namespace TTMapEditor.Scenes
     /// Handles keyboard navigation for the menu and transitions to the
     /// appropriate scenes based on the selected option.
     /// </summary>
-    public class MainMenuScene : IScene
+    internal class MainMenuScene : IScene
     {
 
         IGame mGameInstance = TTMapEditor.Instance();

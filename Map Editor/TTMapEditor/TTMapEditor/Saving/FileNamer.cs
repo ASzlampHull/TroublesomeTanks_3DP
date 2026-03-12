@@ -10,7 +10,7 @@ namespace TTMapEditor.Saving
     /// Handles keyboard input, character filtering, repeat rate, and drawing
     /// of the text entry background and prompt.
     /// </summary>
-    public class FileNamer
+    internal class FileNamer
     {
         private string mCurrentName;
 

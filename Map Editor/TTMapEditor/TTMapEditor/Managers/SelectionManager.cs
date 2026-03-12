@@ -10,7 +10,7 @@ namespace TTMapEditor.Managers
     /// within a <see cref="MapPreview"/>. Ensures only one object is selected
     /// at a time and that objects cannot be moved outside the valid play area.
     /// </summary>
-    public class SelectionManager
+    internal class SelectionManager
     {
         SceneObject mSelectedObject;
 

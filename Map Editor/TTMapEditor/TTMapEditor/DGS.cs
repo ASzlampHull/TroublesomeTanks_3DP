@@ -9,7 +9,7 @@ namespace TTMapEditor
     /// Global data store (DGS) for simple typed configuration values
     /// loaded from a text file at startup.
     /// </summary>
-    public class DGS
+    internal class DGS
     {
         /// <summary>
         /// Singleton instance backing field.

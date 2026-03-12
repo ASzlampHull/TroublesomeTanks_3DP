@@ -13,7 +13,7 @@ namespace TTMapEditor.Scenes
     /// Renders the previous and next scenes to textures and animates the
     /// next scene sliding in from the top until it replaces the previous one.
     /// </summary>
-    public class TransitionScene : IScene
+    internal class TransitionScene : IScene
     {
 
         GraphicsDevice mGraphicsDevice;

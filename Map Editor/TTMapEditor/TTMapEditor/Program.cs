@@ -1,7 +1,7 @@
 ﻿namespace TTMapEditor
 {
 
-    public static class Program
+    internal static class Program
     {
         static void Main()
         {

@@ -18,7 +18,7 @@ namespace TTMapEditor.Managers
     /// 
     /// Implemented as a singleton; use <see cref="Instance"/> to access it.
     /// </summary>
-    public class SceneManager
+    internal class SceneManager
     {
         private List<IScene> mScenes = new List<IScene>();
 

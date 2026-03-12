@@ -10,7 +10,7 @@ namespace TTMapEditor.Objects
     /// Handles mouse interaction for dragging these templates onto the map preview and
     /// instantiating new map objects when a drag ends inside the valid play area.
     /// </summary>
-    public class TemplatePalette
+    internal class TemplatePalette
     {
         private readonly SpriteFont mTitleFont;
         private readonly Texture2D mPixelTexture;

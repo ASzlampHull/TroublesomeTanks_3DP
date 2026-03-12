@@ -18,30 +18,30 @@ namespace TTMapEditor.Scenes
     /// - Handle selection, dragging and keyboard actions for existing objects.
     /// - Validate map rules (e.g. exact tank count) before saving.
     /// </summary>
-    public class MapEditingScene : IScene
+    internal class MapEditingScene : IScene
     {
-        GraphicsDevice mGraphicsDevice;
-        IGame mGameInstance = TTMapEditor.Instance();
-        MainMenuScene mStartScene;
-        string mName;
-        static readonly SpriteFont mTitleFont = TTMapEditor.Instance().GetContentManager().Load<SpriteFont>("TitleFont");
-        static readonly Texture2D mBackgroundTexture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("background_01");
-        static readonly Texture2D mPixelTexture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("white_pixel");
-        static readonly Texture2D mCircleTexture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("circle");
-        static readonly Color BACKGROUND_COLOUR = DGS.Instance.GetColour("COLOUR_BACKGROUND");
-        Rectangle mBackgroundRectangle;
-        Rectangle mPlayArea;
-        Rectangle mPlayAreaOutline;
-        MapPreview mPreview;
-        bool mIsNewMap;
-        bool mFileNameEntered = false;
-        bool notEnoughTanks = false;
-        float popUpTimer = 0f;
-        float timeToShowPopUp = 2f;
-        SelectionManager mSelectionManager;
+        private readonly GraphicsDevice mGraphicsDevice;
+        private readonly IGame mGameInstance = TTMapEditor.Instance();
+        private readonly MainMenuScene mStartScene;
+        private string mName;
+        private static readonly SpriteFont mTitleFont = TTMapEditor.Instance().GetContentManager().Load<SpriteFont>("TitleFont");
+        private static readonly Texture2D mBackgroundTexture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("background_01");
+        private static readonly Texture2D mPixelTexture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("white_pixel");
+        private static readonly Texture2D mCircleTexture = TTMapEditor.Instance().GetContentManager().Load<Texture2D>("circle");
+        private static readonly Color BACKGROUND_COLOUR = DGS.Instance.GetColour("COLOUR_BACKGROUND");
+        private Rectangle mBackgroundRectangle;
+        private Rectangle mPlayArea;
+        private Rectangle mPlayAreaOutline;
+        private MapPreview mPreview;
+        private bool mIsNewMap;
+        private bool mFileNameEntered = false;
+        private bool mNotEnoughTanks = false;
+        private float mPopUpTimer = 0f;
+        private float mTimeToShowPopUp = 2f;
+        private SelectionManager mSelectionManager;
         private FileNamer mFileNamer;
-        Rectangle mSaveButtonRect;
-        const int MaxTanks = 4;
+        private Rectangle mSaveButtonRect;
+        private const int MAX_TANKS = 4;
         private string mMapRoot;
         private MapBoundaryValidator mBoundaryValidator;
         private EditorKeyboardController mKeyboardController;
@@ -61,7 +61,7 @@ namespace TTMapEditor.Scenes
             mName = pMapFile;
             mIsNewMap = pIsNewMap;
 
-            mMapRoot = getMapRoot();
+            mMapRoot = GetMapRoot();
 
             int viewPortWidth = mGraphicsDevice.Viewport.Width;
             int viewPortHeight = mGraphicsDevice.Viewport.Height;
@@ -92,7 +92,7 @@ namespace TTMapEditor.Scenes
             // Set up input and interaction helpers.
             mSelectionManager = new SelectionManager(mPreview, mBoundaryValidator);
             mKeyboardController = new EditorKeyboardController(mPreview, mSelectionManager, mBoundaryValidator);
-            mTemplatePalette = new TemplatePalette(mTitleFont, mPixelTexture, mCircleTexture, mPreview, mBoundaryValidator, viewPortWidth, MaxTanks);
+            mTemplatePalette = new TemplatePalette(mTitleFont, mPixelTexture, mCircleTexture, mPreview, mBoundaryValidator, viewPortWidth, MAX_TANKS);
 
             // Position the save button near the top-left, with padding based on font size.
             int saveButtonWidth = (int)(mTitleFont.MeasureString("Save").X + 20);
@@ -116,15 +116,15 @@ namespace TTMapEditor.Scenes
             mFileNamer.Draw(mSpriteBatch);
 
             // Draw the "not enough tanks" popup while it is active and within display duration.
-            if (notEnoughTanks)
+            if (mNotEnoughTanks)
             {
-                if (popUpTimer < timeToShowPopUp)
+                if (mPopUpTimer < mTimeToShowPopUp)
                 {
-                    popUpTextBox($"You must have exactly {MaxTanks} tanks to save the map.");
+                    ShowPopUpTextBox($"You must have exactly {MAX_TANKS} tanks to save the map.");
                 }
                 else
                 {
-                    notEnoughTanks = false;
+                    mNotEnoughTanks = false;
                 }
             }
 
@@ -134,7 +134,7 @@ namespace TTMapEditor.Scenes
         /// <summary>
         /// Draws the editor background and the current map name (or UNNAMED if not yet set).
         /// </summary>
-        void DrawBackgroundAndTitle()
+        private void DrawBackgroundAndTitle()
         {
             mSpriteBatch.Draw(mBackgroundTexture, mBackgroundRectangle, Color.White);
 
@@ -167,7 +167,7 @@ namespace TTMapEditor.Scenes
         /// <summary>
         /// Draws the play area border and all placed objects (walls, tanks and pickups).
         /// </summary>
-        void DrawPlayAreaAndObjects()
+        private void DrawPlayAreaAndObjects()
         {
             // Draw play area border and fill.
             mSpriteBatch.Draw(mPixelTexture, mPlayAreaOutline, Color.Black);
@@ -201,7 +201,7 @@ namespace TTMapEditor.Scenes
         /// <summary>
         /// Draws the clickable save button and its label, with hover feedback.
         /// </summary>
-        void DrawSaveButton()
+        private void DrawSaveButton()
         {
             // Highlight the button when the mouse is over it.
             if (mSaveButtonRect.Contains(InputManager.GetMousePosition()))
@@ -234,7 +234,7 @@ namespace TTMapEditor.Scenes
         {
             InputManager.Update();
             mFileNamer.Update(pSeconds);
-            popUpTimer += pSeconds;
+            mPopUpTimer += pSeconds;
 
             // Escape returns to the start scene without saving.
             if (InputManager.isKeyPressed(Keys.Escape))
@@ -247,10 +247,10 @@ namespace TTMapEditor.Scenes
             if (mFileNamer.IsActive() && InputManager.isKeyPressed(Keys.Enter))
             {
                 // Enforce exactly MaxTanks before allowing save.
-                if (mPreview.GetTanks().Count != MaxTanks)
+                if (mPreview.GetTanks().Count != MAX_TANKS)
                 {
-                    notEnoughTanks = true;
-                    popUpTimer = 0f;
+                    mNotEnoughTanks = true;
+                    mPopUpTimer = 0f;
                     mFileNamer.ReturnName();
                     return;
                 }
@@ -297,10 +297,10 @@ namespace TTMapEditor.Scenes
         void SaveMap()
         {
             // Validation: the map must contain exactly MaxTanks tanks.
-            if (mPreview.GetTanks().Count != MaxTanks)
+            if (mPreview.GetTanks().Count != MAX_TANKS)
             {
-                notEnoughTanks = true;
-                popUpTimer = 0f;
+                mNotEnoughTanks = true;
+                mPopUpTimer = 0f;
                 return;
             }
             else
@@ -318,7 +318,7 @@ namespace TTMapEditor.Scenes
         /// Intended to be called from <see cref="Draw(float)"/> while a timer controls visibility.
         /// </summary>
         /// <param name="pMessage">Message to display to the user.</param>
-        void popUpTextBox(string pMessage)
+        private void ShowPopUpTextBox(string pMessage)
         {
             int height = (int)mTitleFont.MeasureString(pMessage).Y;
             int width = (int)mTitleFont.MeasureString(pMessage).X;
@@ -335,7 +335,7 @@ namespace TTMapEditor.Scenes
         }
 
         //Gets a relative root of the maps folder that works in both debug and release builds
-        private string getMapRoot()
+        private string GetMapRoot()
         {
             string currentDir = Environment.CurrentDirectory;
             string mapDirectory = Path.GetFullPath(Path.Combine(currentDir, "..", "..", "..", "..", "..", ".."));
