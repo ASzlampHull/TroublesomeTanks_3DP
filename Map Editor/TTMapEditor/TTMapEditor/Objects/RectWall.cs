@@ -32,7 +32,7 @@ namespace TTMapEditor.Objects
         /// </summary>
         /// <param name="pTexture">Texture used to render the wall.</param>
         /// <param name="pRectangle">Rectangle defining the wall's position and size.</param>
-        /// <param name="pRotation">Initial rotation in radians (currently ignored and set to 0).</param>
+        /// <param name="pRotation">Initial rotation in radians.</param>
         public RectWall(Texture2D pTexture, Rectangle pRectangle, float pRotation = 0f) : base(pTexture, pRectangle)
         {
             mRotation = pRotation;
