@@ -270,7 +270,7 @@ namespace Tankontroller.World
             {
                 float backwardRotation = Transform.Rotation + MathHelper.ToRadians(180);
                 Vector2 backwardDirection = new Vector2((float)Math.Cos(backwardRotation), (float)Math.Sin(backwardRotation));
-                float behindOffset = 50.0f * mResolutionScale;
+                float behindOffset = 65.0f * mResolutionScale;
                 Vector2 behindTheTank = Transform.Position + backwardDirection * behindOffset;
                 mBullets.Add(new MineBullet(behindTheTank, Vector2.Zero, mColour, 600.0f));
                 BulletType = BulletType.DEFAULT;
@@ -335,24 +335,6 @@ namespace Tankontroller.World
         #endregion
 
         #region Collisions
-
-        public bool PointIsInTank(Vector2 pPoint)
-        {
-            Vector2[] corners = new Vector2[4];
-            GetCorners(corners);
-            int i;
-            int j;
-            bool result = false;
-            for (i = 0, j = corners.Length - 1; i < corners.Length; j = i++)
-            {
-                if ((corners[i].Y > pPoint.Y) != (corners[j].Y > pPoint.Y) &&
-                    (pPoint.X < (corners[j].X - corners[i].X) * (pPoint.Y - corners[i].Y) / (corners[j].Y - corners[i].Y) + corners[i].X))
-                {
-                    result = !result;
-                }
-            }
-            return result;
-        }
 
         public bool IsInsideShockwave()
         {

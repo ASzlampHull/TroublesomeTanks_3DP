@@ -13,7 +13,7 @@ namespace Tankontroller
     public static class MapManager
     {
         /// <summary>
-        /// DEPRACATED method for loading maps from a custom text format. Use LoadMapFromJson instead for better performance and maintainability.
+        /// DEPRECATED method for loading maps from a custom text format. Use LoadMapFromJson instead for better performance and maintainability.
         /// </summary>
         public static TheWorld LoadMap(string filePath)
         {
@@ -26,7 +26,7 @@ namespace Tankontroller
         }
 
         /// <summary>
-        /// DEPRACATED method for loading maps from a custom text format. Use LoadMapFromJson instead for better performance and maintainability.
+        /// DEPRECATED method for loading maps from a custom text format. Use LoadMapFromJson instead for better performance and maintainability.
         /// </summary>
         private static TheWorld ParseLines(string[] lines)
         {

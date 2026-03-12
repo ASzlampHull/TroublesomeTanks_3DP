@@ -22,7 +22,7 @@ namespace Tankontroller.World.Shapes
         /// Must have an owner and mEnabled flag must be true.
         /// </summary>
         public bool Enabled {
-            get => mEnabled && Owner != null;
+            get => mEnabled;
             set => mEnabled = value;
         }
 

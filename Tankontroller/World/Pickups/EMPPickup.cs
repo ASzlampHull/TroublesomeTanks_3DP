@@ -9,7 +9,7 @@ namespace Tankontroller.World.Pickups
     {
         private static readonly Texture2D mEMPTexture = Tankontroller.Instance().CM().Load<Texture2D>("EMP");
 
-        public EMPPickup(Vector2 pPositon) : base(mEMPTexture, new Rectangle(400, 500, 40, 40), pPositon) { }
+        public EMPPickup(Vector2 pPositon) : base(mEMPTexture, new Rectangle(400, 500, 45, 45), pPositon) { }
 
         public override void TriggerEffect(Tank pTank)
         {

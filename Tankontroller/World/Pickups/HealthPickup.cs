@@ -8,7 +8,7 @@ namespace Tankontroller.World.Pickups
     {
         private static readonly Texture2D mHeartTexture = Tankontroller.Instance().CM().Load<Texture2D>("healthpickup");
 
-        public HealthPickup(Vector2 pPosition) : base(mHeartTexture, new Rectangle(400, 500, 40, 40), pPosition) { }
+        public HealthPickup(Vector2 pPosition) : base(mHeartTexture, new Rectangle(400, 500, 35, 43), pPosition) { }
 
         public override void TriggerEffect(Tank pTank)
         {
