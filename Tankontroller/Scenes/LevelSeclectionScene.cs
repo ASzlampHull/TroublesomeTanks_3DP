@@ -14,6 +14,7 @@ namespace Tankontroller.Scenes
     public class LevelSelectionScene : IScene
     {
         private static readonly bool ONLY_KEYBOARD_ON_MAP_SELECT = DGS.Instance.GetBool("ONLY_KEYBOARD_ON_MAP_SELECT");
+        private static Color WALL_COLOUR = DGS.Instance.GetColour("COLOUR_WALLS");
         private static readonly Texture2D mBackgroundTexture = Tankontroller.Instance().CM().Load<Texture2D>("background_01");
         private static readonly SpriteFont mSpriteFont = Tankontroller.Instance().CM().Load<SpriteFont>("TitleFont");
         private Rectangle mBackgroundRectangle;
@@ -254,7 +255,7 @@ namespace Tankontroller.Scenes
                     wallTexture,
                     drawPosition,
                     null,
-                    Color.DarkGray,
+                    WALL_COLOUR,
                     rotationRadians,
                     origin,
                     scale,
