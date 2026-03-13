@@ -40,14 +40,14 @@ namespace Tankontroller.World
         private RectangleAxisAlignedShape[] mPlayAreaCollisionShapes = new RectangleAxisAlignedShape[4];
         private List<Tank> mTanks = new List<Tank>();
         private List<RectWall> mWalls;
-        private List<Vector2> mPickupSpawnPositions = new List<Vector2>();
+        private List<PickupSpawnPoint> mPickupSpawnPositions = new List<PickupSpawnPoint>();
         private List<Pickup> mPickups = new List<Pickup>();
         private float mPickupSpawnTimer = PICKUP_SPAWN_TIME;
         private List<PickupType> mActivatedPickups = new List<PickupType>();
 
         public Rectangle PlayArea { get { return mPlayArea; } }
 
-        public TheWorld(Rectangle pPlayArea, List<RectWall> pWalls, List<Tank> pTanks, List<Vector2> pPickupSpawnPositions)
+        public TheWorld(Rectangle pPlayArea, List<RectWall> pWalls, List<Tank> pTanks, List <PickupSpawnPoint> pPickupSpawnPositions)
         {
             mWalls = pWalls;
             mTanks = pTanks;
@@ -87,37 +87,37 @@ namespace Tankontroller.World
         public void AddPickup()
         {
             mPickupSpawnTimer = PICKUP_SPAWN_TIME;
-            if (PICKUP_SPAWN && mActivatedPickups.Count() > 0)
+            if (PICKUP_SPAWN && mActivatedPickups.Count() > 0 && mPickupSpawnPositions.Count() > 0)
             {
                 int randPos = new Random().Next(0, mPickupSpawnPositions.Count());
                 //Checks for any pickups at this position to prevent spawn overlap
                 foreach (Pickup p in mPickups)
                 {
-                    if (p.Transform.Position == mPickupSpawnPositions[randPos])
+                    if (p.Transform.Position == mPickupSpawnPositions[randPos].GetPosition())
                     {
                         return;
                     }
                 }
 
                 int randPickup = new Random().Next(0, mActivatedPickups.Count());
-                if (mActivatedPickups[randPickup] == PickupType.HEALTH)
+                if (mActivatedPickups[randPickup] == PickupType.HEALTH && mPickupSpawnPositions[randPos].IsPickupTypeActivated(PickupType.HEALTH))
                 {
-                    HealthPickup mHealthPickup = new HealthPickup(mPickupSpawnPositions[randPos]);
+                    HealthPickup mHealthPickup = new HealthPickup(mPickupSpawnPositions[randPos].GetPosition());
                     mPickups.Add(mHealthPickup);
                 }
-                else if (mActivatedPickups[randPickup] == PickupType.EMP)
+                else if (mActivatedPickups[randPickup] == PickupType.EMP && mPickupSpawnPositions[randPos].IsPickupTypeActivated(PickupType.EMP))
                 {
-                    EMPPickup mEMPPickup = new EMPPickup(mPickupSpawnPositions[randPos]);
+                    EMPPickup mEMPPickup = new EMPPickup(mPickupSpawnPositions[randPos].GetPosition());
                     mPickups.Add(mEMPPickup);
                 }
-                else if (mActivatedPickups[randPickup] == PickupType.MINE)
+                else if (mActivatedPickups[randPickup] == PickupType.MINE && mPickupSpawnPositions[randPos].IsPickupTypeActivated(PickupType.MINE))
                 {
-                    MinePickup mMinePickup = new MinePickup(mPickupSpawnPositions[randPos]);
+                    MinePickup mMinePickup = new MinePickup(mPickupSpawnPositions[randPos].GetPosition());
                     mPickups.Add(mMinePickup);
                 }
-                else if (mActivatedPickups[randPickup] == PickupType.BOUNCY_BULLET)
+                else if (mActivatedPickups[randPickup] == PickupType.BOUNCY_BULLET && mPickupSpawnPositions[randPos].IsPickupTypeActivated(PickupType.BOUNCY_BULLET))
                 {
-                    BouncyBulletPickup mBouncyBulletPickup = new BouncyBulletPickup(mPickupSpawnPositions[randPos]);
+                    BouncyBulletPickup mBouncyBulletPickup = new BouncyBulletPickup(mPickupSpawnPositions[randPos].GetPosition());
                     mPickups.Add(mBouncyBulletPickup);
                 }
             }
