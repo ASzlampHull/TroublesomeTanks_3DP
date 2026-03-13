@@ -158,7 +158,8 @@ namespace TTMapEditor.Managers
             catch (System.Exception e)
             {
                 mScenes.Clear();
-                mScenes.Add(new ErrorMessageScene(e));
+                TTMapEditor game = (TTMapEditor)TTMapEditor.Instance();
+                game.Exit();
             }
         }
 
