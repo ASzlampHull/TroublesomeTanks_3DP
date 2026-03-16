@@ -184,6 +184,8 @@ namespace Tankontroller.Utilities
                     // Inverted: 0 alpha at center, 1 alpha at edges
                     // Add antialiasing near the edge
                     float alpha = MathHelper.Clamp((distanceFromCenter - (radius / pScreenScale) + 2f) / 2f, 0f, 1f);
+                    // Alternative sharper edge without antialiasing:
+                    alpha = distanceFromCenter > (radius / pScreenScale) ? 1f : 0f;
 
                     // Premultiplied alpha
                     colorData[y * pSize + x] = new Color(alpha, alpha, alpha, alpha);

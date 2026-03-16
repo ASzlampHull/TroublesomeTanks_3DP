@@ -12,30 +12,26 @@ namespace Tankontroller.World.Gameplay
 {
     internal class DeathRing
     {
-        private static readonly Texture2D m_CircleTexture = Tankontroller.Instance().CM().Load<Texture2D>("circle");
-
-        // Config (loaded from DGS where present; safe defaults used)
+        // Config 
         private readonly float ACTIVATION_TIME;    // seconds before match end to activate
         private readonly float DURATION;          // how long shrink lasts
-        private readonly float START_RADIUS;       // computed from play area if not set in DGS
-        private readonly float END_RADIUS;         // final safe radius
+        private readonly float START_RADIUS;       
+        private readonly float END_RADIUS;         
         private readonly float DAMAGE_PER_SECOND;   // DPS applied outside safe zone
         private readonly float GRACE_SECONDS;      // Seconds a tank can survive outside the ring before the first "tick" of damage.
+        private readonly float DEATH_ZONE_MASK_SIZE = 30f;     //draw the red transparent "death zone" (outside the dafe zone)
+        private readonly Vector2 CENTER;            // Center of the ring (calculated from play area)
 
         // State
-        private readonly Vector2 CENTER;
-        private float mElapsedSinceStart = 0f;
-        private float mCurrentRadius;              // Inner edge (safe zone boundary)
-        private bool mActive = false;
-        private const float DEATH_ZONE_MASK_SIZE = 30f;     // Adjust this to increase the size of the ring mask and it's surrounding rectangle
+        private float mElapsedSinceStart = 0f;      // Seconds since ring activation
+        private float mSafeZoneRadius;              
+        private bool mIsRingActive = false;                       
+        
 
         // Per-tank state
         private readonly Dictionary<Tank, float> OUTSIDE_TIME = new();
         private readonly Dictionary<Tank, float> DAMAGE_ACCUMULATOR = new();
 
-        // DEBUG: Timer for periodic logging
-        private float mDebugLogTimer = 0f;
-        private const float DEBUG_LOG_INTERVAL = 1f; // Log every 1 second
 
         public DeathRing(Rectangle playArea)
         {
@@ -62,22 +58,20 @@ namespace Tankontroller.World.Gameplay
             float configuredEnd = SafeFloat("DEATH_RING_END_RADIUS", defaultEnd);
             END_RADIUS = configuredEnd > 0 ? configuredEnd : defaultEnd;  
 
-            mCurrentRadius = START_RADIUS;
+            mSafeZoneRadius = START_RADIUS;
         }
 
         /// <summary>
         /// Update ring state. Call every frame.
         /// - deltaSeconds: frame delta
-        /// - remainingMatchSeconds: seconds left in match (countdown)
-        /// - tanks: list of tanks (pass all active tanks)
         /// </summary>
         public void Update(float deltaSeconds, float remainingMatchSeconds, List<Tank> tanks)
         {
-            if (!mActive)
+            if (!mIsRingActive)
             {
                 if (remainingMatchSeconds <= ACTIVATION_TIME)
                 {
-                    mActive = true;
+                    mIsRingActive = true;
                     // Align elapsed so the ring progress corresponds to time since activation
                     mElapsedSinceStart = MathF.Max(0f, ACTIVATION_TIME - remainingMatchSeconds);
                 }
@@ -93,15 +87,7 @@ namespace Tankontroller.World.Gameplay
 
             // Calculates the current radius
             float baseRadius = MathHelper.Lerp(START_RADIUS, END_RADIUS, t);
-            mCurrentRadius = MathHelper.Clamp(baseRadius, END_RADIUS, START_RADIUS);
-
-            // DEBUG: Periodic logging
-            mDebugLogTimer += deltaSeconds;
-            if (mDebugLogTimer >= DEBUG_LOG_INTERVAL)
-            {
-                mDebugLogTimer -= DEBUG_LOG_INTERVAL;
-                LogDebugInfo(tanks);
-            }
+            mSafeZoneRadius = MathHelper.Clamp(baseRadius, END_RADIUS, START_RADIUS);
 
             // Damage application: continuous DPS after grace
             foreach (var tank in tanks)
@@ -109,7 +95,7 @@ namespace Tankontroller.World.Gameplay
                 if (tank == null) continue;
                 Vector2 tankPos = tank.GetWorldPosition();
                 float dist = Vector2.Distance(tankPos, CENTER);
-                bool outside = dist > mCurrentRadius;
+                bool outside = dist > mSafeZoneRadius;
 
                 if (outside)
                 {
@@ -151,54 +137,11 @@ namespace Tankontroller.World.Gameplay
         }
 
         /// <summary>
-        /// DEBUG: Log death ring and tank information every second
-        /// </summary>
-        private void LogDebugInfo(List<Tank> tanks)
-        {
-            // Log death ring state
-            System.Diagnostics.Debug.WriteLine("=== DEATH RING DEBUG ===");
-            System.Diagnostics.Debug.WriteLine($"Ring State -> CurrentRadius (Inner): {mCurrentRadius:F2}");
-            System.Diagnostics.Debug.WriteLine($"Ring Center: ({CENTER.X:F1}, {CENTER.Y:F1})");
-            System.Diagnostics.Debug.WriteLine("");
-
-            // Log per-tank information
-            System.Diagnostics.Debug.WriteLine("Tank Data:");
-            int tankIndex = 1;
-            foreach (var tank in tanks)
-            {
-                if (tank == null) continue;
-
-                Vector2 tankPos = tank.GetWorldPosition();
-                float distFromCenter = Vector2.Distance(tankPos, CENTER);
-                bool isOutside = distFromCenter > mCurrentRadius;
-                float distanceFromEdge = distFromCenter - mCurrentRadius;
-
-                System.Diagnostics.Debug.WriteLine($"  Tank {tankIndex}:");
-                System.Diagnostics.Debug.WriteLine($"    Position: ({tankPos.X:F1}, {tankPos.Y:F1})");
-                System.Diagnostics.Debug.WriteLine($"    Distance from Center: {distFromCenter:F2}");
-                System.Diagnostics.Debug.WriteLine($"    Distance from Safe Edge: {distanceFromEdge:F2} ({(isOutside ? "OUTSIDE" : "INSIDE")})");
-                
-                if (OUTSIDE_TIME.ContainsKey(tank))
-                {
-                    System.Diagnostics.Debug.WriteLine($"    Time Outside: {OUTSIDE_TIME[tank]:F2}s");
-                }
-                if (DAMAGE_ACCUMULATOR.ContainsKey(tank))
-                {
-                    System.Diagnostics.Debug.WriteLine($"    Damage Accumulator: {DAMAGE_ACCUMULATOR[tank]:F2}");
-                }
-
-                tankIndex++;
-            }
-            System.Diagnostics.Debug.WriteLine("========================");
-            System.Diagnostics.Debug.WriteLine("");
-        }
-
-        /// <summary>
         /// Draw ring visuals. Call between SpriteBatch.Begin/End.
         /// </summary>
         public void Draw(SpriteBatch spriteBatch)
         {
-            if (!mActive) return;
+            if (!mIsRingActive) return;
 
             // color for ring (RGBA). adjust alpha to taste.
             Color ringColor = new Color(200, 30, 30, 200);
@@ -206,7 +149,7 @@ namespace Tankontroller.World.Gameplay
             DrawUtilities.DrawDeathZone(
                 spriteBatch,
                 CENTER,
-                mCurrentRadius,
+                mSafeZoneRadius,
                 ringColor,
                 DEATH_ZONE_MASK_SIZE
             );
@@ -215,8 +158,9 @@ namespace Tankontroller.World.Gameplay
             //DrawUtilities.DrawCircle(spriteBatch, CENTER, mCurrentRadius, Color.Blue * 0.5f);
         }
 
-        public bool IsActive() => mActive;
-        public float CurrentRadius => mCurrentRadius;
+        // Getters for external use
+        public bool IsActive() => mIsRingActive;
+        public float CurrentRadius => mSafeZoneRadius;
         public Vector2 Center => CENTER;
     }
 }
