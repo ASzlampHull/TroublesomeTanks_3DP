@@ -23,7 +23,7 @@ These are the controls for the map editor when using a keyboard, which is curren
 
 ### Solution Diagrams
 
-Scene Management - Class Diagram
+### Scene Management - Class Diagram
 
 ``` mermaid
 
@@ -72,7 +72,7 @@ MapEditingScene --> IScene
 ```
 
 
-SceneObject Interaction - Class Diagram
+### SceneObject Interaction - Class Diagram
 
 ```mermaid
 classDiagram
@@ -169,7 +169,7 @@ SceneObject <|-- Pickup
 Pickup --> PickupType
 ```
 
-Map Editing Service - Class Diagram
+### Map Editing Service - Class Diagram
 
 ``` mermaid
 
