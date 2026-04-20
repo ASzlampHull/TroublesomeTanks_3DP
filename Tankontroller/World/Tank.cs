@@ -9,6 +9,7 @@ using Tankontroller.Managers;
 using Tankontroller.Utilities;
 using Tankontroller.World.Bullets;
 using Tankontroller.World.Particles;
+using Tankontroller.World.Gameplay; // Add this using directive
 
 public enum BulletType
 {
@@ -28,7 +29,8 @@ public enum TankStates
 
 namespace Tankontroller.World
 {
-    public class Tank
+    // Apply the IDeathRingTarget interface here
+    public class Tank : IDeathRingTarget
     {
         public static readonly int MAX_HEALTH = DGS.Instance.GetInt("MAX_TANK_HEALTH");
         public static readonly float TANK_SPEED = DGS.Instance.GetFloat("TANK_SPEED");

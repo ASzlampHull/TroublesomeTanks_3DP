@@ -6,6 +6,31 @@ using Xunit;
 
 namespace TankontrollerTests
 {
+    // Simple test double bypassing MonoGame entirely.
+    public class MockTank : IDeathRingTarget
+    {
+        public Vector2 Position { get; set; }
+        public int Health { get; private set; }
+
+        public MockTank(Vector2 position, int initialHealth = 100)
+        {
+            Position = position;
+            Health = initialHealth;
+        }
+
+        public Vector2 GetWorldPosition() => Position;
+        
+        public void TakeDamage()
+        {
+            Health--;
+        }
+        
+        public void OffsetPosition(Vector2 offset)
+        {
+            Position += offset;
+        }
+    }
+
     public class DeathRingTests
     {
         // Default values assumed without a DGS config file loaded:
@@ -14,10 +39,14 @@ namespace TankontrollerTests
         // Duration: 30f
         // Start Radius: 1000 * 1.2f = 1200f
         // End Radius: 1000 * 0.2f = 200f
+        // Grace Seconds: 1f
+        // DPS: 10f
         private const float ACTIVATION_TIME = 45f;
         private const float DURATION = 30f;
         private const float START_RADIUS = 1200f;
         private const float END_RADIUS = 200f;
+        private const float GRACE_SECONDS = 1f;
+        private const float DAMAGE_PER_SECOND = 10f;
 
         [Fact]
         public void TestRadiusAtActivationStart_ShouldBeStartRadius()
@@ -25,7 +54,7 @@ namespace TankontrollerTests
             // Arrange
             var playArea = new Rectangle(0, 0, 1000, 1000);
             var deathRing = new DeathRing(playArea);
-            var dummyTanks = new List<Tank>();
+            var dummyTanks = new List<IDeathRingTarget>();
 
             // Act: Trigger activation at exactly the activation time (0 seconds elapsed into the shrink)
             // CurrentMatchTime counts down. When matchTime == ACTIVATION_TIME, shrinking just begins.
@@ -42,7 +71,7 @@ namespace TankontrollerTests
             // Arrange
             var playArea = new Rectangle(0, 0, 1000, 1000);
             var deathRing = new DeathRing(playArea);
-            var dummyTanks = new List<Tank>();
+            var dummyTanks = new List<IDeathRingTarget>();
 
             // Act 1: Trigger activation
             deathRing.Update(0f, ACTIVATION_TIME, dummyTanks);
@@ -66,7 +95,7 @@ namespace TankontrollerTests
             // Arrange
             var playArea = new Rectangle(0, 0, 1000, 1000);
             var deathRing = new DeathRing(playArea);
-            var dummyTanks = new List<Tank>();
+            var dummyTanks = new List<IDeathRingTarget>();
 
             // Act 1: Trigger activation
             deathRing.Update(0f, ACTIVATION_TIME, dummyTanks);
@@ -87,7 +116,7 @@ namespace TankontrollerTests
             // Arrange
             var playArea = new Rectangle(0, 0, 1000, 1000);
             var deathRing = new DeathRing(playArea);
-            var dummyTanks = new List<Tank>();
+            var dummyTanks = new List<IDeathRingTarget>();
 
             // Act 1: Trigger activation
             deathRing.Update(0f, ACTIVATION_TIME, dummyTanks);
@@ -105,7 +134,7 @@ namespace TankontrollerTests
             // Arrange
             var playArea = new Rectangle(0, 0, 1000, 1000);
             var deathRing = new DeathRing(playArea);
-            var dummyTanks = new List<Tank>();
+            var dummyTanks = new List<IDeathRingTarget>();
 
             // Act 1: Trigger activation
             deathRing.Update(0f, ACTIVATION_TIME, dummyTanks);
@@ -116,6 +145,90 @@ namespace TankontrollerTests
 
             // Assert: The math must clamp and never shrink the safe zone below the END_RADIUS
             Xunit.Assert.Equal(END_RADIUS, deathRing.CurrentRadius);
+        }
+
+        [Fact]
+        public void TestGracePeriod_TankInsideGracePeriod_ShouldTakeNoDamage()
+        {
+            // Arrange
+            var playArea = new Rectangle(0, 0, 1000, 1000); // Center is 500, 500
+            var deathRing = new DeathRing(playArea);
+
+            var mockTank = new MockTank(new Vector2(5000f, 5000f), 100);
+            var tanks = new List<IDeathRingTarget> { mockTank };
+
+            // Act: Activate the ring
+            deathRing.Update(0f, ACTIVATION_TIME, tanks);
+
+            // Advance by just under the required grace period
+            float timeOutside = GRACE_SECONDS * 0.9f;
+            deathRing.Update(timeOutside, ACTIVATION_TIME - timeOutside, tanks);
+
+            // Assert: The tank's health should be untouched
+            Xunit.Assert.Equal(100, mockTank.Health);
+        }
+
+        [Fact]
+        public void TestGracePeriod_TankBeyondGracePeriod_ShouldTakeDamage()
+        {
+            // Arrange
+            var playArea = new Rectangle(0, 0, 1000, 1000);
+            var deathRing = new DeathRing(playArea);
+
+            var mockTank = new MockTank(new Vector2(5000f, 5000f), 100);
+            var tanks = new List<IDeathRingTarget> { mockTank };
+
+            // Act 1: Activate the ring
+            deathRing.Update(0f, ACTIVATION_TIME, tanks);
+
+            // Act 2: Simulate near the grace limit
+            deathRing.Update(0.99f, ACTIVATION_TIME - 0.99f, tanks);
+            Xunit.Assert.Equal(100, mockTank.Health); // Double check still healthy
+
+            // Act 3: Apply the frame that breaches the grace limit
+            float damageDelta = 0.5f;
+            deathRing.Update(damageDelta, ACTIVATION_TIME - (0.99f + damageDelta), tanks);
+
+            // Expected damage reflects the delta timeframe applied once past the GRACE_SECONDS limit
+            int expectedDamageTaken = (int)(DAMAGE_PER_SECOND * damageDelta);
+
+            // Assert: Tank should have properly received exactly the expected damage
+            Xunit.Assert.Equal(100 - expectedDamageTaken, mockTank.Health);
+        }
+
+        [Fact]
+        public void TestGracePeriod_TankReenteringSafeZone_ShouldResetGracePeriod()
+        {
+            // Arrange
+            var playArea = new Rectangle(0, 0, 1000, 1000);
+            var deathRing = new DeathRing(playArea);
+
+            // Tank positioned firmly out of bounds at 5000, 5000 (Safe zone center is 500,500)
+            var mockTank = new MockTank(new Vector2(5000f, 5000f), 100);
+            var tanks = new List<IDeathRingTarget> { mockTank };
+
+            // Act 1: Activate Ring
+            deathRing.Update(0f, ACTIVATION_TIME, tanks);
+
+            // Act 2: Keep tank outside very close to the grace limit (0.9s out of 1.0s limit)
+            deathRing.Update(0.9f, ACTIVATION_TIME - 0.9f, tanks);
+            Xunit.Assert.Equal(100, mockTank.Health);
+
+            // Act 3: Move tank back into the center (safe zone space)
+            mockTank.OffsetPosition(new Vector2(-4500f, -4500f));
+            
+            // Allow an arbitrary frame to pass where damage WOULD be triggered if it hadn't correctly reset
+            deathRing.Update(0.2f, ACTIVATION_TIME - 1.1f, tanks);
+            Xunit.Assert.Equal(100, mockTank.Health);
+
+            // Act 4: Snap the tank outside back into the exact same dangerous location
+            mockTank.OffsetPosition(new Vector2(4500f, 4500f));
+            
+            // Advance by another slightly-under-limit 0.9s (Totalling 1.8s outside unadjusted). 
+            deathRing.Update(0.9f, ACTIVATION_TIME - 2.0f, tanks);
+
+            // Assert: With the logic successfully resetting upon entry, no damage should compile
+            Xunit.Assert.Equal(100, mockTank.Health);
         }
     }
 }

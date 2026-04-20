@@ -7,9 +7,14 @@ using Tankontroller.World;
 using Tankontroller.World.Particles;
 using Tankontroller.Utilities;
 
-
 namespace Tankontroller.World.Gameplay
 {
+    public interface IDeathRingTarget
+    {
+        Vector2 GetWorldPosition();
+        void TakeDamage();
+    }
+
     internal class DeathRing
     {
         // Config 
@@ -29,8 +34,8 @@ namespace Tankontroller.World.Gameplay
         
 
         // Per-tank state
-        private readonly Dictionary<Tank, float> OUTSIDE_TIME = new();
-        private readonly Dictionary<Tank, float> DAMAGE_ACCUMULATOR = new();
+        private readonly Dictionary<IDeathRingTarget, float> OUTSIDE_TIME = new();
+        private readonly Dictionary<IDeathRingTarget, float> DAMAGE_ACCUMULATOR = new();
 
 
         public DeathRing(Rectangle playArea)
@@ -65,7 +70,7 @@ namespace Tankontroller.World.Gameplay
         /// Update ring state. Call every frame.
         /// - deltaSeconds: frame delta
         /// </summary>
-        public void Update(float deltaSeconds, float remainingMatchSeconds, List<Tank> tanks)
+        public void Update(float deltaSeconds, float remainingMatchSeconds, IEnumerable<IDeathRingTarget> tanks)
         {
             if (!mIsRingActive)
             {
