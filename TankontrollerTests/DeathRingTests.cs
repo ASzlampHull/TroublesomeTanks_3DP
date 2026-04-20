@@ -48,6 +48,8 @@ namespace TankontrollerTests
         private const float GRACE_SECONDS = 1f;
         private const float DAMAGE_PER_SECOND = 10f;
 
+        #region Radius Tests
+
         [Fact]
         public void TestRadiusAtActivationStart_ShouldBeStartRadius()
         {
@@ -147,6 +149,10 @@ namespace TankontrollerTests
             Xunit.Assert.Equal(END_RADIUS, deathRing.CurrentRadius);
         }
 
+        #endregion
+
+        #region Grace Period Tests
+
         [Fact]
         public void TestGracePeriod_TankInsideGracePeriod_ShouldTakeNoDamage()
         {
@@ -230,5 +236,115 @@ namespace TankontrollerTests
             // Assert: With the logic successfully resetting upon entry, no damage should compile
             Xunit.Assert.Equal(100, mockTank.Health);
         }
+
+        #endregion
+
+        #region Damage Accumulation Tests
+
+        [Fact]
+        public void TestDamageAccumulation_FractionalDamage_ShouldNotReduceHealth()
+        {
+            // Arrange
+            var playArea = new Rectangle(0, 0, 1000, 1000);
+            var deathRing = new DeathRing(playArea);
+            var mockTank = new MockTank(new Vector2(5000f, 5000f), 100);
+            var tanks = new List<IDeathRingTarget> { mockTank };
+
+            // Act: Activate and approach the grace period limit without crossing it
+            deathRing.Update(0f, ACTIVATION_TIME, tanks);
+            deathRing.Update(0.99f, ACTIVATION_TIME - 0.99f, tanks);
+
+            // Apply a delta that yields less than 1.0 damage.
+            // DPS is 10.0, so 0.05 seconds = 0.5 damage.
+            float fractionalDelta = 0.05f; 
+            deathRing.Update(fractionalDelta, ACTIVATION_TIME - (0.99f + fractionalDelta), tanks);
+
+            // Assert: The accumulator holds 0.5, which is not enough for a whole hit.
+            Xunit.Assert.Equal(100, mockTank.Health);
+        }
+
+        [Fact]
+        public void TestDamageAccumulation_MultipleSmallDeltas_ShouldApplyDamageWhenThresholdReached()
+        {
+            // Arrange
+            var playArea = new Rectangle(0, 0, 1000, 1000);
+            var deathRing = new DeathRing(playArea);
+            var mockTank = new MockTank(new Vector2(5000f, 5000f), 100);
+            var tanks = new List<IDeathRingTarget> { mockTank };
+
+            // Act: Activate and approach the grace period limit without crossing it
+            deathRing.Update(0f, ACTIVATION_TIME, tanks);
+            deathRing.Update(0.99f, ACTIVATION_TIME - 0.99f, tanks);
+
+            // Apply small deltas: 2 frames of 0.05s at 10 DPS = 0.5 damage each
+            float frameDelta = 0.05f;
+            deathRing.Update(frameDelta, ACTIVATION_TIME - (0.99f + frameDelta), tanks);
+            Xunit.Assert.Equal(100, mockTank.Health); // 0.5 total, no hit yet
+
+            deathRing.Update(frameDelta, ACTIVATION_TIME - (0.99f + frameDelta * 2), tanks);
+
+            // Assert: 0.5 + 0.5 = 1.0. The fractional accumulation crossed the integer threshold.
+            Xunit.Assert.Equal(99, mockTank.Health);
+        }
+
+        [Fact]
+        public void TestDamageAccumulation_LargeDelta_ShouldApplyMultipleDamageTicks()
+        {
+            // Arrange
+            var playArea = new Rectangle(0, 0, 1000, 1000);
+            var deathRing = new DeathRing(playArea);
+            var mockTank = new MockTank(new Vector2(5000f, 5000f), 100);
+            var tanks = new List<IDeathRingTarget> { mockTank };
+
+            // Act: Activate and approach the grace period limit without crossing it
+            deathRing.Update(0f, ACTIVATION_TIME, tanks);
+            deathRing.Update(0.99f, ACTIVATION_TIME - 0.99f, tanks);
+
+            // Apply a single large delta that results in multiple points of damage.
+            // 0.35s at 10 DPS = 3.5 damage.
+            float largeDelta = 0.35f;
+            deathRing.Update(largeDelta, ACTIVATION_TIME - (0.99f + largeDelta), tanks);
+
+            // Assert: 3 whole hits should be applied, leaving 0.5 in the accumulator.
+            Xunit.Assert.Equal(97, mockTank.Health);
+        }
+
+        [Fact]
+        public void TestDamageAccumulation_ResetOnReentry_ShouldClearFractionalDamage()
+        {
+            // Arrange
+            var playArea = new Rectangle(0, 0, 1000, 1000);
+            var deathRing = new DeathRing(playArea);
+            var mockTank = new MockTank(new Vector2(5000f, 5000f), 100);
+            var tanks = new List<IDeathRingTarget> { mockTank };
+
+            // Act 1: Activate, approach grace period, and accumulate 0.9 fractional damage.
+            deathRing.Update(0f, ACTIVATION_TIME, tanks);
+            deathRing.Update(0.99f, ACTIVATION_TIME - 0.99f, tanks);
+            
+            float fractionalDelta = 0.09f; // 0.9 damage
+            deathRing.Update(fractionalDelta, ACTIVATION_TIME - (0.99f + fractionalDelta), tanks);
+            Xunit.Assert.Equal(100, mockTank.Health);
+
+            // Act 2: Move to safe zone to trigger state pruning
+            mockTank.OffsetPosition(new Vector2(-4500f, -4500f));
+            float timePassed = 0.99f + fractionalDelta;
+            deathRing.Update(0.1f, ACTIVATION_TIME - (timePassed + 0.1f), tanks);
+
+            // Act 3: Move back out, step up to the edge of the NEW grace period, and accumulate 0.9 damage again.
+            mockTank.OffsetPosition(new Vector2(4500f, 4500f));
+            timePassed += 0.1f;
+            
+            deathRing.Update(0.99f, ACTIVATION_TIME - (timePassed + 0.99f), tanks);
+            timePassed += 0.99f;
+            
+            deathRing.Update(fractionalDelta, ACTIVATION_TIME - (timePassed + fractionalDelta), tanks);
+
+            // Assert: If the accumulator wasn't reset, 0.9 + 0.9 = 1.8, causing 1 damage.
+            // Since it reset successfully, the new fraction is just 0.9, meaning 0 taken damage.
+            Xunit.Assert.Equal(100, mockTank.Health);
+        }
+
+        #endregion
     }
 }
