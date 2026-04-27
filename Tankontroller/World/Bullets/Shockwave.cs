@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Tankontroller.Managers;
 using Tankontroller.Utilities;
 using Tankontroller.World.Particles;
+using Tankontroller.World.Shapes;
 
 namespace Tankontroller.World.Bullets
 {
@@ -12,27 +13,15 @@ namespace Tankontroller.World.Bullets
         public Shockwave(Vector2 pPosition, Vector2 pVelocity, Color pColour, float pLifeTime) : base(pPosition, pVelocity, pColour, pLifeTime) { }
         public override void Update(float pSeconds)
         {
-            Radius += 0.5f;
+            CircleShape.Radius += 0.5f;
             LifeTime -= pSeconds;
             base.Update(pSeconds);
         }
-        public override bool DoCollision(Rectangle pRectangle)
-        {
-            return false;
-        }
-        public override bool DoCollision(RectWall pWall)
-        {
-            return false;
-        }
 
-        public override bool DoCollision(Tank pTank)
-        {
-            return false;
-        }
-        public override bool DoCollision(Bullet pBullet)
-        {
-            return false;
-        }
+        public override bool TankCollisionResponse(Tank pTank) => false;
+        public override bool BulletCollisionResponse(Bullet pBullet) => false;
+        public override bool WallCollisionResponse(CollisionEvent collisionEvent) => false;
+
         public override bool LifeTimeExpired()
         {
             return (LifeTime <= 0);
