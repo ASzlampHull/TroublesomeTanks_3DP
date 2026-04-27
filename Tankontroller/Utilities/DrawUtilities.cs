@@ -138,13 +138,24 @@ namespace Tankontroller.Utilities
         /// Draw a rectangle at the given position with the given size and tint using a pixel texture.
         /// </summary>
         /// <param name="pRectangle"> Reference rectangle for the size and origin </param>
-        public static void DrawRectangle(SpriteBatch pSpriteBatch, Rectangle pRectangle, Color pColor, float pRotationRadians, Vector2 pOrigin, float pScale)
+        public static void DrawRectangle(SpriteBatch pSpriteBatch, Rectangle pRectangle, Color pColor, float pRotationRadians, Vector2 pPosition, float pScale)
         {
             // Generate the pixel texture if it doesn't exist
             mPixelTexture ??= CreatePixelTexture(pSpriteBatch.GraphicsDevice);
             // Draw the rectangle using the pixel texture scaled to the desired size
             Vector2 origin = new(pRectangle.Width / 2f, pRectangle.Height / 2f);
-            pSpriteBatch.Draw(mPixelTexture, pOrigin, pRectangle, pColor, pRotationRadians, origin, pScale, SpriteEffects.None, 0.0f);
+            pSpriteBatch.Draw(mPixelTexture, pPosition, pRectangle, pColor, pRotationRadians, origin, pScale, SpriteEffects.None, 0.0f);
+        }
+
+        /// <summary>
+        /// Draw a rectangle at the given position with the given size and tint using a pixel texture.
+        /// </summary>
+        /// <param name="pRectangle"> Reference rectangle for the size </param>
+        public static void DrawRectangleNonOrigin(SpriteBatch pSpriteBatch, Rectangle pRectangle, Color pColor, float pRotationRadians, Vector2 pPosition, float pScale)
+        {
+            // Generate the pixel texture if it doesn't exist
+            mPixelTexture ??= CreatePixelTexture(pSpriteBatch.GraphicsDevice);
+            pSpriteBatch.Draw(mPixelTexture, pPosition, pRectangle, pColor, pRotationRadians, Vector2.Zero, pScale, SpriteEffects.None, 0.0f);
         }
 
         #endregion Rectangle
